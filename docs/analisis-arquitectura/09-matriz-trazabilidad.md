@@ -1,0 +1,15 @@
+# Matriz de Trazabilidad de Requisitos
+
+A partir del análisis inverso de las funcionalidades presentes en el código (ya que no se cuenta con un documento de requisitos formales inicial), se ha reconstruido la matriz de trazabilidad que conecta la función con su manifestación técnica.
+
+| Funcionalidad / Requisito Inferido | Actor | Interfaz Asociada | Componente Lógico / Negocio | Persistencia | Estado | Evidencia |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Navegación Accesible:** El sistema debe proveer instrucciones habladas a medida que el usuario usa el teclado (`Tab`). | Usuario | Múltiples (Inputs, Buttons, Headers) | `App.tsx` (Oyentes globales `keydown`, `focusin`) | Memoria RAM (`isKeyboardNav` bool) | Implementada | `App.tsx:12-79`. |
+| **Carga de Archivos:** Seleccionar y cargar un archivo `.pdf` local. | Usuario | Input File Oculto (Click simulado) | `handleFileChange` en `PdfReaderPage.tsx` | Objeto `PDFDocumentProxy` en memoria (useState) | Implementada | `PdfReaderPage.tsx:228`. |
+| **Extracción Textual Nativa:** Leer texto interno del PDF. | Sistema | Componente Lector (Canvas invisible) | `loadPageData` -> `pdfjs.getTextContent()` | Caché `pageCache[pageNum]` | Implementada | `PdfReaderPage.tsx:78`. |
+| **OCR Automático:** Activar OCR si la página es primordialmente una imagen (escáner). | Sistema | Indicador de Estado Verbal | `runOCR` usando `tesseract.js` | Caché `pageCache` | Implementada | `PdfReaderPage.tsx:106`. Condicionado si texto < 50 caracteres (L99). |
+| **IA Descriptiva:** Generar descripción textual de los elementos gráficos de una página mediante Inteligencia Artificial. | Usuario | Tecla `H` o botón "Describir imágenes..." | `describeImages` usando `GoogleGenerativeAI` | Caché `pageCache` (evita doble petición) | Implementada | `PdfReaderPage.tsx:138`. |
+| **Controles de Síntesis de Voz:** Leer, pausar, reanudar y detener audio de forma proactiva. | Usuario | Teclas `F`, `Espacio`, `G` y Botones visibles | Hook `useSpeech.ts` y métodos asociados | Motor Web nativo | Implementada | `useSpeech.ts:18`, `PdfReaderPage.tsx:281`. |
+| **Navegación de Documento:** Cambiar página siguiente/anterior, salto a página específica, ir a inicio/fin. | Usuario | Teclas `Flechas`, `Home`, `End` | Funciones `handleNextPage`, `handlePrevPage`, `handlePageJump` | Estado `currentPage` en React | Implementada | `PdfReaderPage.tsx:286-343`. |
+| **Resaltado de Texto Sincronizado:** Subrayar visualmente en pantalla la palabra que está siendo leída en ese instante. | Sistema | (No se muestra visualmente) | Hook `useSpeech` provee estado `highlight`, pero `PdfReaderPage` no lo dibuja en pantalla. | Estado React `highlight` devuelto por el Hook. | Parcialmente Implementada (Lógica sí, UI no). | `useSpeech.ts:100` calcula el highlight, pero no hay divs resaltando texto en la vista principal (solo se usa canvas para dibujar imágenes). |
+| **Persistencia de Progreso:** Recordar dónde se quedó leyendo el usuario al cerrar la pestaña. | Usuario | N/A | N/A | LocalStorage / BD | No Implementada | Al refrescar la página, el archivo se pierde y el estado vuelve a cero. |

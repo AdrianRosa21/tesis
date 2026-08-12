@@ -1,0 +1,15 @@
+# Inventario Técnico de Componentes
+
+| Elemento | Tipo | Responsabilidad | Tecnología | Ubicación | Dependencias | Evidencia | Estado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `App` | Componente/Router | Gestionar la vista actual (Home/Reader) y manejar interceptores globales de eventos para accesibilidad por teclado y foco. | React / TSX | `src/App.tsx` | `HomePage`, `PdfReaderPage`, `useSpeech` | L31: `if (target.tagName === 'BUTTON')` | Implementado |
+| `HomePage` | Vista / Componente | Mostrar la bienvenida y dar la instrucción inicial de uso, capturando la pulsación de la tecla para continuar. | React / TSX | `src/pages/HomePage.tsx` | - | Exportación en `src/pages/HomePage.tsx` | Implementado |
+| `PdfReaderPage` | Vista / Componente (God Object) | Gestionar la carga, interpretación, extracción de texto, OCR, solicitud de descripciones de imágenes y controles de reproducción. | React / TSX | `src/pages/PdfReaderPage.tsx` | `pdfjs-dist`, `tesseract.js`, `@google/generative-ai` | L262: `const handleRead = () => {...}` | Implementado |
+| `useSpeech` | Hook (Servicio/Adaptador) | Proveer una API simplificada (speak, pause, resume, stop) para interactuar con la Web Speech API del navegador. | TypeScript | `src/hooks/useSpeech.ts` | `window.speechSynthesis` | L18: `export function useSpeech(): UseSpeechResult` | Implementado |
+| `main` | Punto de entrada | Renderizar la aplicación React en el DOM, inicializar modo estricto e importar los estilos globales. | React / TSX | `src/main.tsx` | `App`, `styles.css` | L6: `ReactDOM.createRoot...` | Implementado |
+| `Estilos globales` | Configuraciones / Hoja de estilos | Definir variables de colores (incluyendo dark mode), tipografía y anillos de foco de alto contraste para accesibilidad visual. | CSS | `src/styles.css` | - | L67: `/* High contrast focus ring */` | Implementado |
+| `Vite Config` | Configuración | Orquestar la construcción (build) del código fuente y desarrollo local con soporte React. | TypeScript / Vite | `vite.config.ts` | `@vitejs/plugin-react` | Archivo en raíz | Implementado |
+| Backend / API Interna | Servidor | (No existe). Lógica contenida íntegramente en el frontend. | N/A | N/A | N/A | Ausencia de carpetas backend o servidores Node/Python. | No verificado / No existe |
+| Conexión a Base de Datos | Persistencia | (No existe). El sistema no mantiene datos a largo plazo más allá del caché en memoria por página del PDF actual. | N/A | N/A | N/A | Ausencia de drivers DB en `package.json`. | No existe |
+| Configuración de Entorno | Configuración | Almacenar variables sensibles de desarrollo, específicamente el API Key para Gemini. | Archivo de texto | `.env` | N/A | `VITE_GEMINI_API_KEY` en línea 1. | Implementado |
+| Worker PDF | Script en background | Ejecutar las rutinas pesadas de `pdfjs-dist` en un hilo separado para no bloquear la UI. | JavaScript | Importado en `PdfReaderPage.tsx` | `pdfjs-dist/build/pdf.worker.mjs` | L7: `pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;` | Implementado |

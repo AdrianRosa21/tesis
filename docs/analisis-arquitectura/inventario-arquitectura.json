@@ -1,0 +1,136 @@
+{
+  "sistema": {
+    "nombre": "Lector de PDF Accesible",
+    "proposito": "Permitir a usuarios con discapacidades visuales escuchar el contenido de archivos PDF y obtener descripciones de imágenes mediante Inteligencia Artificial.",
+    "tipo": "Aplicación Web (Frontend SPA)",
+    "estado": "Prototipo / MVP"
+  },
+  "tecnologias": [
+    "React 19",
+    "TypeScript",
+    "Vite",
+    "pdfjs-dist",
+    "tesseract.js",
+    "@google/generative-ai"
+  ],
+  "actores": [
+    "Usuario final (Invidente / Baja Visión)"
+  ],
+  "modulos": [
+    "Módulo de Enrutamiento (App)",
+    "Módulo Lector de PDF (Procesamiento y UI)",
+    "Módulo de Servicios Externos (Voz, IA, OCR)"
+  ],
+  "componentes": [
+    {
+      "nombre": "App",
+      "responsabilidad": "Control global de estado y captura de atajos de teclado para accesibilidad.",
+      "ubicacion": "src/App.tsx",
+      "tipo": "Componente React"
+    },
+    {
+      "nombre": "HomePage",
+      "responsabilidad": "Vista de bienvenida con instrucciones habladas iniciales.",
+      "ubicacion": "src/pages/HomePage.tsx",
+      "tipo": "Componente React"
+    },
+    {
+      "nombre": "PdfReaderPage",
+      "responsabilidad": "God component; orquesta carga del PDF, OCR, consultas a la API de Google y llamadas a Web Speech API.",
+      "ubicacion": "src/pages/PdfReaderPage.tsx",
+      "tipo": "Componente React"
+    },
+    {
+      "nombre": "useSpeech",
+      "responsabilidad": "Adaptador para interactuar fluidamente con la Web Speech API del navegador.",
+      "ubicacion": "src/hooks/useSpeech.ts",
+      "tipo": "Custom Hook"
+    }
+  ],
+  "clases": [],
+  "entidades": [
+    "PageData",
+    "HighlightState",
+    "UseSpeechResult"
+  ],
+  "tablas": [],
+  "endpoints": [],
+  "integraciones": [
+    {
+      "servicio": "Google Gemini (gemini-flash-latest)",
+      "proposito": "Descripción semántica de imágenes contenidas en el PDF",
+      "tecnologia": "@google/generative-ai SDK"
+    },
+    {
+      "servicio": "Tesseract.js OCR",
+      "proposito": "Reconocimiento óptico de caracteres en páginas de PDFs escaneados (Client-side worker)",
+      "tecnologia": "tesseract.js"
+    },
+    {
+      "servicio": "Web Speech API",
+      "proposito": "Sintetización nativa de texto a voz sin depender de un servidor externo.",
+      "tecnologia": "window.speechSynthesis"
+    }
+  ],
+  "flujos": [
+    "Arranque del sistema y navegación global por teclado",
+    "Carga y renderizado inicial de un archivo PDF",
+    "Procesamiento inteligente de página (Texto, OCR y Caché)",
+    "Solicitud de Descripción Visual a IA Gemini"
+  ],
+  "riesgos": [
+    {
+      "id": "R1",
+      "descripcion": "API Key de Gemini expuesta en código cliente",
+      "severidad": "Crítica"
+    },
+    {
+      "id": "R2",
+      "descripcion": "Fugas de Memoria por caché Base64 infinito",
+      "severidad": "Alta"
+    },
+    {
+      "id": "R3",
+      "descripcion": "Acoplamiento Extremo (God Object) en PdfReaderPage",
+      "severidad": "Alta"
+    },
+    {
+      "id": "R4",
+      "descripcion": "Dependencia fuerte de red para carga inicial de Modelos Tesseract",
+      "severidad": "Media"
+    },
+    {
+      "id": "R5",
+      "descripcion": "Ausencia de Pruebas Automatizadas",
+      "severidad": "Media"
+    }
+  ],
+  "recomendaciones": [
+    {
+      "prioridad": "Crítica",
+      "accion": "Mover invocación de Google Gemini a un Backend For Frontend (BFF)."
+    },
+    {
+      "prioridad": "Alta",
+      "accion": "Refactorizar PdfReaderPage en hooks específicos (useOCR, usePdfParser)."
+    },
+    {
+      "prioridad": "Alta",
+      "accion": "Implementar un sistema de recolección de basura para limpiar el pageCache de páginas viejas."
+    },
+    {
+      "prioridad": "Media",
+      "accion": "Incorporar Vitest y Testing Library para tests unitarios."
+    }
+  ],
+  "elementosParaDiagramas": {
+    "c4_contexto": {
+      "actores": ["Usuario (Invidente)"],
+      "sistemas": ["Lector PDF", "API Gemini", "Navegador OS"]
+    },
+    "c4_contenedores": {
+      "contenedores": ["SPA React (Frontend)"]
+    },
+    "componentes_react": ["App", "PdfReaderPage", "HomePage", "useSpeech"]
+  }
+}
