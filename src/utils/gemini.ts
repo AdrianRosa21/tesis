@@ -58,11 +58,44 @@ Reglas:
   const textResponse = data.choices[0].message.content;
 
   try {
-    const elements: PageElement[] = JSON.parse(textResponse);
-    return elements;
+    // Clean potential markdown formatting
+    let cleanText = textResponse.trim();
+    if (cleanText.startsWith("```")) {
+      cleanText = cleanText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
+    }
+
+    const parsed = JSON.parse(cleanText);
+
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+
+    if (parsed && typeof parsed === 'object') {
+      // Look for any array property inside the object (like elements, items, list, etc.)
+      const arrayProp = Object.values(parsed).find(val => Array.isArray(val));
+      if (arrayProp) {
+        return arrayProp as PageElement[];
+      }
+
+      // If it's a single element represented directly as an object
+      if ('type' in parsed && 'content' in parsed) {
+        return [parsed as PageElement];
+      }
+      
+      // If it contains a reasoning or error message (e.g. empty/blank page)
+      if ('error_message' in parsed || 'reasoning' in parsed) {
+        return [{
+          type: 'paragraph',
+          content: parsed.error_message || parsed.reasoning || 'No se pudo extraer contenido de esta página.'
+        }];
+      }
+    }
+
+    throw new Error("No se encontró una estructura de arreglo JSON en la respuesta.");
   } catch (error) {
     console.error("Error parsing Agnes JSON response:", textResponse);
     throw new Error("La IA devolvió un formato inválido.", { cause: error });
   }
 }
+
 
