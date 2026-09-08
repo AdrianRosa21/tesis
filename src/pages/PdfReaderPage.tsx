@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url';
-import Tesseract from 'tesseract.js';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { savePdfFile, getPdfFile, deletePdfFile } from '../utils/db';
+import { analyzePageStructure, type PageElement } from '../utils/ai';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -25,12 +24,9 @@ interface PdfReaderPageProps {
 
 interface PageData {
   pageNum: number;
-  extractedText: string;
-  ocrText: string;
-  imageDescriptions: string;
-  isProcessingOCR: boolean;
-  isProcessingDescription: boolean;
+  elements: PageElement[] | null;
   canvasDataUrl: string | null;
+  isProcessing: boolean;
 }
 
 export function PdfReaderPage({
@@ -49,9 +45,9 @@ export function PdfReaderPage({
   const [totalPages, setTotalPages] = useState<number>(0);
   const [pageCache, setPageCache] = useState<Record<number, PageData>>({});
   
-  const [status, setStatus] = useState<string>('Página de lectura de PDF abierta. Presiona la letra F para seleccionar un archivo, o usa el botón Seleccionar PDF.');
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [descriptionModal, setDescriptionModal] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>('Página de lectura de PDF abierta. Presiona la letra R para seleccionar un archivo, o usa el botón Seleccionar PDF.');
+  
+  const [currentElementIndex, setCurrentElementIndex] = useState<number>(0);
   const [readingText, setReadingText] = useState<string>('');
   const [pageInputValue, setPageInputValue] = useState<string>('1');
   
@@ -60,8 +56,7 @@ export function PdfReaderPage({
   const visualCanvasRef = useRef<HTMLCanvasElement>(null);
   const hasInitialized = useRef<boolean>(false);
   const renderIdRef = useRef<number>(0);
-  
-  // Ref para cancelar renderizados anteriores de PDF.js si ocurren superposiciones
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderTaskRef = useRef<any>(null);
 
   useEffect(() => {
@@ -105,137 +100,17 @@ export function PdfReaderPage({
     speak(newStatus);
   }, [speak]);
 
-  // Load a specific page text data, caching the result
-  const loadPageData = useCallback(async (doc: pdfjsLib.PDFDocumentProxy, pageNum: number, canvasDataUrl: string | null) => {
-    if (pageCache[pageNum]) return pageCache[pageNum];
-
-    setIsProcessing(true);
-    let extractedText = '';
-    
-    try {
-      const page = await doc.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      extractedText = textContent.items.map((item: any) => item.str).join(' ').trim();
-    } catch (error) {
-      console.error(error);
-      extractedText = "Error al extraer el texto de esta página.";
-    }
-
-    const newPageData: PageData = {
-      pageNum,
-      extractedText,
-      ocrText: '',
-      imageDescriptions: '',
-      isProcessingOCR: false,
-      isProcessingDescription: false,
-      canvasDataUrl
-    };
-
-    setPageCache(prev => ({ ...prev, [pageNum]: newPageData }));
-    setIsProcessing(false);
-
-    // If text is suspiciously short, run OCR automatically
-    if (extractedText.length < 50 && canvasDataUrl) {
-      runOCR(pageNum, canvasDataUrl, extractedText);
-    }
-
-    return newPageData;
-  }, [pageCache]);
-
-  const runOCR = async (pageNum: number, dataUrl: string, existingText: string) => {
-    setPageCache(prev => ({ ...prev, [pageNum]: { ...prev[pageNum], isProcessingOCR: true } }));
-    updateStatus(`La página ${pageNum} parece estar escaneada. Iniciando reconocimiento de texto.`);
-    
-    try {
-      const result = await Tesseract.recognize(dataUrl, 'spa+eng');
-      let ocrResult = result.data.text.trim();
-      
-      if (ocrResult && existingText.length > 0 && ocrResult.includes(existingText)) {
-        ocrResult = ocrResult.replace(existingText, '').trim();
-      } else if (existingText && existingText.length > 0 && existingText.includes(ocrResult)) {
-        ocrResult = '';
-      }
-
-      setPageCache(prev => ({
-        ...prev,
-        [pageNum]: { 
-          ...prev[pageNum], 
-          isProcessingOCR: false, 
-          ocrText: ocrResult || "No se encontró texto adicional."
-        }
-      }));
-      updateStatus(`Reconocimiento de texto de la página ${pageNum} completado.`);
-    } catch (error) {
-      console.error(error);
-      setPageCache(prev => ({
-        ...prev,
-        [pageNum]: { ...prev[pageNum], isProcessingOCR: false, ocrText: "Error durante el reconocimiento OCR." }
-      }));
-    }
-  };
-
-  const describeImages = async () => {
-    const currentPageData = pageCache[currentPage];
-    if (!currentPageData || !currentPageData.canvasDataUrl) return;
-
-    if (currentPageData.imageDescriptions && !currentPageData.imageDescriptions.includes("Error")) {
-      setDescriptionModal(currentPageData.imageDescriptions);
-      speak(`Descripción visual: ${currentPageData.imageDescriptions}`);
-      return;
-    }
-
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      const msg = 'La descripción visual mediante inteligencia artificial no está configurada.';
-      setDescriptionModal(msg);
-      speak(msg);
-      return;
-    }
-
-    setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessingDescription: true } }));
-    updateStatus('Solicitando descripción visual, por favor espera.');
-
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-      const base64Data = currentPageData.canvasDataUrl.split(',')[1];
-      
-      const result = await model.generateContent([
-        "Describe brevemente esta imagen de forma útil para una persona ciega. Identifica si es una fotografía, gráfico, diagrama, tabla o texto. Sé objetivo y directo. No inventes detalles.",
-        { inlineData: { data: base64Data, mimeType: "image/png" } }
-      ]);
-      
-      const description = result.response.text();
-      setPageCache(prev => ({
-        ...prev,
-        [currentPage]: { ...prev[currentPage], isProcessingDescription: false, imageDescriptions: description }
-      }));
-      setDescriptionModal(description);
-      speak(`Descripción visual lista: ${description}`);
-    } catch (error) {
-      console.error(error);
-      const err = "Error al generar la descripción visual.";
-      setPageCache(prev => ({
-        ...prev,
-        [currentPage]: { ...prev[currentPage], isProcessingDescription: false, imageDescriptions: err }
-      }));
-      setDescriptionModal(err);
-      speak(err);
-    }
-  };
-
-  // Render Visual PDF and prepare data cache
-  const goToPage = async (doc: pdfjsLib.PDFDocumentProxy, pageNum: number) => {
+  async function goToPage(doc: pdfjsLib.PDFDocumentProxy, pageNum: number) {
     if (pageNum < 1 || pageNum > doc.numPages) return;
     
     const currentRenderId = ++renderIdRef.current;
 
     stopSpeech();
     setReadingText('');
+    setCurrentElementIndex(0);
     setCurrentPage(pageNum);
     setPageInputValue(pageNum.toString());
     localStorage.setItem('currentPage', pageNum.toString());
-    setDescriptionModal(null);
     const msg = `Página ${pageNum} de ${doc.numPages}`;
     
     if (headerRef.current) {
@@ -245,31 +120,23 @@ export function PdfReaderPage({
 
     try {
       const page = await doc.getPage(pageNum);
-      
-      // Si otra llamada a goToPage ocurrió mientras esperábamos el getPage, abortamos esta
       if (currentRenderId !== renderIdRef.current) return;
       
-      // Attempt to render the page to visualCanvas
       let dataUrl: string | null = null;
       if (visualCanvasRef.current) {
         const canvas = visualCanvasRef.current;
         const context = canvas.getContext('2d');
         if (context) {
-          // Si hay un renderizado en progreso, lo cancelamos para evitar el error de "multiple render()"
           if (renderTaskRef.current) {
-            try {
-              await renderTaskRef.current.cancel();
-            } catch (e) {
-              // Ignore cancellation errors
-            }
+            try { await renderTaskRef.current.cancel(); } catch { /* ignore cancellation errors */ }
           }
           
-          // Adjust scale based on container width or just a standard size
           const viewport = page.getViewport({ scale: 1.5 });
           canvas.height = viewport.height;
           canvas.width = viewport.width;
           
           const renderContext = { canvasContext: context, viewport };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const renderTask = page.render(renderContext as any);
           renderTaskRef.current = renderTask;
           
@@ -280,22 +147,24 @@ export function PdfReaderPage({
         }
       }
 
-      await loadPageData(doc, pageNum, dataUrl);
-    } catch (error: any) {
-      // Si la llamada no es la más reciente (fue cancelada por otra superpuesta), la ignoramos completamente
-      if (currentRenderId !== renderIdRef.current) {
-        return; 
-      }
-      
-      // Si fue cancelada explícitamente pero por alguna razón es la última llamada (poco probable), la ignoramos
-      if (error?.name === 'RenderingCancelledException' || error?.message?.includes('cancelled')) {
-        return; 
-      }
-      
-      console.error("Error real al renderizar:", error);
+      setPageCache(prev => ({
+        ...prev,
+        [pageNum]: {
+          pageNum,
+          elements: prev[pageNum]?.elements || null,
+          canvasDataUrl: dataUrl,
+          isProcessing: false
+        }
+      }));
+
+    } catch (error: unknown) {
+      if (currentRenderId !== renderIdRef.current) return; 
+      const err = error as Error;
+      if (err?.name === 'RenderingCancelledException' || err?.message?.includes('cancelled')) return; 
+      console.error("Error real al renderizar:", err);
       updateStatus("Error al renderizar la página.");
     }
-  };
+  }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -308,20 +177,14 @@ export function PdfReaderPage({
 
     setFileName(file.name);
     updateStatus(`Archivo seleccionado: ${file.name}. Procesando PDF, por favor espera.`);
-    setIsProcessing(true);
     setPdfDoc(null);
     setPageCache({});
     setCurrentPage(1);
     setTotalPages(0);
-    setDescriptionModal(null);
     stopSpeech();
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      
-      // Creamos una copia del buffer para guardarlo en IndexedDB,
-      // ya que pdfjsLib.getDocument puede "desvincular" (detach) el ArrayBuffer original
-      // al pasarlo al Web Worker, causando un DataCloneError.
       await savePdfFile('currentPdf', arrayBuffer.slice(0));
       localStorage.setItem('fileName', file.name);
       localStorage.setItem('currentPage', '1');
@@ -330,34 +193,58 @@ export function PdfReaderPage({
       setPdfDoc(doc);
       setTotalPages(doc.numPages);
       
-      // Need to wait slightly for canvas ref to mount if it was hidden
       setTimeout(() => goToPage(doc, 1), 100);
     } catch (error) {
       console.error(error);
       updateStatus('Ocurrió un error al procesar el PDF. Asegúrate de que no esté dañado o protegido con contraseña.');
-      setIsProcessing(false);
     }
   };
 
-  const handleRead = () => {
-    const data = pageCache[currentPage];
-    if (!data) {
-      speak('La página no está lista para ser leída.');
-      return;
+  const readElement = (elements: PageElement[], index: number) => {
+    if (index < 0 || index >= elements.length) return;
+    
+    const el = elements[index];
+    let prefix = '';
+    const typeLower = el.type.toLowerCase();
+    
+    // Ignorar prefijo para párrafos normales para que la lectura sea natural
+    if (!['párrafo', 'parrafo', 'texto', 'paragraph'].includes(typeLower)) {
+      // Capitalizar la primera letra del tipo
+      const capitalizedType = el.type.charAt(0).toUpperCase() + el.type.slice(1);
+      prefix = `${capitalizedType}: `;
     }
     
-    const parts = [`Página ${currentPage}.`];
-    
-    if (data.extractedText) parts.push(data.extractedText);
-    else parts.push("No se encontró texto seleccionable.");
+    const textToSpeak = `${prefix}${el.content}`;
+    setReadingText(textToSpeak);
+    speak(textToSpeak);
+  };
 
-    if (data.ocrText) parts.push(`Texto reconocido visualmente: ${data.ocrText}`);
-    
-    parts.push(`Fin de la página ${currentPage}.`);
-    
-    const fullText = parts.join(' ');
-    setReadingText(fullText);
-    speak(fullText);
+  const handleRead = async () => {
+    const data = pageCache[currentPage];
+    if (!data || !data.canvasDataUrl) return;
+
+    if (data.elements) {
+      setCurrentElementIndex(0);
+      readElement(data.elements, 0);
+    } else {
+      updateStatus("Analizando estructura de la página con inteligencia artificial, por favor espera unos segundos.");
+      setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessing: true } }));
+      
+      try {
+        const elements = await analyzePageStructure(data.canvasDataUrl, pdfDoc!, currentPage);
+        setPageCache(prev => ({ 
+          ...prev, 
+          [currentPage]: { ...prev[currentPage], elements, isProcessing: false } 
+        }));
+        
+        setCurrentElementIndex(0);
+        readElement(elements, 0);
+      } catch (e) {
+        console.error(e);
+        updateStatus("Error al analizar la página con inteligencia artificial. Revisa tu clave API o conexión.");
+        setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessing: false } }));
+      }
+    }
   };
 
   const handlePauseResume = () => {
@@ -379,7 +266,6 @@ export function PdfReaderPage({
       if (!isNaN(val) && pdfDoc && val >= 1 && val <= totalPages) {
         goToPage(pdfDoc, val);
       } else {
-        // Restaurar el valor correcto si el usuario introduce algo fuera de rango
         setPageInputValue(currentPage.toString());
         speak(`Página no válida. El documento tiene ${totalPages} páginas.`);
       }
@@ -405,14 +291,11 @@ export function PdfReaderPage({
         fileInputRef.current?.click();
       }
       else if (key === ' ') {
-        e.preventDefault(); // Prevent page scroll when pressing space
+        e.preventDefault(); 
         handlePauseResume();
       } 
       else if (key.toLowerCase() === 'g') {
         stopSpeech();
-      } 
-      else if (key.toLowerCase() === 'h') {
-        describeImages();
       } 
       else if (key.toLowerCase() === 'j') {
         stopSpeech();
@@ -421,6 +304,39 @@ export function PdfReaderPage({
         localStorage.removeItem('fileName');
         onBack();
       } 
+      else if (key === 'ArrowDown') {
+        e.preventDefault();
+        const data = pageCache[currentPage];
+        if (data?.elements) {
+          if (currentElementIndex < data.elements.length - 1) {
+            const nextIdx = currentElementIndex + 1;
+            setCurrentElementIndex(nextIdx);
+            readElement(data.elements, nextIdx);
+          } else {
+            speak("Fin de la página.");
+          }
+        }
+      }
+      else if (key === 'ArrowUp') {
+        e.preventDefault();
+        const data = pageCache[currentPage];
+        if (data?.elements) {
+          if (currentElementIndex > 0) {
+            const prevIdx = currentElementIndex - 1;
+            setCurrentElementIndex(prevIdx);
+            readElement(data.elements, prevIdx);
+          } else {
+            speak("Inicio de la página.");
+          }
+        }
+      }
+      else if (key.toLowerCase() === 'v') {
+        e.preventDefault();
+        const data = pageCache[currentPage];
+        if (data?.elements && currentElementIndex >= 0 && currentElementIndex < data.elements.length) {
+          readElement(data.elements, currentElementIndex);
+        }
+      }
       else if (key === 'ArrowRight') {
         e.preventDefault();
         handleNextPage();
@@ -444,6 +360,8 @@ export function PdfReaderPage({
   });
 
   const currentData = pageCache[currentPage];
+  const isProcessing = currentData?.isProcessing || false;
+  const currentElement = currentData?.elements?.[currentElementIndex];
 
   return (
     <main style={{ maxWidth: '1000px', padding: '1rem', margin: '0 auto' }}>
@@ -528,11 +446,14 @@ export function PdfReaderPage({
               Detener (G)
             </button>
             <button 
-              onClick={() => { if (!currentData?.canvasDataUrl || currentData.isProcessingDescription) return; describeImages(); }} 
-              aria-disabled={(!currentData?.canvasDataUrl || currentData.isProcessingDescription) ? 'true' : 'false'}
-              style={{ opacity: (!currentData?.canvasDataUrl || currentData.isProcessingDescription) ? 0.5 : 1, cursor: (!currentData?.canvasDataUrl || currentData.isProcessingDescription) ? 'not-allowed' : 'pointer' }}
+              onClick={() => {
+                const data = pageCache[currentPage];
+                if (data?.elements && currentElementIndex >= 0 && currentElementIndex < data.elements.length) {
+                  readElement(data.elements, currentElementIndex);
+                }
+              }}
             >
-              Describir imágenes de esta página (H)
+              Repetir línea (V)
             </button>
           </>
         )}
@@ -548,24 +469,7 @@ export function PdfReaderPage({
         </button>
       </div>
 
-      {descriptionModal && (
-        <div 
-          role="region" 
-          aria-label="Descripción de imágenes" 
-          style={{ 
-            backgroundColor: 'var(--btn-bg)', 
-            padding: '1rem', 
-            borderRadius: '4px', 
-            marginBottom: '1rem',
-            border: '2px solid var(--text-color)' 
-          }}
-        >
-          <h2 style={{ fontSize: '1.2rem', marginTop: 0 }}>Descripción visual de la página:</h2>
-          <p>{descriptionModal}</p>
-        </div>
-      )}
-
-      {readingText && (isSpeaking || isPaused) && (
+      {readingText && (isSpeaking || isPaused) && currentElement && (
         <div 
           className="reading-box" 
           aria-hidden="true"
@@ -575,10 +479,14 @@ export function PdfReaderPage({
             borderRadius: '4px', 
             marginBottom: '1rem',
             border: '2px solid var(--focus-color)',
-            fontSize: '1.5rem',
+            fontSize: currentElement.type.toLowerCase().includes('título') || currentElement.type.toLowerCase().includes('titulo') ? '2rem' : '1.5rem',
+            fontWeight: currentElement.type.toLowerCase().includes('título') || currentElement.type.toLowerCase().includes('titulo') ? 'bold' : 'normal',
             lineHeight: '1.8'
           }}
         >
+          {currentElement.type.toLowerCase().includes('imagen') && <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>🖼️ Imagen: </span>}
+          {currentElement.type.toLowerCase().includes('tabla') && <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>📊 Tabla: </span>}
+          
           {highlight ? (
             <>
               {readingText.substring(0, highlight.start)}
@@ -604,7 +512,7 @@ export function PdfReaderPage({
           padding: '1rem',
           maxHeight: '70vh'
         }}
-        aria-hidden="true" // Hide from screen readers since it's an image. Screen readers use the buttons.
+        aria-hidden="true" 
       >
         <canvas ref={visualCanvasRef} style={{ maxWidth: '100%', height: 'auto', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }} />
       </div>

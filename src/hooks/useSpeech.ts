@@ -21,9 +21,11 @@ export function useSpeech(): UseSpeechResult {
   const [highlight, setHighlight] = useState<HighlightState | null>(null);
   const synth = window.speechSynthesis;
   const onEndCallbackRef = useRef<(() => void) | null>(null);
+  const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const stop = useCallback(() => {
     if (synth) {
+      currentUtteranceRef.current = null;
       synth.cancel();
       setIsSpeaking(false);
       setIsPaused(false);
@@ -84,8 +86,10 @@ export function useSpeech(): UseSpeechResult {
       }
 
       const utterance = new SpeechSynthesisUtterance(chunkText);
+      currentUtteranceRef.current = utterance;
       
       utterance.onboundary = (event) => {
+        if (currentUtteranceRef.current !== utterance) return;
         if (event.name === 'word') {
           const globalStart = chunkObj.startIndex + event.charIndex;
           
@@ -102,15 +106,18 @@ export function useSpeech(): UseSpeechResult {
       };
 
       utterance.onend = () => {
+        if (currentUtteranceRef.current !== utterance) return;
         currentChunkIndex++;
         speakChunk();
       };
 
       utterance.onerror = (e) => {
         console.error("SpeechSynthesisError", e);
-        setIsSpeaking(false);
-        setIsPaused(false);
-        setHighlight(null);
+        if (currentUtteranceRef.current === utterance) {
+          setIsSpeaking(false);
+          setIsPaused(false);
+          setHighlight(null);
+        }
       };
 
       synth.speak(utterance);
@@ -122,14 +129,14 @@ export function useSpeech(): UseSpeechResult {
   }, [synth, stop]);
 
   const pause = useCallback(() => {
-    if (synth && synth.speaking && !synth.paused) {
+    if (synth) {
       synth.pause();
       setIsPaused(true);
     }
   }, [synth]);
 
   const resume = useCallback(() => {
-    if (synth && synth.paused) {
+    if (synth) {
       synth.resume();
       setIsPaused(false);
     }

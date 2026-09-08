@@ -1,18 +1,18 @@
 # Análisis de arquitectura del sistema
 
 ## 1. Resumen ejecutivo
-El sistema analizado es un "Lector de PDF Accesible", una aplicación web frontend orientada a usuarios con discapacidades visuales. Su objetivo principal es permitir la carga de un archivo PDF y leer su contenido en voz alta. Además, utiliza tecnologías como OCR para leer documentos escaneados y modelos de IA generativa (Gemini) para describir imágenes.
+El sistema analizado es un "Lector de PDF Accesible", una aplicación web frontend orientada a usuarios con discapacidades visuales. Su objetivo principal es permitir la carga de un archivo PDF y leer su contenido en voz alta. Además, utiliza tecnologías como OCR para leer documentos escaneados y modelos de IA generativa para describir imágenes.
 Está construido como una Single Page Application (SPA) utilizando React 19, TypeScript y Vite. La arquitectura predominante es la Basada en Componentes (Component-Based Architecture) ejecutada enteramente en el lado del cliente (Navegador).
-Sus principales fortalezas radican en la integración proactiva de accesibilidad (atajos de teclado globales, lectura por síntesis de voz, alto contraste). Sin embargo, carece de un backend, lo que genera riesgos de seguridad severos (como la exposición de la API Key de Gemini en el frontend) y depende en gran medida de las capacidades del dispositivo cliente para el procesamiento pesado de OCR y renderizado de PDF.
+Sus principales fortalezas radican en la integración proactiva de accesibilidad (atajos de teclado globales, lectura por síntesis de voz, alto contraste). Sin embargo, carece de un backend, lo que genera riesgos de seguridad severos (como la exposición de la API Key en el frontend) y depende en gran medida de las capacidades del dispositivo cliente para el procesamiento pesado de OCR y renderizado de PDF.
 
 ## 2. Alcance y metodología
 **Archivos revisados:** Código fuente en `src/` (incluyendo `App.tsx`, `main.tsx`, componentes en `src/pages/`, hooks en `src/hooks/`), estilos (`styles.css`), configuración de construcción (`vite.config.ts`, `tsconfig.json`) y dependencias (`package.json`).
 **Metodología:** Análisis estático de código fuente, inspección de archivos de configuración y evaluación del flujo de datos en los componentes de React.
-**Limitaciones:** Al ser un análisis estático de código, no se realizaron pruebas dinámicas de carga o medición de rendimiento en dispositivos específicos. No se analizó backend ni base de datos, ya que no existen en el código proporcionado.
+**Limitaciones:** Al ser un análisis estático de código, no se realizaron pruebas dinámicas de carga o medición de rendimiento en dispositivos específicos. No se analizó backend ni base de datos, ya que no existen.
 
 ## 3. Descripción general del sistema
 *   **Nombre del sistema:** Lector de PDF Accesible.
-*   **Propósito:** Proporcionar una herramienta accesible para que usuarios invidentes o con visión reducida puedan "escuchar" el contenido de archivos PDF y obtener descripciones de sus imágenes.
+*   **Propósito:** Proporcionar una herramienta accesible para que usuarios invidentes o con visión reducida puedan "escuchar" el contenido de archivos PDF y obtener descripciones de sus imágenes, tablas, etc.
 *   **Tipo de sistema:** Aplicación web (Frontend / SPA).
 *   **Usuarios principales:** Personas con discapacidades visuales.
 *   **Estado:** Prototipo / Producto Mínimo Viable (MVP).
@@ -24,7 +24,7 @@ Sus principales fortalezas radican en la integración proactiva de accesibilidad
 *   **Herramienta de construcción:** Vite.
 *   **Librería PDF:** pdfjs-dist (para análisis y renderizado de PDFs).
 *   **Librería OCR:** tesseract.js (para reconocimiento óptico de caracteres).
-*   **Librería IA:** @google/generative-ai (para integrar Gemini Flash para descripción de imágenes).
+*   **Librería IA:** @google/generative-ai (para integrar Gemini Flash para descripción de imágenes).(TEMPORAL ESTA LA CAMBIAREMOS A NUESTRA IA)
 *   **Gestor de dependencias:** npm (evidenciado por `package-lock.json`).
 
 ## 5. Estructura del proyecto
@@ -44,9 +44,9 @@ El sistema emplea un **estilo arquitectónico monolítico de frontend basado en 
 La lógica se organiza en:
 1.  **Capa de Presentación y Estado (Vistas/Páginas):** Componentes React (`HomePage`, `PdfReaderPage`) que manejan el DOM, eventos de usuario y estado local.
 2.  **Capa de Servicios/Integración (Hooks):** Abstracciones sobre APIs del navegador (`useSpeech.ts` encapsula `window.speechSynthesis`).
-3.  **Integraciones Externas:** `pdfjs-dist` procesa el PDF mediante web workers, `tesseract.js` ejecuta OCR, y el SDK de Google realiza peticiones HTTP directas a la API de Gemini desde el navegador.
+3.  **Integraciones Externas:** `pdfjs-dist` procesa el PDF mediante web workers, `tesseract.js` ejecuta OCR, y el SDK de Google realiza peticiones HTTP directas a la API de Gemini desde el navegador.(REFUERZO ESTO SE VA CAMBIAR)
 
-Se observa una baja separación de responsabilidades en `PdfReaderPage.tsx`, el cual actúa como un "God Component", gestionando el estado del PDF, lógica de OCR, peticiones a la IA, reproducción de voz y renderizado visual simultáneamente.
+Se observa una baja separación de responsabilidades en `PdfReaderPage.tsx`, el cual actúa como un "God Component", gestionando el estado del PDF, lógica de OCR, peticiones a la IA, reproducción de voz y renderizado visual simultáneamente.(COSA QUE TAMBIEN SE VA CAMBIAR A UNA MEJOR SEPARACION DE RESPONSABILIDADES)
 
 ## 7. Capas, módulos y componentes
 Consultar el documento `03-inventario-componentes.md` para más detalle.
@@ -67,14 +67,14 @@ Consultar `05-modelo-datos.md`.
 *   **API Google Gemini:** Invocada mediante el SDK web usando el modelo `gemini-flash-latest`. Peticiones originadas en el cliente (`PdfReaderPage.tsx:161`).
 
 ## 12. Seguridad
-Existen vulnerabilidades críticas inherentes a la decisión arquitectónica. Al no tener backend, los secretos (API Keys) deben inyectarse en la aplicación cliente.
+Existen vulnerabilidades críticas inherentes a la decisión arquitectónica. Al no tener backend, los secretos (API Keys) deben inyectarse en la aplicación cliente.(ESTO TENES Q INVESTIGAR JHONATAN)
 Consultar el documento `06-seguridad-riesgos.md`.
 
 ## 13. Calidad del software
 *   **Accesibilidad:** Muy Alta. Es el enfoque central (navegación por teclado estricta, alto contraste nativo, retroalimentación auditiva constante).
-*   **Mantenibilidad:** Media. `useSpeech` está bien desacoplado, pero `PdfReaderPage` concentra demasiadas responsabilidades (482 líneas).
+*   **Mantenibilidad:** Media. `useSpeech` está bien desacoplado, pero `PdfReaderPage` concentra demasiadas responsabilidades (482 líneas).(HAY QUE SEPARARLO)
 *   **Escalabilidad:** Baja. Añadir nuevas funcionalidades al PDF colapsará `PdfReaderPage`. Las limitaciones de RAM del navegador afectarán el procesamiento de PDFs largos.
-*   **Seguridad:** Crítica (Muy Baja). Expone secretos de API en el cliente.
+*   **Seguridad:** Crítica (Muy Baja). Expone secretos de API en el cliente.(CAMBIAR)
 
 ## 14. Patrones y principios de diseño
 *   **Custom Hooks (React):** `useSpeech` implementa una variante de Adapter/Facade para la API de SpeechSynthesis.
