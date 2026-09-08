@@ -28,6 +28,11 @@ Asegúrate de tener instalados los siguientes programas en tu entorno de desarro
 
 El proyecto requiere ciertas configuraciones externas, como claves de API o puertos, que deben declararse en un archivo `.env` en la raíz del proyecto.
 
+Las claves de API la de GROQ la sacaras de AQUI
+https://console.groq.com/keys
+El proyecto TODAVIA no ocupa ollama sin embargo, me ayudaría muchísimo que vean como lo integraremos un modelo local (luego lo subiremos a la nube) y lo integramos con la API de la victoria 
+en fast API.
+
 1. En la raíz del repositorio, busca el archivo `.env.example`.
 2. Duplica este archivo y nómbralo **`.env`** (o renómbralo si lo prefieres, pero asegúrate de mantener el `.env.example` en el control de versiones).
 3. Configura los valores dentro del archivo `.env` de acuerdo a tus credenciales locales o de producción:
