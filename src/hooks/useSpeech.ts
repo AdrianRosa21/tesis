@@ -129,14 +129,14 @@ export function useSpeech(): UseSpeechResult {
   }, [synth, stop]);
 
   const pause = useCallback(() => {
-    if (synth && synth.speaking && !synth.paused) {
+    if (synth) {
       synth.pause();
       setIsPaused(true);
     }
   }, [synth]);
 
   const resume = useCallback(() => {
-    if (synth && synth.paused) {
+    if (synth) {
       synth.resume();
       setIsPaused(false);
     }

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { savePdfFile, getPdfFile, deletePdfFile } from '../utils/db';
-import { analyzePageStructure, type PageElement } from '../utils/gemini';
+import { analyzePageStructure, type PageElement } from '../utils/ai';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -205,9 +205,14 @@ export function PdfReaderPage({
     
     const el = elements[index];
     let prefix = '';
-    if (el.type === 'heading') prefix = 'Título: ';
-    if (el.type === 'image') prefix = 'Imagen: ';
-    if (el.type === 'table') prefix = 'Tabla: ';
+    const typeLower = el.type.toLowerCase();
+    
+    // Ignorar prefijo para párrafos normales para que la lectura sea natural
+    if (!['párrafo', 'parrafo', 'texto', 'paragraph'].includes(typeLower)) {
+      // Capitalizar la primera letra del tipo
+      const capitalizedType = el.type.charAt(0).toUpperCase() + el.type.slice(1);
+      prefix = `${capitalizedType}: `;
+    }
     
     const textToSpeak = `${prefix}${el.content}`;
     setReadingText(textToSpeak);
@@ -226,7 +231,7 @@ export function PdfReaderPage({
       setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessing: true } }));
       
       try {
-        const elements = await analyzePageStructure(data.canvasDataUrl);
+        const elements = await analyzePageStructure(data.canvasDataUrl, pdfDoc!, currentPage);
         setPageCache(prev => ({ 
           ...prev, 
           [currentPage]: { ...prev[currentPage], elements, isProcessing: false } 
@@ -323,6 +328,13 @@ export function PdfReaderPage({
           } else {
             speak("Inicio de la página.");
           }
+        }
+      }
+      else if (key.toLowerCase() === 'v') {
+        e.preventDefault();
+        const data = pageCache[currentPage];
+        if (data?.elements && currentElementIndex >= 0 && currentElementIndex < data.elements.length) {
+          readElement(data.elements, currentElementIndex);
         }
       }
       else if (key === 'ArrowRight') {
@@ -433,6 +445,16 @@ export function PdfReaderPage({
             <button onClick={stopSpeech}>
               Detener (G)
             </button>
+            <button 
+              onClick={() => {
+                const data = pageCache[currentPage];
+                if (data?.elements && currentElementIndex >= 0 && currentElementIndex < data.elements.length) {
+                  readElement(data.elements, currentElementIndex);
+                }
+              }}
+            >
+              Repetir línea (V)
+            </button>
           </>
         )}
         
@@ -457,13 +479,13 @@ export function PdfReaderPage({
             borderRadius: '4px', 
             marginBottom: '1rem',
             border: '2px solid var(--focus-color)',
-            fontSize: currentElement.type === 'heading' ? '2rem' : '1.5rem',
-            fontWeight: currentElement.type === 'heading' ? 'bold' : 'normal',
+            fontSize: currentElement.type.toLowerCase().includes('título') || currentElement.type.toLowerCase().includes('titulo') ? '2rem' : '1.5rem',
+            fontWeight: currentElement.type.toLowerCase().includes('título') || currentElement.type.toLowerCase().includes('titulo') ? 'bold' : 'normal',
             lineHeight: '1.8'
           }}
         >
-          {currentElement.type === 'image' && <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>🖼️ IA: </span>}
-          {currentElement.type === 'table' && <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>📊 Tabla: </span>}
+          {currentElement.type.toLowerCase().includes('imagen') && <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>🖼️ Imagen: </span>}
+          {currentElement.type.toLowerCase().includes('tabla') && <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>📊 Tabla: </span>}
           
           {highlight ? (
             <>

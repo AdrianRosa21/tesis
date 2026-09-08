@@ -7,7 +7,7 @@ Este documento contiene la información estructurada que debe ser utilizada en u
 *   **Actores:**
     *   Usuario (Invidente / Discapacidad Visual).
 *   **Sistemas Externos:**
-    *   **Google Gemini API:** Proporciona descripciones semánticas de imágenes. Comunicación saliente (HTTPS / REST).
+    *   **Nuestra API DE IA:** Proporciona descripciones semánticas de imágenes. Comunicación saliente (HTTPS / REST).
     *   **Sistema Operativo Local / Navegador:** Provee el sistema de archivos local (carga de PDF) y el motor de Síntesis de Voz (Web Speech API).
 
 ## B. Diagrama de Contenedores (C4 Model - Nivel 2)
@@ -59,7 +59,7 @@ Enfocado en el Contenedor "Aplicación Web":
 ## E. Diagrama de Despliegue
 *   **Nodo Físico 1: Servidor de Hosting Estático (Ej. Vercel, Nginx)**
     *   Artefacto Desplegado: `dist/` (Archivos HTML, CSS, JS precompilados por Vite).
-*   **Nodo Físico 2: Dispositivo del Cliente (PC/Móvil)**
+*   **Nodo Físico 2: Dispositivo del Cliente (PC)**
     *   Entorno de Ejecución: Navegador Web (Chrome, Edge, Firefox).
     *   Artefacto: Aplicación React (JS ejecutándose en memoria).
     *   Puertos: 443 (HTTPS) para recuperar el código estático.
@@ -82,4 +82,4 @@ Enfocado en el Contenedor "Aplicación Web":
 Se recomienda generar tres diagramas de secuencia (la base de datos se encuentra en `04-flujos-del-sistema.md`):
 1.  **Secuencia de Navegación Inicial:** Demuestra cómo la aplicación detecta el evento de `keydown`, evalúa la etiqueta HTML que tiene el foco, constuye un texto dinámico y llama al motor de voz.
 2.  **Secuencia de Carga y Procesamiento de PDF:** Muestra el flujo entre `PdfReaderPage`, `pdfjs-dist` obteniendo promesas, renderizando el canvas y evaluando heurísticamente si invoca a `tesseract.js`.
-3.  **Secuencia de Invocación a Gemini:** Describe el envío del blob (Base64) desde el cliente hacia la API de Google AI, la espera de la promesa y la emisión auditiva del resultado.
+3.  **Secuencia de Invocación a la IA:** Describe el envío del blob (Base64) desde el cliente hacia la API, la espera de la promesa y la emisión auditiva del resultado.
