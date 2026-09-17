@@ -22,19 +22,19 @@ class GroqProvider {
   }
 
   async describeImage(image, context) {
-    const prompt = `Eres el módulo de accesibilidad de un lector de documentos PDF para personas ciegas o con baja visión.
-Tu tarea es proporcionar la lectura final y correcta de la página basándote en la imagen proporcionada.
+    const prompt = `Eres el motor de IA de un lector de PDF accesible (AURA). Tu tarea es analizar la imagen de la página y extraer TODO su contenido en orden de lectura lógico, separando el texto y las descripciones de imágenes en bloques.
 
-IMPORTANTE SOBRE LAS MATEMÁTICAS:
-El texto extraído proporcionado en el "Contexto" fue generado por un sistema básico (OCR/pdfjs) que ROMPE las fracciones, exponentes y ecuaciones (ej. lee el numerador y denominador por separado perdiendo la raya de fracción). 
-Debes corregir TODO el texto matemático leyendo la imagen para que tenga sentido al escucharlo (ej. escribe "ax sobre 4", "11 doceavos", "x al cuadrado").
+REGLAS ESTRICTAS:
+1. Extrae todo el texto visible palabra por palabra y ponle el prefijo [TEXTO]. Cada párrafo o línea importante debe ser un bloque separado.
+2. Cuando encuentres una imagen, gráfico o tabla, descríbela detalladamente para un usuario ciego y ponle el prefijo [IMAGEN].
+3. Si hay matemáticas, escríbelas con palabras en español (ej. "uno más uno"), nunca uses LaTeX ni símbolos raros.
+4. NUNCA des saludos, ni pensamientos, ni explicaciones extra. SOLO devuelve los bloques.
 
-REGLAS:
-1. Si hay matemáticas, lee la imagen y escribe las ecuaciones de forma natural para ser escuchadas.
-2. Si hay diagramas, gráficas o imágenes, descríbelos detalladamente.
-3. Si el texto del contexto está bien, puedes basarte en él, pero asegúrate de que el resultado final sea fluido y correcto.
-4. Devuelve ÚNICAMENTE el texto final que el usuario escuchará. Responde en español y de manera concisa.
-${context ? `\nContexto (Texto con posibles errores matemáticos):\n"${context}"` : ''}`;
+Ejemplo de formato esperado:
+[TEXTO] Nombre del proyecto: AURA
+[TEXTO] Área: Tecnología
+[IMAGEN] Fotografía de un joven trabajando en una laptop...
+[TEXTO] Siguiente párrafo del documento...`;
 
     try {
       const response = await this.groq.chat.completions.create({
@@ -67,7 +67,19 @@ class OllamaProvider {
   }
 
   async describeImage(image, context) {
-    const prompt = `Eres el módulo de descripción visual de un lector de documentos PDF diseñado para personas ciegas o con baja visión. Describe la imagen de forma clara, objetiva y útil para alguien que no puede verla. Prioriza contenido principal, objetos importantes, texto. Responde en español y de manera concisa. Contexto cercano: ${context || ''}`;
+    const prompt = `Eres el motor de IA de un lector de PDF accesible (AURA). Tu tarea es analizar la imagen de la página y extraer TODO su contenido en orden de lectura lógico, separando el texto y las descripciones de imágenes en bloques.
+
+REGLAS ESTRICTAS:
+1. Extrae todo el texto visible palabra por palabra y ponle el prefijo [TEXTO]. Cada párrafo o línea importante debe ser un bloque separado.
+2. Cuando encuentres una imagen, gráfico o tabla, descríbela detalladamente para un usuario ciego y ponle el prefijo [IMAGEN].
+3. Si hay matemáticas, escríbelas con palabras en español (ej. "uno más uno"), nunca uses LaTeX ni símbolos raros.
+4. NUNCA des saludos, ni pensamientos, ni explicaciones extra. SOLO devuelve los bloques.
+
+Ejemplo de formato esperado:
+[TEXTO] Nombre del proyecto: AURA
+[TEXTO] Área: Tecnología
+[IMAGEN] Fotografía de un joven trabajando en una laptop...
+[TEXTO] Siguiente párrafo del documento...`;
     
     // Convert data:image/png;base64,... to raw base64 for Ollama
     const base64Data = image.includes(',') ? image.split(',')[1] : image;

@@ -228,6 +228,8 @@ export function PdfReaderPage({
       readElement(data.elements, 0);
     } else {
       updateStatus("Analizando estructura de la página con inteligencia artificial, por favor espera unos segundos.");
+      stopSpeech();
+      speak("Analizando la página con inteligencia artificial. Por favor, espera...");
       setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessing: true } }));
       
       try {
@@ -312,8 +314,11 @@ export function PdfReaderPage({
             const nextIdx = currentElementIndex + 1;
             setCurrentElementIndex(nextIdx);
             readElement(data.elements, nextIdx);
-          } else {
-            speak("Fin de la página.");
+          } else if (currentElementIndex === data.elements.length - 1) {
+            setCurrentElementIndex(data.elements.length);
+            const msg = "Fin de la página.";
+            setReadingText(msg);
+            speak(msg);
           }
         }
       }
@@ -321,20 +326,39 @@ export function PdfReaderPage({
         e.preventDefault();
         const data = pageCache[currentPage];
         if (data?.elements) {
-          if (currentElementIndex > 0) {
+          if (currentElementIndex > 0 && currentElementIndex <= data.elements.length - 1) {
             const prevIdx = currentElementIndex - 1;
             setCurrentElementIndex(prevIdx);
             readElement(data.elements, prevIdx);
-          } else {
-            speak("Inicio de la página.");
+          } else if (currentElementIndex === data.elements.length) {
+            // Si estabamos en el "Fin de la página", regresamos al último elemento
+            const prevIdx = data.elements.length - 1;
+            setCurrentElementIndex(prevIdx);
+            readElement(data.elements, prevIdx);
+          } else if (currentElementIndex === 0) {
+            setCurrentElementIndex(-1);
+            const msg = "Inicio de la página.";
+            setReadingText(msg);
+            speak(msg);
+          } else if (currentElementIndex === -1) {
+            // Ya estamos en el inicio, solo repetimos
+            const msg = "Inicio de la página.";
+            setReadingText(msg);
+            speak(msg);
           }
         }
       }
       else if (key.toLowerCase() === 'v') {
         e.preventDefault();
         const data = pageCache[currentPage];
-        if (data?.elements && currentElementIndex >= 0 && currentElementIndex < data.elements.length) {
-          readElement(data.elements, currentElementIndex);
+        if (data?.elements) {
+          if (currentElementIndex >= 0 && currentElementIndex < data.elements.length) {
+            readElement(data.elements, currentElementIndex);
+          } else if (currentElementIndex === data.elements.length) {
+            speak("Fin de la página.");
+          } else if (currentElementIndex === -1) {
+            speak("Inicio de la página.");
+          }
         }
       }
       else if (key === 'ArrowRight') {
