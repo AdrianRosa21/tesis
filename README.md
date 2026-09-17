@@ -1,74 +1,110 @@
-# Proyecto de Tesis
+# AURA - Lector de PDF Accesible con Inteligencia Artificial (Tesis)
 
-Este proyecto consiste en una aplicación web dividida en un **Frontend** (construido con React, TypeScript y Vite) y un **Backend** (desarrollado con Node.js y Express) que se integra con modelos de Inteligencia Artificial (como Groq, Ollama y Gemini) para el procesamiento de archivos PDF e imágenes.
+AURA es una aplicación web full-stack diseñada para leer documentos PDF a usuarios con discapacidad visual o problemas de lectura. Utiliza **Inteligencia Artificial Visual** ejecutada localmente para analizar el diseño estructural de las páginas, transcribir el texto lógicamente y describir imágenes, tablas y matemáticas sin depender de lectores de pantalla tradicionales limitados.
 
-## Requisitos Previos
+## 🏗️ Arquitectura del Sistema
 
-Asegúrate de tener instalados los siguientes programas en tu entorno de desarrollo:
-
-- [Node.js](https://nodejs.org/) (versión 18 o superior recomendada)
-- [npm](https://www.npmjs.com/) (generalmente se instala junto a Node.js)
-- [Git](https://git-scm.com/)
-
-## Instalación
-
-1. **Clonar el repositorio**
-   ```bash
-   git clone https://github.com/AdrianRosa21/tesis.git
-   cd tesis
-   ```
-
-2. **Instalar dependencias**
-   Dentro de la carpeta del proyecto, instala todas las dependencias necesarias de npm:
-   ```bash
-   npm install
-   ```
-
-## Configuración de Variables de Entorno
-
-El proyecto requiere ciertas configuraciones externas, como claves de API o puertos, que deben declararse en un archivo `.env` en la raíz del proyecto.
-
-Las claves de API la de GROQ la sacaras de AQUI
-https://console.groq.com/keys
-El proyecto TODAVIA no ocupa ollama sin embargo, me ayudaría muchísimo que vean como lo integraremos un modelo local (luego lo subiremos a la nube) y lo integramos con la API de la victoria 
-en fast API.
-
-1. En la raíz del repositorio, busca el archivo `.env.example`.
-2. Duplica este archivo y nómbralo **`.env`** (o renómbralo si lo prefieres, pero asegúrate de mantener el `.env.example` en el control de versiones).
-3. Configura los valores dentro del archivo `.env` de acuerdo a tus credenciales locales o de producción:
-
-```env
-# Ejemplo de configuración (.env)
-AI_PROVIDER=groq
-GROQ_API_KEY=tu_api_key_de_groq_aqui
-GROQ_MODEL=qwen/qwen3.6-27b
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen3-vl:4b
-PORT=3001
-```
-
-> **Nota:** El archivo `.env` está ignorado en git (`.gitignore`), por lo que no correrás el riesgo de subir tus credenciales públicas.
-
-## Ejecución del Proyecto
-
-El proyecto requiere que tanto el servidor backend como el servidor de desarrollo del frontend estén en ejecución. El archivo `package.json` ya tiene los comandos preconfigurados.
-
-Abre **dos terminales** en la raíz del proyecto para ejecutar cada servicio simultáneamente:
-
-### 1. Iniciar el Backend (Servidor Node.js)
-En la primera terminal, ejecuta:
-```bash
-npm run server
-```
-Deberías ver un mensaje indicando que el servidor backend está corriendo en el puerto configurado (por ejemplo, `Backend server running on port 3001`).
-
-### 2. Iniciar el Frontend (Vite)
-En la segunda terminal, ejecuta:
-```bash
-npm run dev
-```
-Deberías ver un mensaje de Vite confirmando que la aplicación frontend está corriendo localmente, normalmente en `http://localhost:5173/`.
+El proyecto consta de 3 capas principales:
+1. **Frontend (React + TypeScript + Vite):** Interfaz de usuario accesible que renderiza el PDF y procesa el Texto-a-Voz (TTS). Corre en el puerto `5173`.
+2. **Backend (Python + FastAPI):** Motor asíncrono que recibe las imágenes del PDF, gestiona colas de peticiones para no saturar el servidor, y se comunica con la IA. Corre en el puerto `3001`.
+3. **Motor de IA (Ollama):** Ejecución local del modelo visual `gemma3:4b` mediante aceleración por GPU.
 
 ---
 
-¡Y eso es todo! Accede a la URL local del frontend desde tu navegador para comenzar a utilizar la aplicación.
+## ⚙️ Requisitos Previos
+
+Asegúrate de tener instalados los siguientes programas en tu entorno de desarrollo:
+
+- **[Node.js](https://nodejs.org/)** (v18 o superior)
+- **[Python](https://www.python.org/)** (v3.12 recomendada)
+- **[Ollama](https://ollama.com/)** (Para correr la IA localmente)
+- **Git**
+
+---
+
+## 🚀 Instalación y Configuración (Paso a Paso)
+
+### PASO 1: Descargar el modelo de IA (Ollama)
+AURA utiliza el modelo visual de Google (Gemma 3). Primero, abre una terminal cualquiera y asegúrate de descargar el modelo en tu computadora:
+```bash
+ollama run gemma3:4b
+```
+*(Una vez que descargue y te permita chatear en la consola, puedes cerrarla escribiendo `/bye`. El modelo ya quedó guardado en tu disco duro).*
+
+### PASO 2: Clonar el Repositorio
+```bash
+git clone https://github.com/AdrianRosa21/tesis.git
+cd tesis
+```
+
+### PASO 3: Configurar Variables de Entorno
+Crea un archivo llamado `.env` en la carpeta raíz del proyecto (junto a `package.json`) y copia esta configuración:
+```env
+# Configuración para usar Ollama localmente
+AI_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=gemma3:4b
+```
+
+### PASO 4: Levantar el Frontend (React)
+Abre una terminal en la raíz del proyecto (`tesis/`) e instala las dependencias de Node:
+```bash
+npm install
+```
+Luego, arranca el servidor de desarrollo del Frontend:
+```bash
+npm run dev
+```
+👉 *El Frontend ahora está vivo en `http://localhost:5173`.*
+
+### PASO 5: Levantar el Backend de Producción (FastAPI)
+Abre una **segunda terminal** y navega a la nueva carpeta del backend en Python:
+```bash
+cd fastapi_backend
+```
+
+Crea un Entorno Virtual de Python (para aislar las dependencias y evitar errores del sistema):
+```bash
+# En Windows:
+py -3.12 -m venv venv
+# (Si usas Mac/Linux, usa: python3 -m venv venv)
+```
+
+Activa el entorno virtual:
+```bash
+# En Windows:
+.\venv\Scripts\activate
+# (Si usas Mac/Linux, usa: source venv/bin/activate)
+```
+
+Instala las librerías necesarias (FastAPI, Uvicorn, etc):
+```bash
+pip install -r requirements.txt
+```
+
+Arranca el servidor Backend:
+```bash
+uvicorn main:app --port 3001 --reload
+```
+👉 *El Backend ahora está vivo y escuchando en `http://localhost:3001`.*
+
+---
+
+## 🎮 Cómo usar AURA
+
+Una vez que tengas **Ollama corriendo de fondo**, el **Frontend (5173)** y el **Backend (3001)** encendidos:
+
+1. Entra a `http://localhost:5173` en tu navegador.
+2. Sube un archivo PDF.
+3. Utiliza los siguientes comandos de teclado (Accesibilidad total):
+   - **Tecla F:** Analizar y leer la página actual. (Escucharás el mensaje *"Analizando la página con IA..."* mientras el Backend procesa la imagen).
+   - **Flecha Derecha / Izquierda:** Cambiar de página del PDF.
+   - **Flecha Abajo / Arriba:** Navegar entre los diferentes bloques de texto e imágenes (con feedback cuando llegas al "Fin de la página").
+   - **Tecla Espacio:** Pausar o Continuar la lectura por voz.
+   - **Tecla G:** Detener la lectura por completo.
+
+## 🛠️ Notas de Producción
+Este repositorio contiene lógica lista para escalar:
+* **Cola de peticiones segura:** El backend en `main.py` contiene un `asyncio.Lock()` que asegura que si múltiples usuarios hacen solicitudes al mismo tiempo, la IA de Ollama (GPU) procesará las peticiones una por una sin crashear.
+* **Validación de peso:** FastAPI rechaza cualquier imagen escaneada que supere los 5MB en base64 para evitar el desbordamiento de memoria RAM.
+* **Timeouts controlados:** Si el modelo visual tarda más de 60 segundos, FastAPI cancela la conexión y devuelve un error limpio 504 al usuario.
