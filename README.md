@@ -108,3 +108,25 @@ Este repositorio contiene lÃ³gica lista para escalar:
 * **Cola de peticiones segura:** El backend en `main.py` contiene un `asyncio.Lock()` que asegura que si mÃºltiples usuarios hacen solicitudes al mismo tiempo, la IA de Ollama (GPU) procesarÃ¡ las peticiones una por una sin crashear.
 * **ValidaciÃ³n de peso:** FastAPI rechaza cualquier imagen escaneada que supere los 5MB en base64 para evitar el desbordamiento de memoria RAM.
 * **Timeouts controlados:** Si el modelo visual tarda mÃ¡s de 60 segundos, FastAPI cancela la conexiÃ³n y devuelve un error limpio 504 al usuario.
+
+## ?? Despliegue en Producción (API en PC con GPU y Frontend Web)
+
+Si deseas hostear la API en una computadora con GPU (para procesar los PDFs rápidamente) y el Frontend en un servicio web, sigue estos pasos:
+
+### 1. Configurar la PC con GPU (Servidor Backend)
+1. Clona este repositorio en esa computadora.
+2. Instala Python, Node.js y Ollama.
+3. Asegúrate de tener el modelo descargado: ollama run gemma3:4b
+4. Levanta el backend de FastAPI usando los pasos del **PASO 5**.
+5. Exponer el puerto 3001 a Internet:
+   - Puedes comprar un dominio y usar **Cloudflare Tunnels** o **Ngrok** para apuntar ese dominio (ej. pi.midominio.com) hacia el localhost:3001 de la computadora con GPU.
+   - O bien, abre el puerto en tu módem y usa un DDNS (No-IP/DuckDNS).
+
+### 2. Configurar el Frontend (Servidor Web)
+El frontend de Vite ya está configurado para leer la variable de entorno VITE_API_URL.
+1. En tu servicio de hosting (Vercel, Netlify, Firebase Hosting, etc.), crea un nuevo proyecto apuntando a este repositorio de GitHub.
+2. En las configuraciones del proyecto (Environment Variables), agrega lo siguiente:
+   - Clave: VITE_API_URL
+   - Valor: https://api.midominio.com (la URL pública que configuraste en el paso anterior).
+3. Despliega el proyecto. El Frontend ahora se comunicará con la PC que tiene la GPU para procesar los PDFs.
+
