@@ -15,9 +15,13 @@ export async function analyzePageStructure(canvasDataUrl: string, pdfDoc?: PDFDo
 
   try {
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+    const API_KEY = import.meta.env.VITE_API_KEY || "aura-tesis-secreto-2026";
     const response = await fetch(`${API_URL}/api/describe-image`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "x-api-key": API_KEY
+      },
       body: JSON.stringify({ image: optimizedDataUrl })
     });
 

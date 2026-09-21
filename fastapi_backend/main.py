@@ -2,7 +2,7 @@ import os
 import hashlib
 import asyncio
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -12,14 +12,25 @@ load_dotenv(dotenv_path="../.env")
 
 app = FastAPI(title="AURA - PDF Reader AI API")
 
-# Configuración CORS
+# 1. SEGURIDAD: Configuración CORS Estricta (Solo permite peticiones desde tu Vercel y localhost)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://aurapdf-one.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 2. SEGURIDAD: API Key para evitar que usen tu backend desde Postman o scripts
+API_KEY_SECRET = os.getenv("API_KEY", "aura-tesis-secreto-2026")
+
+async def verify_api_key(x_api_key: str = Header(None)):
+    if x_api_key != API_KEY_SECRET:
+        raise HTTPException(status_code=401, detail="Acceso denegado. API Key inválida.")
 
 class ImageRequest(BaseModel):
     image: str
@@ -40,7 +51,7 @@ MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
 PROMPT = "Transcribe todo el texto de esta imagen exactamente como está escrito. Si hay imágenes o gráficos, descríbelos. No incluyas explicaciones tuyas, solo el texto de la imagen."
 
-@app.post("/api/describe-image")
+@app.post("/api/describe-image", dependencies=[Depends(verify_api_key)])
 async def describe_image(req: ImageRequest):
     if not req.image:
         raise HTTPException(status_code=400, detail="No image provided")
@@ -54,22 +65,11 @@ async def describe_image(req: ImageRequest):
         print(f"Rechazado: Imagen pesada ({image_bytes_size / (1024*1024):.2f} MB)")
         raise HTTPException(status_code=413, detail="Imagen muy pesada.")
     
-    # === DEBUG: GUARDAR IMAGEN PARA VER QUÉ ESTÁ LLEGANDO ===
-    import base64
-    try:
-        ruta_guardado = r"C:\Users\adrian.rosa\OneDrive\Escritorio\imagen_recibida.jpg"
-        with open(ruta_guardado, "wb") as f:
-            f.write(base64.b64decode(base64_data))
-        print(f"📸 ¡IMAGEN DESCARGADA! Revisa tu escritorio en: {ruta_guardado}")
-    except Exception as e:
-        print(f"No se pudo guardar la imagen en el escritorio: {e}")
-    # ========================================================
-
-    # 2. CACHÉ (Desactivado temporalmente para pruebas)
-    # img_hash = hashlib.sha256(base64_data.encode('utf-8')).hexdigest()
-    # if img_hash in image_cache:
-    #     print("Respondiendo desde caché...")
-    #     return {"success": True, "description": image_cache[img_hash]}
+    # 2. CACHÉ (Activado: responde al instante si ya leyó la imagen)
+    img_hash = hashlib.sha256(base64_data.encode('utf-8')).hexdigest()
+    if img_hash in image_cache:
+        print("Respondiendo desde caché (Página ya procesada)...")
+        return {"success": True, "description": image_cache[img_hash]}
         
     payload = {
         "model": OLLAMA_MODEL,
@@ -99,7 +99,7 @@ async def describe_image(req: ImageRequest):
                 print(f"\n🤖 OLLAMA RESPONDIÓ ESTO:\n{description}\n")
                 
                 # Guardar en caché el resultado exitoso
-                # image_cache[img_hash] = description
+                image_cache[img_hash] = description
                 return {"success": True, "description": description}
                 
         except httpx.ReadTimeout:
