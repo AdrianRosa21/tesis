@@ -38,19 +38,12 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma3:4b")
 MAX_IMAGE_SIZE_MB = 5
 MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
-PROMPT = """Eres el motor de IA de un lector de PDF accesible (AURA). Tu tarea es analizar la imagen de la página y extraer TODO su contenido en orden de lectura lógico, separando el texto y las descripciones de imágenes en bloques.
+PROMPT = """Eres el motor de IA de un lector de PDF. Analiza la imagen enviada y extrae TODO su contenido en orden de lectura.
 
 REGLAS ESTRICTAS:
-1. Extrae todo el texto visible palabra por palabra y ponle el prefijo [TEXTO]. Cada párrafo o línea importante debe ser un bloque separado.
-2. Cuando encuentres una imagen, gráfico o tabla, descríbela detalladamente para un usuario ciego y ponle el prefijo [IMAGEN].
-3. Si hay matemáticas, escríbelas con palabras en español (ej. "uno más uno"), nunca uses LaTeX ni símbolos raros.
-4. NUNCA des saludos, ni pensamientos, ni explicaciones extra. SOLO devuelve los bloques.
-
-Ejemplo de formato esperado:
-[TEXTO] Nombre del proyecto: AURA
-[TEXTO] Área: Tecnología
-[IMAGEN] Fotografía de un joven trabajando en una laptop...
-[TEXTO] Siguiente párrafo del documento..."""
+1. Extrae todo el texto visible y ponle el prefijo [TEXTO].
+2. Si ves una imagen o gráfico, descríbela detalladamente y ponle el prefijo [IMAGEN].
+3. NUNCA des saludos, ni repitas instrucciones. SOLO devuelve el contenido real que ves en la imagen."""
 
 @app.post("/api/describe-image")
 async def describe_image(req: ImageRequest):
