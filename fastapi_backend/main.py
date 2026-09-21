@@ -49,19 +49,27 @@ async def describe_image(req: ImageRequest):
     base64_data = req.image.split(',')[1] if ',' in req.image else req.image
     
     # 1. VALIDACIÓN DE TAMAÑO
-    # Calcular tamaño real aproximado en bytes a partir del base64 (3/4 de la longitud)
     image_bytes_size = (len(base64_data) * 3) / 4
     if image_bytes_size > MAX_BYTES:
-        print(f"Rechazado: Imagen demasiado pesada ({image_bytes_size / (1024*1024):.2f} MB)")
-        raise HTTPException(
-            status_code=413, 
-            detail=f"La imagen es muy pesada. Límite: {MAX_IMAGE_SIZE_MB}MB."
-        )
+        print(f"Rechazado: Imagen pesada ({image_bytes_size / (1024*1024):.2f} MB)")
+        raise HTTPException(status_code=413, detail="Imagen muy pesada.")
     
-    # 2. CACHÉ (Respuesta instantánea si ya procesamos esta imagen antes)
-    img_hash = hashlib.sha256(base64_data.encode('utf-8')).hexdigest()
-    if img_hash in image_cache:
-        return {"success": True, "description": image_cache[img_hash]}
+    # === DEBUG: GUARDAR IMAGEN PARA VER QUÉ ESTÁ LLEGANDO ===
+    import base64
+    try:
+        ruta_guardado = r"C:\Users\adrian.rosa\OneDrive\Escritorio\imagen_recibida.jpg"
+        with open(ruta_guardado, "wb") as f:
+            f.write(base64.b64decode(base64_data))
+        print(f"📸 ¡IMAGEN DESCARGADA! Revisa tu escritorio en: {ruta_guardado}")
+    except Exception as e:
+        print(f"No se pudo guardar la imagen en el escritorio: {e}")
+    # ========================================================
+
+    # 2. CACHÉ (Desactivado temporalmente para pruebas)
+    # img_hash = hashlib.sha256(base64_data.encode('utf-8')).hexdigest()
+    # if img_hash in image_cache:
+    #     print("Respondiendo desde caché...")
+    #     return {"success": True, "description": image_cache[img_hash]}
         
     payload = {
         "model": OLLAMA_MODEL,
@@ -88,9 +96,10 @@ async def describe_image(req: ImageRequest):
                 data = response.json()
                 
                 description = data.get("message", {}).get("content", "")
+                print(f"\n🤖 OLLAMA RESPONDIÓ ESTO:\n{description}\n")
                 
                 # Guardar en caché el resultado exitoso
-                image_cache[img_hash] = description
+                # image_cache[img_hash] = description
                 return {"success": True, "description": description}
                 
         except httpx.ReadTimeout:
