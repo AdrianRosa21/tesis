@@ -93,8 +93,8 @@ async def describe_image(req: ImageRequest):
         print("Enviando imagen a Ollama... (Las demás peticiones están en espera)")
         try:
             # 4. TIMEOUT Y PETICIÓN ASÍNCRONA
-            # Le damos a Ollama máximo 60 segundos para responder, sino soltamos la petición
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            # Le damos a Ollama máximo 300 segundos para responder, por si la compu procesa lento
+            async with httpx.AsyncClient(timeout=300.0) as client:
                 response = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)
                 response.raise_for_status()
                 data = response.json()
