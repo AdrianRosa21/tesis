@@ -38,12 +38,7 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma3:4b")
 MAX_IMAGE_SIZE_MB = 5
 MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
-PROMPT = """Eres el motor de IA de un lector de PDF. Analiza la imagen enviada y extrae TODO su contenido en orden de lectura.
-
-REGLAS ESTRICTAS:
-1. Extrae todo el texto visible y ponle el prefijo [TEXTO].
-2. Si ves una imagen o gráfico, descríbela detalladamente y ponle el prefijo [IMAGEN].
-3. NUNCA des saludos, ni repitas instrucciones. SOLO devuelve el contenido real que ves en la imagen."""
+PROMPT = "Transcribe todo el texto de esta imagen exactamente como está escrito. Si hay imágenes o gráficos, descríbelos. No incluyas explicaciones tuyas, solo el texto de la imagen."
 
 @app.post("/api/describe-image")
 async def describe_image(req: ImageRequest):
