@@ -49,19 +49,16 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "minicpm-v")
 MAX_IMAGE_SIZE_MB = 5
 MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
-PROMPT = """Eres AURA, un asistente inteligente de accesibilidad para personas con discapacidad visual.
-Tu tarea es analizar la imagen y extraer su información de manera exacta, estructurada y sin inventar absolutamente nada.
+PROMPT = """Extrae el texto de esta imagen EXACTAMENTE línea por línea.
+Tu única salida debe ser el contenido puro del documento para que un usuario con ceguera pueda navegarlo línea por línea con su lector de pantalla.
 
-INSTRUCCIONES DE ADAPTACIÓN (Reconoce el tipo de imagen y aplica la mejor lógica):
-1. DOCUMENTOS SIMPLES Y EXÁMENES: Si es texto plano, una carta o un examen, simplemente transcríbelo de forma exacta y ordenada de inicio a fin. No agregues explicaciones extras.
-2. RECETAS MÉDICAS O FORMULARIOS: Segmenta la información de forma clara usando viñetas o títulos cortos (ej. 'Paciente', 'Prescripciones', 'Indicaciones') para que el usuario pueda ir escuchando por partes y entender la estructura.
-3. DIAGRAMAS DE FLUJO O ESQUEMAS: Solo si detectas que es un diagrama, explica visualmente cómo se conectan los cuadros y transcribe cuidadosamente todo el texto dentro de ellos.
-
-PROHIBICIONES ABSOLUTAS (Reglas de Oro):
-- NO alucines ni agregues resúmenes o conclusiones largas al final del texto.
-- NO menciones "flechas", "diagramas" o "nodos" si la imagen es un documento normal que no los tiene.
-- NO inventes datos, nombres ni números que no estén claramente escritos en la imagen.
-- Usa un formato limpio, directo y optimizado para ser leído por un lector de pantalla en voz alta."""
+REGLAS ABSOLUTAS:
+1. NO resumas nada.
+2. NO agregues introducciones (ej. "Este documento es...").
+3. NO agregues conclusiones.
+4. Devuelve el texto tal cual aparece, respetando el orden y los saltos de línea.
+5. Si hay imágenes, logotipos, firmas o diagramas, trátalos simplemente como una línea más de texto describiéndolos entre corchetes, por ejemplo: [Imagen: Logotipo del hospital] o [Firma del doctor].
+6. Transcribe, no converses."""
 
 @app.post("/api/describe-image", dependencies=[Depends(verify_api_key)])
 async def describe_image(req: ImageRequest):

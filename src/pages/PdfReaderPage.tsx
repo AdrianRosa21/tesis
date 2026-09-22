@@ -536,15 +536,15 @@ export function PdfReaderPage({
         style={{ 
           border: '1px solid var(--text-color)', 
           backgroundColor: '#eaeaea',
-          display: pdfDoc ? 'flex' : 'none', 
-          justifyContent: 'center',
+          display: pdfDoc ? 'block' : 'none', 
           overflow: 'auto',
           padding: '1rem',
-          maxHeight: '70vh'
+          maxHeight: '70vh',
+          textAlign: 'center'
         }}
         aria-hidden="true" 
       >
-        <canvas ref={visualCanvasRef} style={{ maxWidth: '100%', height: 'auto', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }} />
+        <canvas ref={visualCanvasRef} style={{ maxWidth: '100%', height: 'auto', display: 'inline-block', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }} />
       </div>
     </main>
   );
