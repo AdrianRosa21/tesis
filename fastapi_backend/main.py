@@ -49,14 +49,15 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "minicpm-v")
 MAX_IMAGE_SIZE_MB = 5
 MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
-PROMPT = """Eres AURA, un asistente de accesibilidad avanzado para personas con discapacidad visual. 
-Tu objetivo es describir esta página de manera natural, fluida y detallada, como si se lo estuvieras leyendo y explicando a alguien que está a tu lado.
+PROMPT = """Analiza esta imagen y descríbela detalladamente para una persona con discapacidad visual.
 
-Sigue estas pautas:
-1. Lee el texto principal de forma exacta, clara y en orden.
-2. Si hay diagramas, esquemas, chats o ilustraciones, DETENTE A EXPLICARLOS. Describe qué representa la imagen, qué elementos visuales hay y cómo interactúan.
-3. Lee cuidadosamente todo el texto, etiquetas o diálogos que estén dentro de las imágenes, respetando los símbolos (como @ o #).
-4. Usa un tono conversacional y descriptivo. NO uses formatos robóticos (como **Título** o 'Text within illustration'). Estructura tu respuesta en párrafos limpios, agradables y fáciles de escuchar para un lector de pantalla automatizado."""
+IMPORTANTE: La imagen contiene diagramas de flujo, esquemas o cuadros con texto. Tienes la OBLIGACIÓN ESTRICTA de leer y transcribir TODO el texto que veas dentro de los cuadros, flechas, nodos y etiquetas. No omitas nada.
+
+Reglas:
+1. Explica la estructura visual (ej. "A la izquierda hay una columna azul con 4 nodos...").
+2. Lee TODO el texto de cada recuadro exactamente como aparece (incluyendo símbolos como # y @). NUNCA digas que el texto 'no está visible', esfuérzate por leer cada palabra de los recuadros.
+3. Explica paso a paso cómo se conectan los cuadros mediante las flechas para que la persona entienda el flujo.
+4. Usa un formato de lectura natural y fluido, estructurado en párrafos claros y agradables de escuchar. No inventes información, solo describe lo que ves."""
 
 @app.post("/api/describe-image", dependencies=[Depends(verify_api_key)])
 async def describe_image(req: ImageRequest):
