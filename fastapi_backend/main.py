@@ -80,7 +80,11 @@ async def describe_image(req: ImageRequest):
                 "images": [base64_data]
             }
         ],
-        "stream": False
+        "stream": False,
+        "options": {
+            "temperature": 0.0,
+            "top_p": 0.1
+        }
     }
     
     # 3. COLA DE PETICIONES (Evitar que Ollama colapse con múltiples usuarios)
