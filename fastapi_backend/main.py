@@ -49,7 +49,7 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma3:4b")
 MAX_IMAGE_SIZE_MB = 5
 MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
-PROMPT = "Transcribe todo el texto de esta imagen exactamente como está escrito. Si hay imágenes o gráficos, descríbelos. No incluyas explicaciones tuyas, solo el texto de la imagen."
+PROMPT = "Actúa como un sistema OCR perfecto. Transcribe TODO el texto de esta imagen de forma exacta, literal y precisa. No inventes palabras, no autocompletes oraciones y copia exactamente lo que ves. Si hay diagramas o iconos, transcribe su texto de forma fiel y precisa."
 
 @app.post("/api/describe-image", dependencies=[Depends(verify_api_key)])
 async def describe_image(req: ImageRequest):

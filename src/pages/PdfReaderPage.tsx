@@ -131,9 +131,14 @@ export function PdfReaderPage({
             try { await renderTaskRef.current.cancel(); } catch { /* ignore cancellation errors */ }
           }
           
-          const viewport = page.getViewport({ scale: 1.5 });
+          // Aumentar la escala a 3.0 para Alta Definición (mejora radicalmente el OCR)
+          const viewport = page.getViewport({ scale: 3.0 });
           canvas.height = viewport.height;
           canvas.width = viewport.width;
+          
+          // Fondo blanco forzado para evitar problemas de transparencia
+          context.fillStyle = '#ffffff';
+          context.fillRect(0, 0, canvas.width, canvas.height);
           
           const renderContext = { canvasContext: context, viewport };
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -143,7 +148,8 @@ export function PdfReaderPage({
           await renderTask.promise;
           renderTaskRef.current = null;
           
-          dataUrl = canvas.toDataURL('image/png');
+          // Usar JPEG de alta calidad para evitar un string Base64 gigante con resolución 3x
+          dataUrl = canvas.toDataURL('image/jpeg', 0.95);
         }
       }
 
