@@ -43,7 +43,7 @@ image_cache = {}
 ollama_lock = asyncio.Lock()
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL = "llama3.2-vision"  # Forzado para ignorar el archivo .env
+OLLAMA_MODEL = "llava"  # Cambiado a llava porque mllama (llama3.2) no es compatible con la versión actual de Ollama
 
 # Límite de tamaño: 5 Megabytes (ajustable)
 MAX_IMAGE_SIZE_MB = 5
