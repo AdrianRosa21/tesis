@@ -57,8 +57,9 @@ REGLAS ABSOLUTAS:
 2. NO agregues introducciones (ej. "Este documento es...").
 3. NO agregues conclusiones.
 4. Devuelve el texto tal cual aparece, respetando el orden y los saltos de línea.
-5. Si hay imágenes, logotipos, firmas o diagramas, trátalos simplemente como una línea más de texto describiéndolos entre corchetes, por ejemplo: [Imagen: Logotipo del hospital] o [Firma del doctor].
-6. Transcribe, no converses."""
+5. NO uses formato Markdown. Cero asteriscos (**), cero negritas, cero símbolos raros. Solo texto plano.
+6. Si hay imágenes, logotipos, firmas o diagramas, trátalos simplemente como una línea más de texto describiéndolos entre corchetes: [Imagen: Logotipo del hospital].
+7. Transcribe, no converses."""
 
 @app.post("/api/describe-image", dependencies=[Depends(verify_api_key)])
 async def describe_image(req: ImageRequest):
