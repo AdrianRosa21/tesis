@@ -43,7 +43,7 @@ image_cache = {}
 ollama_lock = asyncio.Lock()
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "minicpm-v")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2-vision")
 
 # Límite de tamaño: 5 Megabytes (ajustable)
 MAX_IMAGE_SIZE_MB = 5
@@ -89,7 +89,9 @@ async def describe_image(req: ImageRequest):
         "stream": False,
         "options": {
             "temperature": 0.0,
-            "top_p": 0.1
+            "top_p": 0.1,
+            "repeat_penalty": 1.2,
+            "num_predict": 1024
         }
     }
     
