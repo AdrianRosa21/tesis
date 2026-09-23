@@ -43,7 +43,7 @@ image_cache = {}
 ollama_lock = asyncio.Lock()
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL = "qwen2.5-vl"  # El mejor modelo local para matemáticas y OCR
+OLLAMA_MODEL = "qwen2.5vl"  # Tag oficial en Ollama
 
 # Límite de tamaño: 5 Megabytes (ajustable)
 MAX_IMAGE_SIZE_MB = 5
