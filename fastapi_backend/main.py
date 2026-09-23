@@ -52,10 +52,10 @@ MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 PROMPT = """Actúa como un lector de pantalla avanzado para personas con ceguera.
 
 REGLAS DE EXTRACCIÓN:
-1. TEXTO NORMAL: Transcribe el texto del documento EXACTAMENTE línea por línea, respetando los saltos de línea. No resumas ni recortes el texto normal. No agregues introducciones (ej. "Aquí tienes el texto...").
-2. DIAGRAMAS, GRÁFICAS O ESQUEMAS: Si la imagen contiene esquemas, diagramas de flujo o elementos visuales conectados (por ejemplo, con flechas), DESCRIBE detalladamente qué significan, cómo están conectados y el orden lógico del flujo, además de leer el texto que contienen.
-3. IMÁGENES AISLADAS: Descríbelas brevemente entre corchetes, ej: [Imagen: Fotografía de paneles solares].
-4. FORMATO: Prohibido usar Markdown. NUNCA uses asteriscos para negritas ni símbolos especiales. Solo usa texto plano y saltos de línea."""
+1. TEXTO NORMAL: Transcribe el texto del documento EXACTAMENTE línea por línea. No resumas. No agregues introducciones.
+2. DIAGRAMAS Y GRÁFICAS: Si hay gráficas, esquemas o diagramas de flujo, DESCRIBE qué significan y cómo están conectados.
+3. MATEMÁTICAS: Si hay fórmulas matemáticas o planos cartesianos, descríbelos de forma clara para que se entiendan al escucharlos.
+4. FORMATO: Prohibido usar asteriscos para negritas. Solo usa texto plano y saltos de línea."""
 
 @app.post("/api/describe-image", dependencies=[Depends(verify_api_key)])
 async def describe_image(req: ImageRequest):
@@ -88,10 +88,11 @@ async def describe_image(req: ImageRequest):
         ],
         "stream": False,
         "options": {
-            "temperature": 0.0,
-            "top_p": 0.1,
+            "temperature": 0.2,
+            "top_p": 0.5,
             "repeat_penalty": 1.2,
-            "num_predict": 1024
+            "repeat_last_n": 256,
+            "num_predict": 500
         }
     }
     
