@@ -49,17 +49,13 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "minicpm-v")
 MAX_IMAGE_SIZE_MB = 5
 MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
-PROMPT = """Extrae el texto de esta imagen EXACTAMENTE línea por línea.
-Tu única salida debe ser el contenido puro del documento para que un usuario con ceguera pueda navegarlo línea por línea con su lector de pantalla.
+PROMPT = """Actúa como un lector de pantalla avanzado para personas con ceguera.
 
-REGLAS ABSOLUTAS:
-1. NO resumas nada.
-2. NO agregues introducciones (ej. "Este documento es...").
-3. NO agregues conclusiones.
-4. Devuelve el texto tal cual aparece, respetando el orden y los saltos de línea.
-5. NO uses formato Markdown. Cero asteriscos (**), cero negritas, cero símbolos raros. Solo texto plano.
-6. Si hay imágenes, logotipos, firmas o diagramas, trátalos simplemente como una línea más de texto describiéndolos entre corchetes: [Imagen: Logotipo del hospital].
-7. Transcribe, no converses."""
+REGLAS DE EXTRACCIÓN:
+1. TEXTO NORMAL: Transcribe el texto del documento EXACTAMENTE línea por línea, respetando los saltos de línea. No resumas ni recortes el texto normal. No agregues introducciones (ej. "Aquí tienes el texto...").
+2. DIAGRAMAS, GRÁFICAS O ESQUEMAS: Si la imagen contiene esquemas, diagramas de flujo o elementos visuales conectados (por ejemplo, con flechas), DESCRIBE detalladamente qué significan, cómo están conectados y el orden lógico del flujo, además de leer el texto que contienen.
+3. IMÁGENES AISLADAS: Descríbelas brevemente entre corchetes, ej: [Imagen: Fotografía de paneles solares].
+4. FORMATO: Prohibido usar Markdown. NUNCA uses asteriscos para negritas ni símbolos especiales. Solo usa texto plano y saltos de línea."""
 
 @app.post("/api/describe-image", dependencies=[Depends(verify_api_key)])
 async def describe_image(req: ImageRequest):
@@ -110,6 +106,10 @@ async def describe_image(req: ImageRequest):
                 data = response.json()
                 
                 description = data.get("message", {}).get("content", "")
+                
+                # 5. FORZAR LIMPIEZA DE MARKDOWN (Asteriscos, negritas, etc)
+                description = description.replace("*", "").replace("#", "")
+                
                 print(f"\n🤖 OLLAMA RESPONDIÓ ESTO:\n{description}\n")
                 
                 # Guardar en caché el resultado exitoso
