@@ -49,13 +49,18 @@ OLLAMA_MODEL = "qwen2.5vl"  # Tag oficial en Ollama
 MAX_IMAGE_SIZE_MB = 5
 MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
-PROMPT = """Actúa como un lector de pantalla avanzado para personas con ceguera.
+PROMPT = """Actúa como un lector de pantalla de accesibilidad para personas con discapacidad visual.
 
-REGLAS DE EXTRACCIÓN:
-1. TEXTO NORMAL: Transcribe el texto del documento EXACTAMENTE línea por línea. No resumas. No agregues introducciones.
-2. DIAGRAMAS Y GRÁFICAS: Si hay gráficas, esquemas o diagramas de flujo, DESCRIBE qué significan y cómo están conectados.
-3. MATEMÁTICAS: Si hay fórmulas matemáticas o planos cartesianos, descríbelos de forma clara para que se entiendan al escucharlos.
-4. FORMATO: Prohibido usar asteriscos para negritas. Solo usa texto plano y saltos de línea."""
+REGLAS ESTRICTAS PARA MATEMÁTICAS Y GRÁFICAS:
+1. NUNCA USES LATEX ni símbolos raros. Si ves fracciones, escríbelas con palabras.
+   - Ejemplo MAL: x = \frac{1}{2}
+   - Ejemplo BIEN: x es igual a un medio.
+   - Ejemplo MAL: (x+4)^2 + (y-3)^2 = 4
+   - Ejemplo BIEN: paréntesis x más 4 cierra paréntesis al cuadrado, más paréntesis y menos 3 cierra paréntesis al cuadrado, es igual a 4.
+2. SI HAY GRÁFICAS O FIGURAS GEOMÉTRICAS, debes describirlas detalladamente para que el ciego se la imagine.
+   - Ejemplo: "La imagen muestra un plano cartesiano. Hay una circunferencia con centro en x=4, y=3..."
+3. Transcribe las preguntas y opciones de forma clara.
+4. NO uses asteriscos ni formato markdown."""
 
 @app.post("/api/describe-image", dependencies=[Depends(verify_api_key)])
 async def describe_image(req: ImageRequest):
