@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { HomePage } from './pages/HomePage';
 import { PdfReaderPage } from './pages/PdfReaderPage';
 import { useSpeech } from './hooks/useSpeech';
@@ -8,7 +8,25 @@ type Page = 'home' | 'reader';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
-  const speech = useSpeech();
+  const {
+    speak,
+    pause,
+    resume,
+    stop,
+    isSpeaking,
+    isPaused,
+    highlight
+  } = useSpeech();
+
+  const handleStart = useCallback(() => {
+    stop();
+    setCurrentPage('reader');
+  }, [stop]);
+
+  const handleBack = useCallback(() => {
+    stop();
+    setCurrentPage('home');
+  }, [stop]);
 
   useEffect(() => {
     const checkSavedSession = async () => {
@@ -78,7 +96,7 @@ function App() {
       }
 
       if (text) {
-        speech.speak(text);
+        speak(text);
       }
     };
 
@@ -91,33 +109,27 @@ function App() {
       document.removeEventListener('mousedown', handleMouseDown);
       document.removeEventListener('focusin', handleFocus);
     };
-  }, [speech]);
+  }, [speak]);
 
   return (
     <>
       {currentPage === 'home' && (
         <HomePage 
-          onStart={() => {
-            speech.stop();
-            setCurrentPage('reader');
-          }}
-          speak={speech.speak}
-          stopSpeech={speech.stop}
+          onStart={handleStart}
+          speak={speak}
+          stopSpeech={stop}
         />
       )}
       {currentPage === 'reader' && (
         <PdfReaderPage 
-          onBack={() => {
-            speech.stop();
-            setCurrentPage('home');
-          }}
-          speak={speech.speak}
-          pauseSpeech={speech.pause}
-          resumeSpeech={speech.resume}
-          stopSpeech={speech.stop}
-          isSpeaking={speech.isSpeaking}
-          isPaused={speech.isPaused}
-          highlight={speech.highlight}
+          onBack={handleBack}
+          speak={speak}
+          pauseSpeech={pause}
+          resumeSpeech={resume}
+          stopSpeech={stop}
+          isSpeaking={isSpeaking}
+          isPaused={isPaused}
+          highlight={highlight}
         />
       )}
     </>
@@ -125,4 +137,3 @@ function App() {
 }
 
 export default App;
-

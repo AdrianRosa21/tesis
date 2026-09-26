@@ -153,15 +153,23 @@ export function PdfReaderPage({
         }
       }
 
-      setPageCache(prev => ({
-        ...prev,
-        [pageNum]: {
+      setPageCache(prev => {
+        const nextCache = Object.fromEntries(
+          Object.entries(prev).map(([key, value]) => [
+            key,
+            { ...value, canvasDataUrl: null }
+          ])
+        ) as Record<number, PageData>;
+
+        nextCache[pageNum] = {
           pageNum,
           elements: prev[pageNum]?.elements || null,
           canvasDataUrl: dataUrl,
           isProcessing: false
-        }
-      }));
+        };
+
+        return nextCache;
+      });
 
     } catch (error: unknown) {
       if (currentRenderId !== renderIdRef.current) return; 
@@ -227,22 +235,32 @@ export function PdfReaderPage({
 
   const handleRead = async () => {
     const data = pageCache[currentPage];
-    if (!data || !data.canvasDataUrl) return;
+    if (!data) return;
 
     if (data.elements) {
       setCurrentElementIndex(0);
       readElement(data.elements, 0);
     } else {
+      if (!data.canvasDataUrl) {
+        updateStatus("La pagina todavia se esta preparando. Intenta de nuevo en un momento.");
+        return;
+      }
+
       updateStatus("Analizando estructura de la página con inteligencia artificial, por favor espera unos segundos.");
       stopSpeech();
       speak("Analizando la página con inteligencia artificial. Por favor, espera...");
       setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessing: true } }));
       
       try {
-        const elements = await analyzePageStructure(data.canvasDataUrl, pdfDoc!, currentPage);
+        const elements = await analyzePageStructure(data.canvasDataUrl);
         setPageCache(prev => ({ 
           ...prev, 
-          [currentPage]: { ...prev[currentPage], elements, isProcessing: false } 
+          [currentPage]: {
+            ...prev[currentPage],
+            elements,
+            canvasDataUrl: null,
+            isProcessing: false
+          }
         }));
         
         setCurrentElementIndex(0);

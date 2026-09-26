@@ -1,6 +1,3 @@
-import type { PDFDocumentProxy } from 'pdfjs-dist';
-import Tesseract from 'tesseract.js';
-
 export type ElementType = string;
 
 export interface PageElement {
@@ -8,7 +5,12 @@ export interface PageElement {
   content: string;
 }
 
-export async function analyzePageStructure(canvasDataUrl: string, pdfDoc?: PDFDocumentProxy, pageNum?: number): Promise<PageElement[]> {
+interface ApiErrorPayload {
+  detail?: string;
+  error?: string;
+}
+
+export async function analyzePageStructure(canvasDataUrl: string): Promise<PageElement[]> {
   const elements: PageElement[] = [];
 
   const optimizedDataUrl = await optimizeImage(canvasDataUrl);
@@ -25,11 +27,16 @@ export async function analyzePageStructure(canvasDataUrl: string, pdfDoc?: PDFDo
       body: JSON.stringify({ image: optimizedDataUrl })
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success && data.description) {
+    if (!response.ok) {
+      const errorPayload = await response.json().catch(() => ({})) as ApiErrorPayload;
+      const message = errorPayload.detail || errorPayload.error || `La API respondió con HTTP ${response.status}.`;
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+    if (data.success && data.description) {
         // Eliminar tags <think>...</think> generados por modelos de razonamiento
-        let cleanDescription = data.description.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+        const cleanDescription = data.description.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
         
         // Parsear los bloques [TEXTO] e [IMAGEN]
         const lines = cleanDescription.split('\n');
@@ -46,11 +53,10 @@ export async function analyzePageStructure(canvasDataUrl: string, pdfDoc?: PDFDo
             elements.push({ type: "Texto", content: line });
           }
         }
-      }
     }
   } catch (e) {
     console.error("Error contactando al backend de IA:", e);
-    throw new Error("No fue posible analizar la página con AURA.");
+    throw new Error("No fue posible analizar la página con AURA.", { cause: e });
   }
 
   if (elements.length === 0) {
@@ -65,8 +71,9 @@ function optimizeImage(dataUrl: string): Promise<string> {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      // Limitar resolución a 800px para ahorrar tokens manteniendo legibilidad
-      const MAX_WIDTH = 800;
+      // 800 px vuelve ilegible el texto pequeno. 1600 px conserva detalle sin
+      // acercarse normalmente al limite de 5 MB del backend.
+      const MAX_WIDTH = 1600;
       let width = img.width;
       let height = img.height;
 
@@ -82,12 +89,12 @@ function optimizeImage(dataUrl: string): Promise<string> {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
-        // Compresión WebP o JPEG 0.7
-        resolve(canvas.toDataURL('image/jpeg', 0.7));
+        resolve(canvas.toDataURL('image/jpeg', 0.9));
       } else {
         resolve(dataUrl);
       }
     };
+    img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;
   });
 }

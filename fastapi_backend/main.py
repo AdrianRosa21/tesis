@@ -1,14 +1,18 @@
 import os
 import hashlib
 import asyncio
+from collections import OrderedDict
+from pathlib import Path
+
 import httpx
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# Cargar variables de entorno
-load_dotenv(dotenv_path="../.env")
+# Cargar siempre el .env de la raiz, independientemente del directorio actual.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
 app = FastAPI(title="AURA - PDF Reader AI API")
 
@@ -36,14 +40,15 @@ class ImageRequest(BaseModel):
     image: str
     context: str | None = None
 
-# Caché en memoria
-image_cache = {}
+# Cache LRU acotada para evitar que un proceso de larga duracion agote la RAM.
+MAX_CACHE_ENTRIES = int(os.getenv("MAX_CACHE_ENTRIES", "128"))
+image_cache: OrderedDict[str, str] = OrderedDict()
 
 # Candado (Lock) para procesar peticiones de una en una
 ollama_lock = asyncio.Lock()
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL = "qwen2.5vl"  # Tag oficial en Ollama
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5vl")
 
 # Límite de tamaño: 5 Megabytes (ajustable)
 MAX_IMAGE_SIZE_MB = 5
@@ -61,6 +66,42 @@ REGLAS ESTRICTAS PARA MATEMÁTICAS Y GRÁFICAS:
    - Ejemplo: "La imagen muestra un plano cartesiano. Hay una circunferencia con centro en x=4, y=3..."
 3. Transcribe las preguntas y opciones de forma clara.
 4. NO uses asteriscos ni formato markdown."""
+
+
+@app.get("/api/health")
+async def health():
+    """Confirma que FastAPI esta vivo sin depender de Ollama."""
+    return {"status": "ok", "service": "aura-api"}
+
+
+@app.get("/api/ready")
+async def ready():
+    """Comprueba que Ollama responde y que el modelo configurado esta instalado."""
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get(f"{OLLAMA_BASE_URL}/api/tags")
+            response.raise_for_status()
+            models = response.json().get("models", [])
+    except (httpx.HTTPError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Ollama no esta disponible.",
+        ) from exc
+
+    available_names = {
+        model.get("name", "") for model in models if isinstance(model, dict)
+    }
+    model_available = any(
+        name == OLLAMA_MODEL or name.split(":", 1)[0] == OLLAMA_MODEL
+        for name in available_names
+    )
+    if not model_available:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"El modelo configurado '{OLLAMA_MODEL}' no esta instalado.",
+        )
+
+    return {"status": "ready", "model": OLLAMA_MODEL}
 
 @app.post("/api/describe-image", dependencies=[Depends(verify_api_key)])
 async def describe_image(req: ImageRequest):
@@ -80,6 +121,7 @@ async def describe_image(req: ImageRequest):
     img_hash = hashlib.sha256(base64_data.encode('utf-8')).hexdigest()
     if img_hash in image_cache:
         print("Respondiendo desde caché (Página ya procesada)...")
+        image_cache.move_to_end(img_hash)
         return {"success": True, "description": image_cache[img_hash]}
         
     payload = {
@@ -122,11 +164,20 @@ async def describe_image(req: ImageRequest):
                 
                 # Guardar en caché el resultado exitoso
                 image_cache[img_hash] = description
+                image_cache.move_to_end(img_hash)
+                while len(image_cache) > MAX_CACHE_ENTRIES:
+                    image_cache.popitem(last=False)
                 return {"success": True, "description": description}
                 
         except httpx.ReadTimeout:
             print("Error: Ollama tardó demasiado en responder.")
             raise HTTPException(status_code=504, detail="La IA está tardando mucho en procesar. Por favor, intenta de nuevo.")
+        except httpx.HTTPStatusError as exc:
+            print(f"Ollama respondio con HTTP {exc.response.status_code}.")
+            raise HTTPException(status_code=502, detail="Ollama rechazó la solicitud.") from exc
+        except httpx.RequestError as exc:
+            print(f"No fue posible conectar con Ollama: {exc}")
+            raise HTTPException(status_code=503, detail="Ollama no está disponible.") from exc
         except Exception as e:
             print(f"Ollama API error: {e}")
-            raise HTTPException(status_code=500, detail="Error interno al procesar la imagen con la IA.")
+            raise HTTPException(status_code=500, detail="Error interno al procesar la imagen con la IA.") from e
