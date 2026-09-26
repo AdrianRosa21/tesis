@@ -26,6 +26,7 @@ interface PageData {
   pageNum: number;
   elements: PageElement[] | null;
   canvasDataUrl: string | null;
+  nativeText: string | null;
   isProcessing: boolean;
 }
 
@@ -121,6 +122,22 @@ export function PdfReaderPage({
     try {
       const page = await doc.getPage(pageNum);
       if (currentRenderId !== renderIdRef.current) return;
+
+      let nativeText: string | null = null;
+      try {
+        const textContent = await page.getTextContent();
+        nativeText = textContent.items
+          .map(item => {
+            if (!('str' in item)) return '';
+            return `${item.str}${item.hasEOL ? '\n' : ' '}`;
+          })
+          .join('')
+          .replace(/[ \t]+\n/g, '\n')
+          .replace(/[ \t]{2,}/g, ' ')
+          .trim() || null;
+      } catch (error) {
+        console.warn('No fue posible extraer la capa de texto del PDF.', error);
+      }
       
       let dataUrl: string | null = null;
       if (visualCanvasRef.current) {
@@ -165,6 +182,7 @@ export function PdfReaderPage({
           pageNum,
           elements: prev[pageNum]?.elements || null,
           canvasDataUrl: dataUrl,
+          nativeText,
           isProcessing: false
         };
 
@@ -252,7 +270,7 @@ export function PdfReaderPage({
       setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessing: true } }));
       
       try {
-        const elements = await analyzePageStructure(data.canvasDataUrl);
+        const elements = await analyzePageStructure(data.canvasDataUrl, data.nativeText);
         setPageCache(prev => ({ 
           ...prev, 
           [currentPage]: {

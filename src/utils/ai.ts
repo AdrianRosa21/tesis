@@ -10,7 +10,7 @@ interface ApiErrorPayload {
   error?: string;
 }
 
-export async function analyzePageStructure(canvasDataUrl: string): Promise<PageElement[]> {
+export async function analyzePageStructure(canvasDataUrl: string, nativeText?: string | null): Promise<PageElement[]> {
   const elements: PageElement[] = [];
 
   const optimizedDataUrl = await optimizeImage(canvasDataUrl);
@@ -24,7 +24,10 @@ export async function analyzePageStructure(canvasDataUrl: string): Promise<PageE
         "Content-Type": "application/json",
         "x-api-key": API_KEY
       },
-      body: JSON.stringify({ image: optimizedDataUrl })
+      body: JSON.stringify({
+        image: optimizedDataUrl,
+        context: nativeText?.trim() || undefined
+      })
     });
 
     if (!response.ok) {
@@ -46,6 +49,10 @@ export async function analyzePageStructure(canvasDataUrl: string): Promise<PageE
           
           if (line.startsWith('[IMAGEN]')) {
             elements.push({ type: "Descripción Visual", content: line.replace('[IMAGEN]', '').trim() });
+          } else if (line.startsWith('[TABLA]')) {
+            elements.push({ type: "Tabla", content: line.replace('[TABLA]', '').trim() });
+          } else if (line.startsWith('[DUDOSO]')) {
+            elements.push({ type: "Contenido dudoso", content: line.replace('[DUDOSO]', '').trim() });
           } else if (line.startsWith('[TEXTO]')) {
             elements.push({ type: "Texto", content: line.replace('[TEXTO]', '').trim() });
           } else {
