@@ -111,13 +111,16 @@ export function useSpeech(): UseSpeechResult {
         speakChunk();
       };
 
-      utterance.onerror = (e) => {
-        console.error("SpeechSynthesisError", e);
-        if (currentUtteranceRef.current === utterance) {
-          setIsSpeaking(false);
-          setIsPaused(false);
-          setHighlight(null);
+      utterance.onerror = (event) => {
+        if (currentUtteranceRef.current !== utterance) return;
+
+        if (event.error !== 'canceled' && event.error !== 'interrupted') {
+          console.error("SpeechSynthesisError", event);
         }
+
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setHighlight(null);
       };
 
       synth.speak(utterance);

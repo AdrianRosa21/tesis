@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "backend": "python -m uvicorn fastapi_backend.main:app --port 3001 --reload",
     "server": "node server.js",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -16,10 +17,9 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "groq-sdk": "^1.6.0",
-    "pdfjs-dist": "^6.0.227",
+    "pdfjs-dist": "6.2.108",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "tesseract.js": "^7.0.0"
+    "react-dom": "^19.2.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
