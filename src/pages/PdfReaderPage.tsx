@@ -202,7 +202,8 @@ export function PdfReaderPage({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
+    const hasPdfExtension = file.name.toLowerCase().endsWith('.pdf');
+    if (file.type !== 'application/pdf' && !hasPdfExtension) {
       updateStatus('El archivo seleccionado no es un PDF válido.');
       return;
     }
@@ -253,7 +254,7 @@ export function PdfReaderPage({
 
   const handleRead = async () => {
     const data = pageCache[currentPage];
-    if (!data) return;
+    if (!data || data.isProcessing) return;
 
     if (data.elements) {
       setCurrentElementIndex(0);
@@ -280,12 +281,16 @@ export function PdfReaderPage({
             isProcessing: false
           }
         }));
-        
+
+        setStatus(`Análisis completado. Se encontraron ${elements.length} elementos en la página ${currentPage}.`);
         setCurrentElementIndex(0);
         readElement(elements, 0);
       } catch (e) {
         console.error(e);
-        updateStatus("Error al analizar la página con inteligencia artificial. Revisa tu clave API o conexión.");
+        const message = e instanceof Error
+          ? e.message
+          : 'No fue posible analizar la página con AURA.';
+        updateStatus(message);
         setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessing: false } }));
       }
     }
@@ -327,12 +332,12 @@ export function PdfReaderPage({
       const key = e.key;
       
       if (key.toLowerCase() === 'f') {
-        if (pdfDoc) {
+        if (pdfDoc && !isProcessing) {
           handleRead();
         }
       } 
       else if (key.toLowerCase() === 'r') {
-        fileInputRef.current?.click();
+        if (!isProcessing) fileInputRef.current?.click();
       }
       else if (key === ' ') {
         e.preventDefault(); 
@@ -405,19 +410,19 @@ export function PdfReaderPage({
       }
       else if (key === 'ArrowRight') {
         e.preventDefault();
-        handleNextPage();
+        if (!isProcessing) handleNextPage();
       } 
       else if (key === 'ArrowLeft') {
         e.preventDefault();
-        handlePrevPage();
+        if (!isProcessing) handlePrevPage();
       } 
       else if (key === 'Home') {
         e.preventDefault();
-        if (pdfDoc) goToPage(pdfDoc, 1);
+        if (pdfDoc && !isProcessing) goToPage(pdfDoc, 1);
       } 
       else if (key === 'End') {
         e.preventDefault();
-        if (pdfDoc) goToPage(pdfDoc, totalPages);
+        if (pdfDoc && !isProcessing) goToPage(pdfDoc, totalPages);
       }
     };
 
@@ -457,6 +462,7 @@ export function PdfReaderPage({
         />
         <button 
           onClick={() => { if (isProcessing) return; fileInputRef.current?.click(); }} 
+          disabled={isProcessing}
           aria-disabled={isProcessing ? 'true' : 'false'}
           style={{ opacity: isProcessing ? 0.5 : 1, cursor: isProcessing ? 'not-allowed' : 'pointer' }}
         >
@@ -467,15 +473,17 @@ export function PdfReaderPage({
           <>
             <button 
               onClick={() => { if (currentPage <= 1) return; handlePrevPage(); }} 
-              aria-disabled={currentPage <= 1 ? 'true' : 'false'}
-              style={{ opacity: currentPage <= 1 ? 0.5 : 1, cursor: currentPage <= 1 ? 'not-allowed' : 'pointer' }}
+              disabled={currentPage <= 1 || isProcessing}
+              aria-disabled={currentPage <= 1 || isProcessing ? 'true' : 'false'}
+              style={{ opacity: currentPage <= 1 || isProcessing ? 0.5 : 1, cursor: currentPage <= 1 || isProcessing ? 'not-allowed' : 'pointer' }}
             >
               Página anterior (Flecha Izq)
             </button>
             <button 
               onClick={() => { if (currentPage >= totalPages) return; handleNextPage(); }} 
-              aria-disabled={currentPage >= totalPages ? 'true' : 'false'}
-              style={{ opacity: currentPage >= totalPages ? 0.5 : 1, cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer' }}
+              disabled={currentPage >= totalPages || isProcessing}
+              aria-disabled={currentPage >= totalPages || isProcessing ? 'true' : 'false'}
+              style={{ opacity: currentPage >= totalPages || isProcessing ? 0.5 : 1, cursor: currentPage >= totalPages || isProcessing ? 'not-allowed' : 'pointer' }}
             >
               Página siguiente (Flecha Der)
             </button>
@@ -487,6 +495,8 @@ export function PdfReaderPage({
                 min={1} 
                 max={totalPages} 
                 value={pageInputValue} 
+                disabled={isProcessing}
+                aria-disabled={isProcessing ? 'true' : 'false'}
                 onChange={handlePageInputChange}
                 onKeyDown={handlePageInputKeyDown}
                 style={{ fontSize: '1.25rem', padding: '0.5rem', width: '80px' }}
@@ -496,6 +506,7 @@ export function PdfReaderPage({
             
             <button 
               onClick={() => { if (!currentData || isProcessing) return; handleRead(); }} 
+              disabled={!currentData || isProcessing}
               aria-disabled={(!currentData || isProcessing) ? 'true' : 'false'}
               style={{ opacity: (!currentData || isProcessing) ? 0.5 : 1, cursor: (!currentData || isProcessing) ? 'not-allowed' : 'pointer' }}
             >
@@ -503,6 +514,7 @@ export function PdfReaderPage({
             </button>
             <button 
               onClick={() => { if (!isSpeaking && !isPaused) return; handlePauseResume(); }} 
+              disabled={!isSpeaking && !isPaused}
               aria-disabled={(!isSpeaking && !isPaused) ? 'true' : 'false'}
               style={{ opacity: (!isSpeaking && !isPaused) ? 0.5 : 1, cursor: (!isSpeaking && !isPaused) ? 'not-allowed' : 'pointer' }}
             >
@@ -512,6 +524,7 @@ export function PdfReaderPage({
               Detener (G)
             </button>
             <button 
+              disabled={!currentData?.elements || isProcessing}
               onClick={() => {
                 const data = pageCache[currentPage];
                 if (data?.elements && currentElementIndex >= 0 && currentElementIndex < data.elements.length) {
@@ -535,7 +548,7 @@ export function PdfReaderPage({
         </button>
       </div>
 
-      {readingText && (isSpeaking || isPaused) && currentElement && (
+      {readingText && currentElement && (
         <div 
           className="reading-box" 
           aria-hidden="true"

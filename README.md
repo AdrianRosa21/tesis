@@ -14,10 +14,11 @@ Los lectores de pantalla convencionales extraen el texto subyacente de un PDF. S
 
 ## 🏗️ Arquitectura del Sistema (Frontend + POD Backend)
 
-El proyecto está dividido en dos partes principales para asegurar eficiencia y accesibilidad universal:
+El proyecto está dividido en tres partes para asegurar eficiencia, accesibilidad y protección de secretos:
 
-1.  **Frontend Ligero (Cliente / Vercel):** Una interfaz web minimalista en React, accesible completamente por teclado. Su trabajo es cargar el PDF, convertir la página actual en una imagen Base64 y enviarla al servidor.
-2.  **Backend Pesado (Servidor API / POD GPU):** Un servidor desarrollado en Python con FastAPI. Recibe la imagen, gestiona la cola de peticiones y se comunica con un motor de IA local (Ollama) para realizar la inferencia multimodal.
+1.  **Frontend Ligero (Cliente / Vercel):** Una interfaz web minimalista en React, accesible completamente por teclado. Carga el PDF, convierte la página actual en una imagen Base64 y la envía a una ruta del mismo origen.
+2.  **Proxy privado (Vercel Function):** Reenvía la solicitud al POD y añade la clave desde variables privadas del servidor. La credencial ya no se incluye en el bundle del navegador.
+3.  **Backend Pesado (Servidor API / POD GPU):** Un servidor desarrollado en Python con FastAPI. Recibe la imagen, gestiona la cola de peticiones y se comunica con un motor de IA local (Ollama) para realizar la inferencia multimodal.
 
 ### Diagrama de Flujo
 
@@ -28,7 +29,11 @@ El proyecto está dividido en dos partes principales para asegurar eficiencia y 
    v
 [Frontend: React + Vite + TypeScript] -> (Carga PDF, convierte Página a Imagen Base64)
    |
-   | (Petición POST Segura a la API con Headers y Payload Base64)
+   | (Petición POST al mismo origen, sin secretos públicos)
+   v
+[Vercel Function: /api/describe-image] -> (Añade la API_KEY privada)
+   |
+   | (Petición servidor a servidor)
    v
 [Backend: FastAPI (Python) en POD]
    |
@@ -42,7 +47,7 @@ El proyecto está dividido en dos partes principales para asegurar eficiencia y 
    |
    | (Analiza píxeles, entiende layout, describe imágenes y matemáticas)
    v
-[Backend FastAPI] -> (Recibe texto, limpia Markdown, guarda en Caché, responde HTTP 200)
+[Backend FastAPI] -> (Normaliza elementos, guarda en caché y responde JSON estructurado)
    |
    v
 [Frontend React] -> (Pasa el texto limpio al motor Text-To-Speech del navegador)
@@ -118,6 +123,19 @@ npm install
 npm run dev
 ```
 La interfaz web estará en `http://localhost:5173`.
+
+### 5. Configurar Vercel en producción
+
+No configures `VITE_API_KEY` ni `VITE_API_URL` en el frontend de producción. La función `api/describe-image.js` usa estas variables privadas de Vercel:
+
+```text
+AURA_BACKEND_URL=https://tu-backend.example.com
+AURA_API_KEY=una_clave_larga_y_aleatoria
+```
+
+El backend FastAPI debe tener la misma clave en `API_KEY`. Para limitar abuso del proxy público, configura además rate limiting o reglas de firewall en Vercel.
+
+Consulta la guía paso a paso en [`docs/despliegue-seguro.md`](docs/despliegue-seguro.md).
 
 ---
 
