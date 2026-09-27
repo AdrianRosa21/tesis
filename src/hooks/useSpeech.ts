@@ -64,8 +64,9 @@ export function useSpeech(): UseSpeechResult {
     }
     
     let currentChunkIndex = 0;
+    const MAX_RETRIES = 2;
 
-    const speakChunk = () => {
+    const speakChunk = (retryCount = 0) => {
       if (currentChunkIndex >= chunks.length) {
         setIsSpeaking(false);
         setIsPaused(false);
@@ -78,7 +79,7 @@ export function useSpeech(): UseSpeechResult {
 
       const chunkObj = chunks[currentChunkIndex];
       const chunkText = chunkObj.text;
-      
+
       if (!chunkText.trim()) {
         currentChunkIndex++;
         speakChunk();
@@ -87,12 +88,12 @@ export function useSpeech(): UseSpeechResult {
 
       const utterance = new SpeechSynthesisUtterance(chunkText);
       currentUtteranceRef.current = utterance;
-      
+
       utterance.onboundary = (event) => {
         if (currentUtteranceRef.current !== utterance) return;
         if (event.name === 'word') {
           const globalStart = chunkObj.startIndex + event.charIndex;
-          
+
           let length = event.charLength;
           if (!length) {
             // fallback: guess word length by finding the next space/punctuation
@@ -100,7 +101,7 @@ export function useSpeech(): UseSpeechResult {
             const wordMatch = remaining.match(/^[^\s]+/);
             length = wordMatch ? wordMatch[0].length : 1;
           }
-          
+
           setHighlight({ start: globalStart, length });
         }
       };
@@ -114,10 +115,25 @@ export function useSpeech(): UseSpeechResult {
       utterance.onerror = (event) => {
         if (currentUtteranceRef.current !== utterance) return;
 
-        if (event.error !== 'canceled' && event.error !== 'interrupted') {
-          console.error("SpeechSynthesisError", event);
+        if (event.error === 'canceled' || event.error === 'interrupted') {
+          setIsSpeaking(false);
+          setIsPaused(false);
+          setHighlight(null);
+          return;
         }
 
+        // Bug conocido de Chrome: el motor de sintesis a veces no esta listo
+        // justo al cargar la pagina y la primera llamada falla en silencio.
+        // Reintentar resuelve el caso sin que el usuario note nada.
+        if (retryCount < MAX_RETRIES) {
+          setTimeout(() => {
+            if (currentUtteranceRef.current !== utterance) return;
+            speakChunk(retryCount + 1);
+          }, 250);
+          return;
+        }
+
+        console.error("SpeechSynthesisError", event);
         setIsSpeaking(false);
         setIsPaused(false);
         setHighlight(null);
