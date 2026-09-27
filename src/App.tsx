@@ -1,13 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { HomePage } from './pages/HomePage';
 import { PdfReaderPage } from './pages/PdfReaderPage';
+import { TutorialPage } from './pages/TutorialPage';
 import { useSpeech } from './hooks/useSpeech';
 import { getPdfFile } from './utils/db';
 
-type Page = 'home' | 'reader';
+type Page = 'home' | 'reader' | 'tutorial';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
+  const pageBeforeTutorialRef = useRef<'home' | 'reader'>('home');
   const {
     speak,
     pause,
@@ -28,6 +30,19 @@ function App() {
     setCurrentPage('home');
   }, [stop]);
 
+  const handleOpenTutorial = useCallback(() => {
+    if (currentPage === 'home' || currentPage === 'reader') {
+      pageBeforeTutorialRef.current = currentPage;
+    }
+    stop();
+    setCurrentPage('tutorial');
+  }, [currentPage, stop]);
+
+  const handleExitTutorial = useCallback(() => {
+    stop();
+    setCurrentPage(pageBeforeTutorialRef.current);
+  }, [stop]);
+
   useEffect(() => {
     const checkSavedSession = async () => {
       try {
@@ -40,12 +55,21 @@ function App() {
       }
     };
     checkSavedSession();
+  }, []);
 
+  useEffect(() => {
     let isKeyboardNav = false;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
         isKeyboardNav = true;
+      }
+
+      if (e.key.toLowerCase() === 'h' && currentPage !== 'tutorial') {
+        const active = document.activeElement?.tagName;
+        if (active === 'INPUT' || active === 'TEXTAREA' || active === 'SELECT') return;
+        e.preventDefault();
+        handleOpenTutorial();
       }
     };
 
@@ -109,20 +133,22 @@ function App() {
       document.removeEventListener('mousedown', handleMouseDown);
       document.removeEventListener('focusin', handleFocus);
     };
-  }, [speak]);
+  }, [speak, currentPage, handleOpenTutorial]);
 
   return (
     <>
       {currentPage === 'home' && (
-        <HomePage 
+        <HomePage
           onStart={handleStart}
+          onOpenTutorial={handleOpenTutorial}
           speak={speak}
           stopSpeech={stop}
         />
       )}
       {currentPage === 'reader' && (
-        <PdfReaderPage 
+        <PdfReaderPage
           onBack={handleBack}
+          onOpenTutorial={handleOpenTutorial}
           speak={speak}
           pauseSpeech={pause}
           resumeSpeech={resume}
@@ -130,6 +156,17 @@ function App() {
           isSpeaking={isSpeaking}
           isPaused={isPaused}
           highlight={highlight}
+        />
+      )}
+      {currentPage === 'tutorial' && (
+        <TutorialPage
+          onExit={handleExitTutorial}
+          speak={speak}
+          pauseSpeech={pause}
+          resumeSpeech={resume}
+          stopSpeech={stop}
+          isSpeaking={isSpeaking}
+          isPaused={isPaused}
         />
       )}
     </>

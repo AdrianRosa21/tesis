@@ -13,6 +13,7 @@ interface HighlightState {
 
 interface PdfReaderPageProps {
   onBack: () => void;
+  onOpenTutorial: () => void;
   speak: (text: string) => void;
   pauseSpeech: () => void;
   resumeSpeech: () => void;
@@ -32,6 +33,7 @@ interface PageData {
 
 export function PdfReaderPage({
   onBack,
+  onOpenTutorial,
   speak,
   pauseSpeech,
   resumeSpeech,
@@ -548,6 +550,9 @@ export function PdfReaderPage({
           onBack(); 
         }}>
           Volver al inicio (J)
+        </button>
+        <button onClick={onOpenTutorial}>
+          Tutorial (H)
         </button>
       </div>
 
