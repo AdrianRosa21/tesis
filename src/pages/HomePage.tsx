@@ -8,14 +8,10 @@ interface HomePageProps {
 
 export function HomePage({ onStart, speak, stopSpeech }: HomePageProps) {
   const btnRef = useRef<HTMLButtonElement>(null);
-  const welcomedRef = useRef(false);
 
   useEffect(() => {
-    if (!welcomedRef.current) {
-      welcomedRef.current = true;
-      speak('Bienvenido a AURA. Esta aplicación tiene su propio lector de voz integrado y se controla con el teclado. Si tienes activado un lector de pantalla como NVDA, JAWS, VoiceOver o TalkBack, puedes desactivarlo ahora: a partir de aquí, AURA leerá todo el contenido por ti. Una excepción: cuando se abra la ventana para elegir tu archivo PDF, esa ventana es del sistema operativo, no de AURA, así que ahí sí necesitas tu lector de pantalla si lo desactivaste. Presiona Enter, la barra espaciadora o el botón Comenzar para continuar.');
-    }
-    
+    speak('Bienvenido a AURA. Esta aplicación tiene su propio lector de voz integrado y se controla con el teclado. Si tienes activado un lector de pantalla como NVDA, JAWS, VoiceOver o TalkBack, puedes desactivarlo ahora: a partir de aquí, AURA leerá todo el contenido por ti. Una excepción: cuando se abra la ventana para elegir tu archivo PDF, esa ventana es del sistema operativo, no de AURA, así que ahí sí necesitas tu lector de pantalla si lo desactivaste. Presiona Enter, la barra espaciadora o el botón Comenzar para continuar.');
+
     // Auto focus button
     if (btnRef.current) {
       btnRef.current.focus();
