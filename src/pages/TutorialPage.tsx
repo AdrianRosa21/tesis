@@ -18,7 +18,7 @@ interface TutorialStep {
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
     title: 'Cómo se usa este tutorial',
-    text: 'Te voy a explicar, paso a paso y a tu propio ritmo, cómo usar AURA. Usa la flecha derecha o la flecha hacia abajo para escuchar el siguiente paso, y la flecha izquierda o la flecha hacia arriba para volver al paso anterior. Presiona la tecla V en cualquier momento para repetir el paso actual desde el inicio. Usa la barra espaciadora para pausar o continuar. Cuando quieras salir, presiona Escape o la tecla H.',
+    text: 'Te voy a explicar, paso a paso y a tu propio ritmo, cómo usar AURA. Usa la flecha derecha o la flecha hacia abajo para escuchar el siguiente paso, y la flecha izquierda o la flecha hacia arriba para volver al paso anterior. Presiona la tecla V en cualquier momento para repetir el paso actual desde el inicio. Usa la barra espaciadora para pausar o continuar. Cuando quieras salir, presiona Escape.',
   },
   {
     title: 'Seleccionar un documento',
@@ -54,7 +54,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     title: 'Repetir este tutorial',
-    text: 'Puedes volver a escuchar este tutorial cuando quieras presionando la tecla H, tanto desde la pantalla principal como desde el lector de PDF. Esto termina el tutorial. Presiona Escape o la tecla H para salir y empezar a usar AURA.',
+    text: 'Puedes volver a escuchar este tutorial cuando quieras presionando la tecla H, tanto desde la pantalla principal como desde el lector de PDF. Esto termina el tutorial. Presiona Escape para salir y empezar a usar AURA.',
   },
 ];
 
@@ -93,7 +93,7 @@ export function TutorialPage({
 
       const key = e.key;
 
-      if (key === 'Escape' || key.toLowerCase() === 'h') {
+      if (key === 'Escape') {
         e.preventDefault();
         onExit();
       } else if (key === 'ArrowDown' || key === 'ArrowRight') {
@@ -102,7 +102,7 @@ export function TutorialPage({
           setStepIndex(stepIndex + 1);
         } else {
           stopSpeech();
-          speak('Ya escuchaste el último paso. Presiona Escape o la tecla H para salir del tutorial.');
+          speak('Ya escuchaste el último paso. Presiona Escape para salir del tutorial.');
         }
       } else if (key === 'ArrowUp' || key === 'ArrowLeft') {
         e.preventDefault();
@@ -163,7 +163,7 @@ export function TutorialPage({
           Repetir paso (V)
         </button>
         <button onClick={onExit}>
-          Salir del tutorial (H)
+          Salir del tutorial (Escape)
         </button>
       </div>
     </main>
