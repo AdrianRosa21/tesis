@@ -1,0 +1,209 @@
+{
+  "started_at": "2026-09-27T06:09:21.408871+00:00",
+  "api_url": "https://api.aura4blinds.online",
+  "corpus": "C:\\Users\\adria\\Downloads\\AURA_corpus_pruebas_PDF",
+  "runs_per_case": 2,
+  "results": [
+    {
+      "case": "F01",
+      "file": "F01_texto_digital_comunicado.pdf",
+      "run": 1,
+      "duration_seconds": 1.71,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F01",
+      "file": "F01_texto_digital_comunicado.pdf",
+      "run": 2,
+      "duration_seconds": 1.81,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F02",
+      "file": "F02_documento_escaneado_historico.pdf",
+      "run": 1,
+      "duration_seconds": 2.35,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F02",
+      "file": "F02_documento_escaneado_historico.pdf",
+      "run": 2,
+      "duration_seconds": 1.84,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F03",
+      "file": "F03_opcion_multiple.pdf",
+      "run": 1,
+      "duration_seconds": 0.95,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F03",
+      "file": "F03_opcion_multiple.pdf",
+      "run": 2,
+      "duration_seconds": 1.07,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F04",
+      "file": "F04_matematicas_algebra_fracciones.pdf",
+      "run": 1,
+      "duration_seconds": 1.53,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F04",
+      "file": "F04_matematicas_algebra_fracciones.pdf",
+      "run": 2,
+      "duration_seconds": 1.33,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F05",
+      "file": "F05_tabla_sencilla_precios.pdf",
+      "run": 1,
+      "duration_seconds": 1.06,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F05",
+      "file": "F05_tabla_sencilla_precios.pdf",
+      "run": 2,
+      "duration_seconds": 1.24,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F06",
+      "file": "F06_tabla_extensa_estadistica.pdf",
+      "run": 1,
+      "duration_seconds": 1.17,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F06",
+      "file": "F06_tabla_extensa_estadistica.pdf",
+      "run": 2,
+      "duration_seconds": 1.69,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F07",
+      "file": "F07_grafica_barras_lineas.pdf",
+      "run": 1,
+      "duration_seconds": 1.23,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F07",
+      "file": "F07_grafica_barras_lineas.pdf",
+      "run": 2,
+      "duration_seconds": 1.01,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F08",
+      "file": "F08_diagrama_piezas_conexiones.pdf",
+      "run": 1,
+      "duration_seconds": 1.07,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F08",
+      "file": "F08_diagrama_piezas_conexiones.pdf",
+      "run": 2,
+      "duration_seconds": 1.23,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F09",
+      "file": "F09_articulo_dos_columnas.pdf",
+      "run": 1,
+      "duration_seconds": 2.61,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F09",
+      "file": "F09_articulo_dos_columnas.pdf",
+      "run": 2,
+      "duration_seconds": 1.91,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F10",
+      "file": "F10_folleto_turistico_con_fotografia.pdf",
+      "run": 1,
+      "duration_seconds": 1.24,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F10",
+      "file": "F10_folleto_turistico_con_fotografia.pdf",
+      "run": 2,
+      "duration_seconds": 1.13,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F11",
+      "file": "F11_texto_pequeno_borroso.pdf",
+      "run": 1,
+      "duration_seconds": 1.13,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F11",
+      "file": "F11_texto_pequeno_borroso.pdf",
+      "run": 2,
+      "duration_seconds": 1.04,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F12",
+      "file": "F12_instrucciones_enganosas.pdf",
+      "run": 1,
+      "duration_seconds": 1.04,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    },
+    {
+      "case": "F12",
+      "file": "F12_instrucciones_enganosas.pdf",
+      "run": 2,
+      "duration_seconds": 1.22,
+      "automated_status": "error",
+      "error": "HTTP 503: {\"detail\":\"El servidor no tiene configurada la clave de acceso.\"}"
+    }
+  ],
+  "finished_at": "2026-09-27T06:10:10.149560+00:00",
+  "summary": {
+    "total": 24,
+    "candidate_pass": 0,
+    "errors": 24,
+    "pass_rate": 0.0,
+    "avg_seconds": null,
+    "max_seconds": null
+  }
+}

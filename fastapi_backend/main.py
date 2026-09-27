@@ -135,11 +135,11 @@ Si la pagina pregunta "Dos x al cuadrado menos siete x menos cuatro es igual a c
 
 CLASSIFY_PROMPT = """Observa la pagina completa y responde SOLO con JSON.
 Marca true unicamente si el elemento aparece de verdad en la pagina:
-- tabla: filas y columnas con datos.
+- tabla: datos organizados en filas y columnas, con o sin lineas de cuadricula visibles. Un informe o listado con muchas cifras alineadas por categoria y periodo (por ejemplo ventas por mes, o estadisticas por region) ES una tabla, aunque este compuesto solo de numeros.
 - grafica: barras, lineas, pastel o puntos con ejes o valores.
 - diagrama: cajas, circulos o nodos unidos por flechas o lineas.
 - imagen: fotografia, ilustracion, dibujo, mapa, logotipo o figura que no es texto.
-- matematicas: ecuaciones, fracciones, exponentes o formulas.
+- matematicas: ecuaciones o formulas con simbolos como +, -, =, exponentes, raices o fracciones algebraicas. NO marques matematicas solo porque hay muchos numeros: si los numeros estan organizados en filas y columnas, es una tabla, no matematicas.
 - columnas: numero de columnas de texto (1, 2 o 3)."""
 
 CLASSIFY_SCHEMA = {
@@ -427,8 +427,55 @@ def parse_json_lenient(raw: str) -> dict[str, Any] | None:
     return None
 
 
+def collapse_repeated_lines(text: str) -> str:
+    """Corta bucles de repeticion: si un tramo de palabras se repite tal cual
+    varias veces seguidas en cualquier parte del bloque (degeneracion conocida
+    de modelos con temperature=0), se conserva solo la primera repeticion.
+    Trabaja a nivel de palabras (no de lineas) porque el modelo no siempre
+    corta la linea en el mismo punto en cada repeticion. Busca en cualquier
+    posicion, no solo desde el inicio, porque el bucle suele empezar despues
+    de un titulo u otro fragmento que no se repite."""
+    words = text.split()
+    n = len(words)
+    if n < 12:
+        return text
+
+    best: tuple[int, int, int] | None = None  # (start, period, covered)
+    max_period = n // 2
+    for period in range(4, max_period + 1):
+        min_repeats = 2
+        start = 0
+        while start + period * min_repeats <= n:
+            window = words[start : start + period]
+            repeats = 1
+            pos = start + period
+            while pos + period <= n and words[pos : pos + period] == window:
+                repeats += 1
+                pos += period
+            if repeats >= min_repeats:
+                covered = repeats * period
+                if best is None or covered > best[2]:
+                    best = (start, period, covered)
+                start = pos
+            else:
+                start += 1
+
+    if best is None:
+        return text
+
+    start, period, covered = best
+    end = start + covered
+    window = words[start : start + period]
+    remainder = words[end:]
+    # Un remanente que es solo el inicio de otra repeticion cortada se descarta.
+    if remainder and window[: len(remainder)] == remainder:
+        remainder = []
+    return " ".join(words[: start + period] + remainder)
+
+
 def _clean(value: Any) -> str:
-    return strip_markdown(str(value or "")).strip()
+    cleaned = strip_markdown(str(value or "")).strip()
+    return collapse_repeated_lines(cleaned)
 
 
 def blocks_to_elements(blocks: list[dict[str, Any]]) -> list[dict[str, str]]:
@@ -507,6 +554,23 @@ def elements_to_description(elements: list[dict[str, str]]) -> str:
     return "\n".join(lines)
 
 
+MENTIONS_ROWS_PATTERN = re.compile(r"\d+\s*filas?\b", re.IGNORECASE)
+
+
+def looks_like_missed_table(blocks: list[dict[str, Any]]) -> bool:
+    """Señal de que una tabla se resumio como texto en vez de transcribirse:
+    el clasificador puede fallar en tablas densas sin lineas de cuadricula
+    visibles, y el modelo entonces solo dice 'informe de N filas' sin
+    generar ninguna fila real."""
+    has_table_block = any(
+        str(b.get("tipo", "")).lower() == "tabla" for b in blocks if isinstance(b, dict)
+    )
+    if has_table_block:
+        return False
+    combined = " ".join(str(b.get("contenido", "")) for b in blocks if isinstance(b, dict))
+    return bool(MENTIONS_ROWS_PATTERN.search(combined))
+
+
 def missing_visuals(page: dict[str, Any], blocks: list[dict[str, Any]]) -> list[str]:
     """Tipos visuales que el clasificador vio pero la extraccion no describio bien."""
     missing = []
@@ -550,6 +614,8 @@ async def ollama_chat(
     *,
     fmt: dict[str, Any] | None = None,
     num_predict: int = 1600,
+    temperature: float = 0.0,
+    repeat_penalty: float = 1.05,
 ) -> tuple[str, str]:
     payload: dict[str, Any] = {
         "model": OLLAMA_MODEL,
@@ -557,9 +623,9 @@ async def ollama_chat(
         "stream": False,
         "keep_alive": OLLAMA_KEEP_ALIVE,
         "options": {
-            "temperature": 0.0,
+            "temperature": temperature,
             "top_p": 0.1,
-            "repeat_penalty": 1.05,
+            "repeat_penalty": repeat_penalty,
             "num_ctx": OLLAMA_NUM_CTX,
             "num_predict": num_predict,
         },
@@ -588,24 +654,47 @@ async def run_pipeline_v3(client: httpx.AsyncClient, image_b64: str, context: st
 async def run_pipeline_v4(client: httpx.AsyncClient, image_b64: str, context: str | None) -> dict[str, Any]:
     started = time.monotonic()
 
-    # Paso 1: clasificar (si falla, se sigue con reglas generales).
+    # Paso 1: clasificar. Se hace dos veces (una determinista, otra con algo
+    # de variacion) y se combinan con OR, porque en paginas limite (ej. una
+    # tabla densa de solo numeros) una sola pasada con temperature=0 puede
+    # quedar atascada en una lectura equivocada. Esto no afecta la fidelidad
+    # del texto final: solo decide que reglas de extraccion se activan.
     page: dict[str, Any] = {}
     try:
-        raw_class, _ = await ollama_chat(
-            client, CLASSIFY_PROMPT, image_b64, fmt=CLASSIFY_SCHEMA, num_predict=120
+        raw_class_a, _ = await ollama_chat(
+            client, CLASSIFY_PROMPT, image_b64, fmt=CLASSIFY_SCHEMA, num_predict=120, temperature=0.0
         )
-        page = parse_json_lenient(raw_class) or {}
+        page_a = parse_json_lenient(raw_class_a) or {}
+        raw_class_b, _ = await ollama_chat(
+            client, CLASSIFY_PROMPT, image_b64, fmt=CLASSIFY_SCHEMA, num_predict=120, temperature=0.6
+        )
+        page_b = parse_json_lenient(raw_class_b) or {}
+        page = {
+            "tabla": bool(page_a.get("tabla")) or bool(page_b.get("tabla")),
+            "grafica": bool(page_a.get("grafica")) or bool(page_b.get("grafica")),
+            "diagrama": bool(page_a.get("diagrama")) or bool(page_b.get("diagrama")),
+            "imagen": bool(page_a.get("imagen")) or bool(page_b.get("imagen")),
+            "matematicas": bool(page_a.get("matematicas")) or bool(page_b.get("matematicas")),
+            "columnas": max(int(page_a.get("columnas") or 1), int(page_b.get("columnas") or 1)),
+        }
     except httpx.HTTPError as exc:
         print(f"Clasificacion fallida, se continua sin ella: {exc}")
     print(f"Clasificacion: {page}")
 
     # Paso 2: extraccion estructurada.
+    # Las tablas densas necesitan mas "empuje" contra la repeticion: al
+    # generar muchas filas con la misma plantilla ("Fila N: campo: valor..."),
+    # un repeat_penalty bajo hace que el modelo se detenga temprano con un
+    # resumen en vez de enumerar las filas. Para texto normal ese mismo valor
+    # alto corrompe palabras comunes, asi que solo se sube cuando hay tabla.
+    extraction_repeat_penalty = 1.2 if page.get("tabla") else 1.05
     raw, done_reason = await ollama_chat(
         client,
         build_extraction_prompt(page, context),
         image_b64,
         fmt=EXTRACT_SCHEMA,
         num_predict=4096,
+        repeat_penalty=extraction_repeat_penalty,
     )
     data = parse_json_lenient(raw)
     if data is None:
@@ -621,6 +710,24 @@ async def run_pipeline_v4(client: httpx.AsyncClient, image_b64: str, context: st
         print("Aviso: la salida se corto por longitud; se rescataron los bloques completos.")
 
     blocks = [b for b in data.get("bloques", []) if isinstance(b, dict)]
+
+    # Paso 2b: red de seguridad para tablas que el clasificador no detecto.
+    # Si el resultado solo dice "informe de N filas" sin ninguna fila real,
+    # se reintenta forzando las reglas de tabla, sin importar lo que dijo
+    # el clasificador.
+    if not page.get("tabla") and looks_like_missed_table(blocks):
+        if time.monotonic() - started < AURA_TIME_BUDGET_S * 0.5:
+            print("Posible tabla no detectada por el clasificador; se reintenta forzando reglas de tabla.")
+            forced_prompt = build_extraction_prompt({**page, "tabla": True}, context)
+            raw_forced, _ = await ollama_chat(
+                client, forced_prompt, image_b64, fmt=EXTRACT_SCHEMA, num_predict=4096, repeat_penalty=1.2
+            )
+            forced_data = parse_json_lenient(raw_forced)
+            if forced_data:
+                forced_blocks = [b for b in forced_data.get("bloques", []) if isinstance(b, dict)]
+                if any(str(b.get("tipo", "")).lower() == "tabla" for b in forced_blocks):
+                    blocks = forced_blocks
+                    page = {**page, "tabla": True}
 
     # Paso 3: completar elementos visuales que faltan (con presupuesto de tiempo).
     followups = 0

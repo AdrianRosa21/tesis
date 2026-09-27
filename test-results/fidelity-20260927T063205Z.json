@@ -1,0 +1,429 @@
+{
+  "started_at": "2026-09-27T06:32:05.702418+00:00",
+  "api_url": "https://api.aura4blinds.online",
+  "corpus": "C:\\Users\\adria\\OneDrive\\Escritorio\\tesis\\corpus_extra",
+  "runs_per_case": 2,
+  "results": [
+    {
+      "case": "G01",
+      "file": "G01_ilustracion_parque.pdf",
+      "run": 1,
+      "duration_seconds": 15.84,
+      "description": "[TEXTO] Actividad: Un día en el parque\nObserva la ilustración y responde en tu cuaderno qué elementos aparecen en ella.\n\nFigura 1. Ilustración del parque municipal.\n[IMAGEN] En la ilustración se ve un parque municipal. Hay un árbol con una copa verde y un tronco marrón en el primer plano a la izquierda. En el centro hay una banca de madera con patas negras. A la derecha de la banca, en el suelo, hay un perro marrón con cuatro patas y una cola. En el fondo, en el cielo azul claro, se ve el sol amarillo brillante. El suelo del parque es de color verde uniforme. No hay texto dentro de la imagen.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 2,
+      "warnings": [
+        "2 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G01",
+      "file": "G01_ilustracion_parque.pdf",
+      "run": 2,
+      "duration_seconds": 15.55,
+      "description": "[TEXTO] Actividad: Un día en el parque\nObserva la ilustración y responde en tu cuaderno qué elementos aparecen en ella.\n\nFigura 1. Ilustración del parque municipal.\n[IMAGEN] En la ilustración se ve un parque municipal. Hay un árbol con una copa verde y un tronco marrón en el primer plano a la izquierda. En el centro hay una banca de madera con patas negras. A la derecha de la banca, en el suelo, hay un perro marrón con cuatro patas y una cola. En el fondo, en el cielo azul claro, se ve el sol amarillo brillante. El suelo del parque es de color verde uniforme. No hay texto dentro de la imagen.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 2,
+      "warnings": [
+        "2 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G02",
+      "file": "G02_grafica_pastel.pdf",
+      "run": 1,
+      "duration_seconds": 10.84,
+      "description": "[IMAGEN] pie chart. Datos: Vivienda: 30%; Transporte: 35%; Alimentación: 25%; Otros: 10%\n[TEXTO] Distribución del gasto familiar mensual\n\nGasto mensual por categoría\n\nVivienda 30%\nTransporte 35%\nAlimentación 25%\nOtros 10%\n\nFuente: encuesta escolar 2026.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 6,
+      "warnings": [
+        "6 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G02",
+      "file": "G02_grafica_pastel.pdf",
+      "run": 2,
+      "duration_seconds": 10.13,
+      "description": "[IMAGEN] pie chart. Datos: Vivienda: 30%; Transporte: 35%; Alimentación: 25%; Otros: 10%\n[TEXTO] Distribución del gasto familiar mensual\n\nGasto mensual por categoría\n\nVivienda 30%\nTransporte 35%\nAlimentación 25%\nOtros 10%\n\nFuente: encuesta escolar 2026.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 6,
+      "warnings": [
+        "6 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G03",
+      "file": "G03_grafica_lineas.pdf",
+      "run": 1,
+      "duration_seconds": 12.89,
+      "description": "[IMAGEN] lineal. Datos: Lun: 28 °C; Mar: 31 °C; Mié: 30 °C; Jue: 33 °C; Vie: 29 °C\n[TEXTO] Temperatura máxima de la semana\nSan Salvador, semana 39",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 1,
+      "warnings": [
+        "1 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G03",
+      "file": "G03_grafica_lineas.pdf",
+      "run": 2,
+      "duration_seconds": 15.28,
+      "description": "[IMAGEN] lineal. Datos: Lun: 28 °C; Mar: 31 °C; Mié: 30 °C; Jue: 33 °C; Vie: 29 °C\n[TEXTO] Temperatura máxima de la semana\nSan Salvador, semana 39",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 1,
+      "warnings": [
+        "1 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G04",
+      "file": "G04_barras_sin_valores.pdf",
+      "run": 1,
+      "duration_seconds": 14.59,
+      "description": "[IMAGEN] barra. Datos: Robótica: 40; Música: 25; Deportes: 60; Dibujo: 15\n[TEXTO] Estudiantes inscritos por taller\n\nNota: las barras no tienen el valor escrito; se lee con la escala del eje vertical.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 1,
+      "warnings": [
+        "1 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G04",
+      "file": "G04_barras_sin_valores.pdf",
+      "run": 2,
+      "duration_seconds": 13.2,
+      "description": "[IMAGEN] barra. Datos: Robótica: 40; Música: 25; Deportes: 60; Dibujo: 15\n[TEXTO] Estudiantes inscritos por taller\n\nNota: las barras no tienen el valor escrito; se lee con la escala del eje vertical.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 1,
+      "warnings": [
+        "1 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G05",
+      "file": "G05_diagrama_flujo.pdf",
+      "run": 1,
+      "duration_seconds": 20.52,
+      "description": "[IMAGEN] Diagrama de flujo con el título \"Diagrama de flujo: ¿Puede votar?\". El diagrama consta de los siguientes elementos: un círculo azul etiquetado como \"Inicio\", un rectángulo azul con la etiqueta \"Leer edad\", un cuadrado amarillo con la pregunta \"¿Edad ≥ 18?\", dos rectángulos verdes y rojos con las respuestas \"Puede votar\" y \"No puede votar\", respectivamente, y un círculo azul etiquetado como \"Fin\". Las flechas muestran el flujo de la información: desde \"Inicio\" a \"Leer edad\", luego a \"¿Edad ≥ 18?\", seguido de las ramas 'Sí' y 'No', y finalmente a \"Fin\".\n[IMAGEN] El diagrama de flujo muestra el siguiente proceso:\n\n1. Inicio: Representado por un círculo azul.\n2. Leer edad: Representado por un rectángulo azul.\n3. ¿Edad ≥ 18?: Representado por un cuadrado amarillo con una pregunta.\n4. Sí: Representado por una flecha roja que apunta hacia \"Puede votar\".\n5. Puede votar: Representado por un rectángulo verde.\n6. No: Representado por una flecha roja que apunta hacia \"No puede votar\".\n7. No puede votar: Representado por un rectángulo rosa.\n8. Fin: Representado por un círculo azul.\n\nLas flechas y sus etiquetas son las siguientes:\nInicio hacia Leer edad\nLeer edad hacia ¿Edad ≥ 18?\n¿Edad ≥ 18? hacia Sí\nSí hacia Puede votar\n¿Edad ≥ 18? hacia No\nNo hacia No puede votar\nPuede votar y No pueden votar hacia Fin",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 16,
+      "warnings": [
+        "16 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G05",
+      "file": "G05_diagrama_flujo.pdf",
+      "run": 2,
+      "duration_seconds": 20.45,
+      "description": "[IMAGEN] Diagrama de flujo con el título \"Diagrama de flujo: ¿Puede votar?\". El diagrama consta de los siguientes elementos: un círculo azul etiquetado como \"Inicio\", un rectángulo azul con la etiqueta \"Leer edad\", un cuadrado amarillo con la pregunta \"¿Edad ≥ 18?\", dos rectángulos verdes y rojos con las respuestas \"Puede votar\" y \"No puede votar\", respectivamente, y un círculo azul etiquetado como \"Fin\". Las flechas muestran el flujo de la información: desde \"Inicio\" a \"Leer edad\", luego a \"¿Edad ≥ 18?\", seguido de las ramas 'Sí' y 'No', y finalmente a \"Fin\".\n[IMAGEN] El diagrama de flujo muestra el siguiente proceso:\n\n1. Inicio: Representado por un círculo azul.\n2. Leer edad: Representado por un rectángulo azul.\n3. ¿Edad ≥ 18?: Representado por un cuadrado amarillo con una pregunta.\n4. Sí: Representado por una flecha roja que apunta hacia \"Puede votar\".\n5. Puede votar: Representado por un rectángulo verde.\n6. No: Representado por una flecha roja que apunta hacia \"No puede votar\".\n7. No puede votar: Representado por un rectángulo rosa.\n8. Fin: Representado por un círculo azul.\n\nLas flechas y sus etiquetas son las siguientes:\nInicio hacia Leer edad\nLeer edad hacia ¿Edad ≥ 18?\n¿Edad ≥ 18? hacia Sí\nSí hacia Puede votar\n¿Edad ≥ 18? hacia No\nNo hacia No puede votar\nPuede votar y No pueden votar hacia Fin",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 16,
+      "warnings": [
+        "16 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G06",
+      "file": "G06_tabla_horario.pdf",
+      "run": 1,
+      "duration_seconds": 12.73,
+      "description": "[TABLA] Horario de clases - 2.º año de bachillerato. 5 filas. Columnas: Hora; Lunes; Martes; Miércoles; Jueves; Viernes\n[TABLA] Fila 1. Hora: 7:00; Lunes: Matemática; Martes: Inglés; Miércoles: Matemática; Jueves: Física; Viernes: Programación\n[TABLA] Fila 2. Hora: 8:00; Lunes: Lenguaje; Martes: Programación; Miércoles: Ciencias; Jueves: Matemática; Viernes: Inglés\n[TABLA] Fila 3. Hora: 9:00; Lunes: RECREO; Martes: RECREO; Miércoles: RECREO; Jueves: RECREO; Viernes: RECREO\n[TABLA] Fila 4. Hora: 9:30; Lunes: Física; Martes: Base de datos; Miércoles: Inglés; Jueves: Programación; Viernes: Lenguaje\n[TABLA] Fila 5. Hora: 10:30; Lunes: Base de datos; Martes: Ciencias; Miércoles: Educación física; Jueves: Lenguaje; Viernes: Orientación",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "G06",
+      "file": "G06_tabla_horario.pdf",
+      "run": 2,
+      "duration_seconds": 13.34,
+      "description": "[TABLA] Horario de clases - 2.º año de bachillerato. 5 filas. Columnas: Hora; Lunes; Martes; Miércoles; Jueves; Viernes\n[TABLA] Fila 1. Hora: 7:00; Lunes: Matemática; Martes: Inglés; Miércoles: Matemática; Jueves: Física; Viernes: Programación\n[TABLA] Fila 2. Hora: 8:00; Lunes: Lenguaje; Martes: Programación; Miércoles: Ciencias; Jueves: Matemática; Viernes: Inglés\n[TABLA] Fila 3. Hora: 9:00; Lunes: RECREO; Martes: RECREO; Miércoles: RECREO; Jueves: RECREO; Viernes: RECREO\n[TABLA] Fila 4. Hora: 9:30; Lunes: Física; Martes: Base de datos; Miércoles: Inglés; Jueves: Programación; Viernes: Lenguaje\n[TABLA] Fila 5. Hora: 10:30; Lunes: Base de datos; Martes: Ciencias; Miércoles: Educación física; Jueves: Lenguaje; Viernes: Orientación",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "G07",
+      "file": "G07_boletin_dos_columnas_icono.pdf",
+      "run": 1,
+      "duration_seconds": 17.39,
+      "description": "[TEXTO] Boletín ambiental del instituto\nColumna izquierda. Durante septiembre recolectamos 320 kilogramos de plástico gracias a la campaña de reciclaje. Cada sección participó con sus propias bolsas y el segundo año obtuvo el primer lugar.\n\nColumna derecha. El próximo mes plantaremos 45 árboles en la zona norte del campus. Los voluntarios deben inscribirse con su orientador antes del viernes 9 de octubre.\n\nÍcono: semáforo en rojo = alto al desperdicio.\n[IMAGEN] En esta página se observa un boletín ambiental del instituto. Hay dos columnas principales: una a la izquierda y otra a la derecha.\n\nEn la columna de la izquierda, se muestra un texto que informa sobre la recolección de 320 kilogramos de plástico durante septiembre gracias a una campaña de reciclaje. Se menciona que cada sección participó con sus propias bolsas y que el segundo año obtuvo el primer lugar.\n\nEn la columna de la derecha, hay un texto que anuncia que próximamente se plantarán 45 árboles en la zona norte del campus. Se indica que los voluntarios deben inscribirse con su orientador antes del viernes 9 de octubre.\n\nAdemás, en el centro de la página se encuentra un icono de un semáforo con luces rojas encendidas. Debajo del icono, hay un texto que dice: \"Ícono: semáforo en rojo = alto al desperdicio.\"\n\nEl fondo de la página es blanco y los elementos están bien organizados para una fácil lectura.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 7,
+      "warnings": [
+        "7 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G07",
+      "file": "G07_boletin_dos_columnas_icono.pdf",
+      "run": 2,
+      "duration_seconds": 18.33,
+      "description": "[TEXTO] Boletín ambiental del instituto\nColumna izquierda. Durante septiembre recolectamos 320 kilogramos de plástico gracias a la campaña de reciclaje. Cada sección participó con sus propias bolsas y el segundo año obtuvo el primer lugar.\n\nColumna derecha. El próximo mes plantaremos 45 árboles en la zona norte del campus. Los voluntarios deben inscribirse con su orientador antes del viernes 9 de octubre.\n\nÍcono: semáforo en rojo = alto al desperdicio.\n[IMAGEN] En esta página se observa un boletín ambiental del instituto. Hay dos columnas principales: una a la izquierda y otra a la derecha.\n\nEn la columna de la izquierda, se muestra un texto que informa sobre la recolección de 320 kilogramos de plástico durante septiembre gracias a una campaña de reciclaje. Se menciona que cada sección participó con sus propias bolsas y que el segundo año obtuvo el primer lugar.\n\nEn la columna de la derecha, hay un texto que anuncia que próximamente se plantarán 45 árboles en la zona norte del campus. Se indica que los voluntarios deben inscribirse con su orientador antes del viernes 9 de octubre.\n\nAdemás, en el centro de la página se encuentra un icono de un semáforo con luces rojas encendidas. Debajo del icono, hay un texto que dice: \"Ícono: semáforo en rojo = alto al desperdicio.\"\n\nEl fondo de la página es blanco y los elementos están bien organizados para una fácil lectura.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 7,
+      "warnings": [
+        "7 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G08",
+      "file": "G08_mapa_campus.pdf",
+      "run": 1,
+      "duration_seconds": 15.44,
+      "description": "[TEXTO] Mapa del campus\n[IMAGEN] En esta página se observa un mapa del campus. El mapa está dividido en cuatro cuadrantes, cada uno representando una sección diferente del campus. \nEn el cuadrante superior izquierdo se encuentra la \"Biblioteca\", marcada en azul claro.\nEn el cuadrante superior derecho se encuentra la \"Cafetería\", marcada en beige claro.\nEn el cuadrante inferior izquierdo se encuentra el \"Laboratorio de cómputo\", marcado en verde claro.\nEn el cuadrante inferior derecho se encuentra la \"Cancha\", marcada en rosa claro.\n\nEn el centro del mapa, hay un círculo rojo con la frase \"Usted está aquí\" escrita en rojo. Este círculo indica la ubicación actual del observador en el campus. \n\nEl mapa tiene una flecha hacia arriba en el cuadrante superior derecho, indicando que el norte está en esa dirección.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 6,
+      "warnings": [
+        "6 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G08",
+      "file": "G08_mapa_campus.pdf",
+      "run": 2,
+      "duration_seconds": 15.06,
+      "description": "[TEXTO] Mapa del campus\n[IMAGEN] En esta página se observa un mapa del campus. El mapa está dividido en cuatro cuadrantes, cada uno representando una sección diferente del campus. \nEn el cuadrante superior izquierdo se encuentra la \"Biblioteca\", marcada en azul claro.\nEn el cuadrante superior derecho se encuentra la \"Cafetería\", marcada en beige claro.\nEn el cuadrante inferior izquierdo se encuentra el \"Laboratorio de cómputo\", marcado en verde claro.\nEn el cuadrante inferior derecho se encuentra la \"Cancha\", marcada en rosa claro.\n\nEn el centro del mapa, hay un círculo rojo con la frase \"Usted está aquí\" escrita en rojo. Este círculo indica la ubicación actual del observador en el campus. \n\nEl mapa tiene una flecha hacia arriba en el cuadrante superior derecho, indicando que el norte está en esa dirección.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 6,
+      "warnings": [
+        "6 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G09",
+      "file": "G09_formulas_matematicas.pdf",
+      "run": 1,
+      "duration_seconds": 9.36,
+      "description": "[TEXTO] Guía de ejercicios - Álgebra\nLee cada expresión. No es necesario resolverlas en esta hoja.\n1) x = (-b ± √(b² - 4ac)) / 2a\n2) √49 + 3² = ?\n3) 5/8 - 1/4 = ?\n4) 2x³ - 7x + 4 = 0",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 5,
+      "warnings": [
+        "5 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G09",
+      "file": "G09_formulas_matematicas.pdf",
+      "run": 2,
+      "duration_seconds": 11.5,
+      "description": "[TEXTO] Guía de ejercicios - Álgebra\nLee cada expresión. No es necesario resolverlas en esta hoja.\n1) x = (-b ± √(b² - 4ac)) / 2a\n2) √49 + 3² = ?\n3) 5/8 - 1/4 = ?\n4) 2x³ - 7x + 4 = 0",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 5,
+      "warnings": [
+        "5 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G10",
+      "file": "G10_escaneado_sin_texto.pdf",
+      "run": 1,
+      "duration_seconds": 9.82,
+      "description": "[TEXTO] CONSTANCIA DE PARTICIPACIÓN\n\nSe hace constar que la estudiante\n\nMaría Fernanda López Hernández\n\nparticipó en la Feria de Ciencias 2026\n\ncon el proyecto \"Filtro de agua solar\".\n\nSanta Tecla, 18 de agosto de 2026.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 5,
+      "warnings": [
+        "5 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G10",
+      "file": "G10_escaneado_sin_texto.pdf",
+      "run": 2,
+      "duration_seconds": 10.67,
+      "description": "[TEXTO] CONSTANCIA DE PARTICIPACIÓN\n\nSe hace constar que la estudiante\n\nMaría Fernanda López Hernández\n\nparticipó en la Feria de Ciencias 2026\n\ncon el proyecto \"Filtro de agua solar\".\n\nSanta Tecla, 18 de agosto de 2026.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 5,
+      "warnings": [
+        "5 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G11",
+      "file": "G11_formulario_casillas.pdf",
+      "run": 1,
+      "duration_seconds": 13.25,
+      "description": "[TEXTO] Formulario de inscripción al taller\n[TEXTO] Nombre completo:\n[TEXTO] Carlos Ernesto Ramírez\n[TEXTO] Grado:\n[TEXTO] 2.º año B\n[TEXTO] Teléfono:\n[TEXTO] 7012-3456\n[TEXTO] Taller elegido (marque uno):\n[TEXTO] Robótica\n[TEXTO] Música\n[TEXTO] Dibujo\n[TEXTO] ¿Necesita transporte?\n[TEXTO] Sí\n[TEXTO] No",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "G11",
+      "file": "G11_formulario_casillas.pdf",
+      "run": 2,
+      "duration_seconds": 14.03,
+      "description": "[TEXTO] Formulario de inscripción al taller\n[TEXTO] Nombre completo:\n[TEXTO] Carlos Ernesto Ramírez\n[TEXTO] Grado:\n[TEXTO] 2.º año B\n[TEXTO] Teléfono:\n[TEXTO] 7012-3456\n[TEXTO] Taller elegido (marque uno):\n[TEXTO] Robótica\n[TEXTO] Música\n[TEXTO] Dibujo\n[TEXTO] ¿Necesita transporte?\n[TEXTO] Sí\n[TEXTO] No",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "G12",
+      "file": "G12_diagrama_venn.pdf",
+      "run": 1,
+      "duration_seconds": 19.3,
+      "description": "[IMAGEN] Diagrama de Venn con dos círculos intersecantes. El círculo azul representa 'Python' y el círculo naranja representa 'JavaScript'. En la intersección de ambos círculos hay el número 8. En el círculo azul, fuera de la intersección, hay el número 12. En el círculo naranjo, fuera de la intersección, hay el número 15. Debajo del círculo naranjo, fuera del diagrama, hay el texto 'Ninguno: 5'.\n[TEXTO] Diagrama de Venn: lenguajes conocidos\n[IMAGEN] El diagrama de Venn muestra dos conjuntos: uno etiquetado como \"Python\" y otro como \"JavaScript\". En el centro de ambos conjuntos se encuentra un área que contiene el número 8, lo cual indica la cantidad de personas que conocen tanto Python como JavaScript. En el conjunto \"Python\", fuera del área de intersección, se encuentra el número 12, indicando las personas que conocen solo Python. En el conjunto \"JavaScript\", fuera del área de intersección, se encuentra el número 15, indicando las personas que conocen solo JavaScript. Por último, en la parte exterior del diagrama, fuera de ambos conjuntos, se encuentra el número 5, lo cual indica las personas que no conocen ni Python ni JavaScript.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "G12",
+      "file": "G12_diagrama_venn.pdf",
+      "run": 2,
+      "duration_seconds": 17.4,
+      "description": "[IMAGEN] Diagrama de Venn con dos círculos intersecantes. El círculo azul representa 'Python' y el círculo naranja representa 'JavaScript'. En la intersección de ambos círculos hay el número 8. En el círculo azul, fuera de la intersección, hay el número 12. En el círculo naranjo, fuera de la intersección, hay el número 15. Debajo del círculo naranjo, fuera del diagrama, hay el texto 'Ninguno: 5'.\n[TEXTO] Diagrama de Venn: lenguajes conocidos\n[IMAGEN] El diagrama de Venn muestra dos conjuntos: uno etiquetado como \"Python\" y otro como \"JavaScript\". En el centro de ambos conjuntos se encuentra un área que contiene el número 8, lo cual indica la cantidad de personas que conocen tanto Python como JavaScript. En el conjunto \"Python\", fuera del área de intersección, se encuentra el número 12, indicando las personas que conocen solo Python. En el conjunto \"JavaScript\", fuera del área de intersección, se encuentra el número 15, indicando las personas que conocen solo JavaScript. Por último, en la parte exterior del diagrama, fuera de ambos conjuntos, se encuentra el número 5, lo cual indica las personas que no conocen ni Python ni JavaScript.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "G13",
+      "file": "G13_dos_figuras.pdf",
+      "run": 1,
+      "duration_seconds": 14.15,
+      "description": "[TEXTO] Actividad de observación\nObserva las dos figuras y describe lo que representa cada una.\n\nFigura 1\n\nFigura 2\n[IMAGEN] En la imagen se observan dos figuras distintas:\n\nFigura 1: Se ve un semáforo con tres luces. La luz superior es roja, la central es amarilla y la inferior es verde. El semáforo está montado en una estructura vertical y está ubicado en el centro de la imagen.\n\nFigura 2: Se observa un reloj analógico con números del 1 al 12. Las manecillas indican las horas y los minutos. La manecilla de las horas apunta a la posición 3, lo que indica que son aproximadamente las tres horas. El reloj está ubicado en el centro de la imagen.\n\nNo hay texto adicional dentro de las figuras.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 6,
+      "warnings": [
+        "6 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G13",
+      "file": "G13_dos_figuras.pdf",
+      "run": 2,
+      "duration_seconds": 17.21,
+      "description": "[TEXTO] Actividad de observación\nObserva las dos figuras y describe lo que representa cada una.\n\nFigura 1\n\nFigura 2\n[IMAGEN] En la imagen se observan dos figuras distintas:\n\nFigura 1: Se ve un semáforo con tres luces. La luz superior es roja, la central es amarilla y la inferior es verde. El semáforo está montado en una estructura vertical y está ubicado en el centro de la imagen.\n\nFigura 2: Se observa un reloj analógico con números del 1 al 12. Las manecillas indican las horas y los minutos. La manecilla de las horas apunta a la posición 3, lo que indica que son aproximadamente las tres horas. El reloj está ubicado en el centro de la imagen.\n\nNo hay texto adicional dentro de las figuras.",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 6,
+      "warnings": [
+        "6 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G14",
+      "file": "G14_organigrama.pdf",
+      "run": 1,
+      "duration_seconds": 11.54,
+      "description": "[IMAGEN] organigrama. Flechas: Director hacia Subdirección académica; Director hacia Subdirección administrativa; Subdirección académica hacia Coordinación de Software; Subdirección académica hacia Coordinación de Ciencias; Subdirección administrativa hacia Contabilidad\n[TEXTO] Organigrama del instituto",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "G14",
+      "file": "G14_organigrama.pdf",
+      "run": 2,
+      "duration_seconds": 10.85,
+      "description": "[IMAGEN] organigrama. Flechas: Director hacia Subdirección académica; Director hacia Subdirección administrativa; Subdirección académica hacia Coordinación de Software; Subdirección académica hacia Coordinación de Ciencias; Subdirección administrativa hacia Contabilidad\n[TEXTO] Organigrama del instituto",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "G15",
+      "file": "G15_barras_agrupadas.pdf",
+      "run": 1,
+      "duration_seconds": 14.09,
+      "description": "[TEXTO] Resultados del torneo interescolar\nLa siguiente gráfica compara los puntos de cada equipo en dos jornadas.\n[IMAGEN] La gráfica es de tipo barras dobles, con el título \"Resultados del torneo interescolar\". El eje vertical representa los puntos, y el eje horizontal muestra las categorías de equipos: Águilas, Leones, y Pumas.\n\nPara cada categoría, el valor en la primera jornada (representado por el color azul) es:\nÁguilas: 12\nLeones: 9\nPumas: 15\n\nPara la segunda jornada (representado por el color naranja), los valores son:\nÁguilas: 18\nLeones: 14\nPumas: 11",
+      "automated_status": "review",
+      "missing_anchors": [
+        "Jornada 1",
+        "Jornada 2"
+      ],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 9,
+      "warnings": [
+        "Faltan anclas: Jornada 1, Jornada 2",
+        "9 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "G15",
+      "file": "G15_barras_agrupadas.pdf",
+      "run": 2,
+      "duration_seconds": 15.25,
+      "description": "[TEXTO] Resultados del torneo interescolar\nLa siguiente gráfica compara los puntos de cada equipo en dos jornadas.\n[IMAGEN] La gráfica es de tipo barras dobles, con el título \"Resultados del torneo interescolar\". El eje vertical representa los puntos, y el eje horizontal muestra las categorías de equipos: Águilas, Leones, y Pumas.\n\nPara cada categoría, el valor en la primera jornada (representado por el color azul) es:\nÁguilas: 12\nLeones: 9\nPumas: 15\n\nPara la segunda jornada (representado por el color naranja), los valores son:\nÁguilas: 18\nLeones: 14\nPumas: 11",
+      "automated_status": "review",
+      "missing_anchors": [
+        "Jornada 1",
+        "Jornada 2"
+      ],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 9,
+      "warnings": [
+        "Faltan anclas: Jornada 1, Jornada 2",
+        "9 líneas no usan un prefijo permitido"
+      ]
+    }
+  ],
+  "finished_at": "2026-09-27T06:39:32.374572+00:00",
+  "summary": {
+    "total": 30,
+    "candidate_pass": 8,
+    "errors": 0,
+    "pass_rate": 26.7,
+    "avg_seconds": 14.33,
+    "max_seconds": 20.52
+  }
+}

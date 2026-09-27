@@ -1,0 +1,79 @@
+{
+  "started_at": "2026-09-27T06:54:14.113584+00:00",
+  "api_url": "https://api.aura4blinds.online",
+  "corpus": "C:\\Users\\adria\\Downloads\\AURA_corpus_pruebas_PDF",
+  "runs_per_case": 2,
+  "results": [
+    {
+      "case": "F06",
+      "file": "F06_tabla_extensa_estadistica.pdf",
+      "run": 1,
+      "duration_seconds": 29.46,
+      "description": "[TEXTO] Informe estadístico mensual - 24 filas\nMes\tZona\tCasos\tAtendidos\tPendientes\tPromedio\tMeta\n[TABLA] Tabla. 24 filas. Columnas: Mes; Zona; Casos; Atendidos; Pendientes; Promedio; Meta\n[TABLA] Fila 1. Mes: M01; Zona: Centro; Casos: 93; Atendidos: 72; Pendientes: 21; Promedio: 7,4; Meta: 111\n[TABLA] Fila 2. Mes: M02; Zona: Sur; Casos: 96; Atendidos: 74; Pendientes: 22; Promedio: 7,7; Meta: 112\n[TABLA] Fila 3. Mes: M03; Zona: Norte; Casos: 99; Atendidos: 76; Pendientes: 23; Promedio: 8,0; Meta: 113\n[TABLA] Fila 4. Mes: M04; Zona: Centro; Casos: 102; Atendidos: 78; Pendientes: 24; Promedio: 8,3; Meta: 114\n[TABLA] Fila 5. Mes: M05; Zona: Sur; Casos: 105; Atendidos: 80; Pendientes: 25; Promedio: 8,6; Meta: 115\n[TABLA] Fila 6. Mes: M06; Zona: Norte; Casos: 108; Atendidos: 82; Pendientes: 26; Promedio: 8,9; Meta: 116\n[TABLA] Fila 7. Mes: M07; Zona: Centro; Casos: 111; Atendidos: 84; Pendientes: 27; Promedio: 7,1; Meta: 117\n[TABLA] Fila 8. Mes: M08; Zona: Sur; Casos: 114; Atendidos: 86; Pendientes: 28; Promedio: 7,4; Meta: 118\n[TABLA] Fila 9. Mes: M09; Zona: Norte; Casos: 117; Atendidos: 88; Pendientes: 29; Promedio: 7,7; Meta: 119\n[TABLA] Fila 10. Mes: M10; Zona: Centro; Casos: 120; Atendidos: 90; Pendientes: 30; Promedio: 8,0; Meta: 120\n[TABLA] Fila 11. Mes: M11; Zona: Sur; Casos: 123; Atendidos: 92; Pendientes: 31; Promedio: 8,3; Meta: 121\n[TABLA] Fila 12. Mes: M12; Zona: Norte; Casos: 126; Atendidos: 94; Pendientes: 32; Promedio: 8,6; Meta: 122\n[TABLA] Fila 13. Mes: M13; Zona: Centro; Casos: 129; Atendidos: 96; Pendientes: 33; Promedio: 8,9; Meta: 123\n[TABLA] Fila 14. Mes: M14; Zona: Sur; Casos: 132; Atendidos: 98; Pendientes: 34; Promedio: 7,1; Meta: 124\n[TABLA] Fila 15. Mes: M15; Zona: Norte; Casos: 135; Atendidos: 100; Pendientes: 35; Promedio: 7,4; Meta: 125\n[TABLA] Fila 16. Mes: M16; Zona: Centro; Casos: 138; Atendidos: 102; Pendientes: 36; Promedio: 7,7; Meta: 126\n[TABLA] Fila 17. Mes: M17; Zona: Sur; Casos: 141; Atendidos: 104; Pendientes: 37; Promedio: 8,0; Meta: 127\n[TABLA] Fila 18. Mes: M18; Zona: Norte; Casos: 144; Atendidos: 106; Pendientes: 38; Promedio: 8,3; Meta: 128\n[TABLA] Fila 19. Mes: M19; Zona: Centro; Casos: 147; Atendidos: 108; Pendientes: 39; Promedio: 8,6; Meta: 129\n[TABLA] Fila 20. Mes: M20; Zona: Sur; Casos: 150; Atendidos: 110; Pendientes: 40; Promedio: 8,9; Meta: 130\n[TABLA] Fila 21. Mes: M21; Zona: Norte; Casos: 153; Atendidos: 112; Pendientes: 41; Promedio: 7,1; Meta: 131\n[TABLA] Fila 22. Mes: M22; Zona: Centro; Casos: 156; Atendidos: 114; Pendientes: 42; Promedio: 7,4; Meta: 132\n[TABLA] Fila 23. Mes: M23; Zona: Sur; Casos: 159; Atendidos: 116; Pendientes: 43; Promedio: 7,7; Meta: 133\n[TABLA] Fila 24. Mes: M24; Zona: Norte; Casos: 162; Atendidos: 118; Pendientes: 44; Promedio: 8,0; Meta: 134",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 1,
+      "warnings": [
+        "1 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "F06",
+      "file": "F06_tabla_extensa_estadistica.pdf",
+      "run": 2,
+      "duration_seconds": 30.28,
+      "description": "[TEXTO] Informe estadístico mensual - 24 filas\nMes\tZona\tCasos\tAtendidos\tPendientes\tPromedio\tMeta\n[TABLA] Tabla. 24 filas. Columnas: Mes; Zona; Casos; Atendidos; Pendientes; Promedio; Meta\n[TABLA] Fila 1. Mes: M01; Zona: Centro; Casos: 93; Atendidos: 72; Pendientes: 21; Promedio: 7,4; Meta: 111\n[TABLA] Fila 2. Mes: M02; Zona: Sur; Casos: 96; Atendidos: 74; Pendientes: 22; Promedio: 7,7; Meta: 112\n[TABLA] Fila 3. Mes: M03; Zona: Norte; Casos: 99; Atendidos: 76; Pendientes: 23; Promedio: 8,0; Meta: 113\n[TABLA] Fila 4. Mes: M04; Zona: Centro; Casos: 102; Atendidos: 78; Pendientes: 24; Promedio: 8,3; Meta: 114\n[TABLA] Fila 5. Mes: M05; Zona: Sur; Casos: 105; Atendidos: 80; Pendientes: 25; Promedio: 8,6; Meta: 115\n[TABLA] Fila 6. Mes: M06; Zona: Norte; Casos: 108; Atendidos: 82; Pendientes: 26; Promedio: 8,9; Meta: 116\n[TABLA] Fila 7. Mes: M07; Zona: Centro; Casos: 111; Atendidos: 84; Pendientes: 27; Promedio: 7,1; Meta: 117\n[TABLA] Fila 8. Mes: M08; Zona: Sur; Casos: 114; Atendidos: 86; Pendientes: 28; Promedio: 7,4; Meta: 118\n[TABLA] Fila 9. Mes: M09; Zona: Norte; Casos: 117; Atendidos: 88; Pendientes: 29; Promedio: 7,7; Meta: 119\n[TABLA] Fila 10. Mes: M10; Zona: Centro; Casos: 120; Atendidos: 90; Pendientes: 30; Promedio: 8,0; Meta: 120\n[TABLA] Fila 11. Mes: M11; Zona: Sur; Casos: 123; Atendidos: 92; Pendientes: 31; Promedio: 8,3; Meta: 121\n[TABLA] Fila 12. Mes: M12; Zona: Norte; Casos: 126; Atendidos: 94; Pendientes: 32; Promedio: 8,6; Meta: 122\n[TABLA] Fila 13. Mes: M13; Zona: Centro; Casos: 129; Atendidos: 96; Pendientes: 33; Promedio: 8,9; Meta: 123\n[TABLA] Fila 14. Mes: M14; Zona: Sur; Casos: 132; Atendidos: 98; Pendientes: 34; Promedio: 7,1; Meta: 124\n[TABLA] Fila 15. Mes: M15; Zona: Norte; Casos: 135; Atendidos: 100; Pendientes: 35; Promedio: 7,4; Meta: 125\n[TABLA] Fila 16. Mes: M16; Zona: Centro; Casos: 138; Atendidos: 102; Pendientes: 36; Promedio: 7,7; Meta: 126\n[TABLA] Fila 17. Mes: M17; Zona: Sur; Casos: 141; Atendidos: 104; Pendientes: 37; Promedio: 8,0; Meta: 127\n[TABLA] Fila 18. Mes: M18; Zona: Norte; Casos: 144; Atendidos: 106; Pendientes: 38; Promedio: 8,3; Meta: 128\n[TABLA] Fila 19. Mes: M19; Zona: Centro; Casos: 147; Atendidos: 108; Pendientes: 39; Promedio: 8,6; Meta: 129\n[TABLA] Fila 20. Mes: M20; Zona: Sur; Casos: 150; Atendidos: 110; Pendientes: 40; Promedio: 8,9; Meta: 130\n[TABLA] Fila 21. Mes: M21; Zona: Norte; Casos: 153; Atendidos: 112; Pendientes: 41; Promedio: 7,1; Meta: 131\n[TABLA] Fila 22. Mes: M22; Zona: Centro; Casos: 156; Atendidos: 114; Pendientes: 42; Promedio: 7,4; Meta: 132\n[TABLA] Fila 23. Mes: M23; Zona: Sur; Casos: 159; Atendidos: 116; Pendientes: 43; Promedio: 7,7; Meta: 133\n[TABLA] Fila 24. Mes: M24; Zona: Norte; Casos: 162; Atendidos: 118; Pendientes: 44; Promedio: 8,0; Meta: 134",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 1,
+      "warnings": [
+        "1 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "F09",
+      "file": "F09_articulo_dos_columnas.pdf",
+      "run": 1,
+      "duration_seconds": 12.26,
+      "description": "[TEXTO] La percepción multimodal combina\ninformación textual y visual. En\ndocumentos científicos, el orden de\nlectura importa porque una página puede\ncontener encabezados, notas y referencias.\nLa columna izquierda presenta el contexto,\nlametodologíay parte delos resultados.\n[TEXTO] -",
+      "automated_status": "review",
+      "missing_anchors": [
+        "segunda columna"
+      ],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 6,
+      "warnings": [
+        "Faltan anclas: segunda columna",
+        "6 líneas no usan un prefijo permitido"
+      ]
+    },
+    {
+      "case": "F09",
+      "file": "F09_articulo_dos_columnas.pdf",
+      "run": 2,
+      "duration_seconds": 12.1,
+      "description": "[TEXTO] La percepción multimodal combina\ninformación textual y visual. En\ndocumentos científicos, el orden de\nlectura importa porque una página puede\ncontener encabezados, notas y referencias.\nLa columna izquierda presenta el contexto,\nlametodologíay parte delos resultados.\n[TEXTO] -",
+      "automated_status": "review",
+      "missing_anchors": [
+        "segunda columna"
+      ],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 6,
+      "warnings": [
+        "Faltan anclas: segunda columna",
+        "6 líneas no usan un prefijo permitido"
+      ]
+    }
+  ],
+  "finished_at": "2026-09-27T06:55:40.563120+00:00",
+  "summary": {
+    "total": 4,
+    "candidate_pass": 0,
+    "errors": 0,
+    "pass_rate": 0.0,
+    "avg_seconds": 21.02,
+    "max_seconds": 30.28
+  }
+}
