@@ -440,7 +440,10 @@ export function PdfReaderPage({
         Lector de PDF
       </h1>
       
-      <div aria-live="polite" className="visually-hidden">
+      {/* AURA lee este texto con su propia voz (speak()). Se oculta del lector
+          de pantalla nativo (aria-hidden) para que no hablen dos voces a la
+          vez sobre el mismo estado. */}
+      <div aria-live="polite" aria-hidden="true" className="visually-hidden">
         {status}
       </div>
 
