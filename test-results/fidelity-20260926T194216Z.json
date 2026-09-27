@@ -1,0 +1,23 @@
+{
+  "started_at": "2026-09-26T19:42:16.232480+00:00",
+  "api_url": "https://api.aura4blinds.online",
+  "corpus": "C:\\Users\\adria\\Downloads\\AURA_corpus_pruebas_PDF",
+  "runs_per_case": 1,
+  "results": [
+    {
+      "case": "F03",
+      "file": "F03_opcion_multiple.pdf",
+      "run": 1,
+      "duration_seconds": 12.61,
+      "description": "Prueba de opción múltiple\nLa prueba consiste en leer, NO resolver\n\n1. ¿Cuál de estas expresiones contiene una palabra esdrújula?\nA) papel\nB) rápido\nC) pared\nD) calor\n\n2. En una tabla, ¿qué elemento identifica el significado de cada columna?\nA) Encabezado\nB) Pie de página\nC) Margen\nD) Firma\n\n3. ¿Cuál opción reproduce exactamente 3/4?\nA) 0.34\nB) ¾\nC) 4/3\nD) 3-4",
+      "automated_status": "review",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 17,
+      "warnings": [
+        "17 líneas no usan un prefijo permitido"
+      ]
+    }
+  ],
+  "finished_at": "2026-09-26T19:42:29.315240+00:00"
+}

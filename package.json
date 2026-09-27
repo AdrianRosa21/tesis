@@ -6,17 +6,13 @@
   "scripts": {
     "dev": "vite",
     "backend": "python -m uvicorn fastapi_backend.main:app --port 3001 --reload",
-    "server": "node server.js",
+    "test:fidelity": "python scripts/run_fidelity_corpus.py",
+    "security:key": "python scripts/generate_api_key.py",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "groq-sdk": "^1.6.0",
     "pdfjs-dist": "6.2.108",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"

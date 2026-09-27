@@ -1,0 +1,201 @@
+{
+  "started_at": "2026-09-27T02:13:18.359166+00:00",
+  "api_url": "https://api.aura4blinds.online",
+  "corpus": "C:\\Users\\adria\\Downloads\\AURA_corpus_pruebas_PDF",
+  "runs_per_case": 2,
+  "results": [
+    {
+      "case": "F01",
+      "file": "F01_texto_digital_comunicado.pdf",
+      "run": 1,
+      "duration_seconds": 1.0,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F01",
+      "file": "F01_texto_digital_comunicado.pdf",
+      "run": 2,
+      "duration_seconds": 0.75,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F02",
+      "file": "F02_documento_escaneado_historico.pdf",
+      "run": 1,
+      "duration_seconds": 1.01,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F02",
+      "file": "F02_documento_escaneado_historico.pdf",
+      "run": 2,
+      "duration_seconds": 0.92,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F03",
+      "file": "F03_opcion_multiple.pdf",
+      "run": 1,
+      "duration_seconds": 0.71,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F03",
+      "file": "F03_opcion_multiple.pdf",
+      "run": 2,
+      "duration_seconds": 0.79,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F04",
+      "file": "F04_matematicas_algebra_fracciones.pdf",
+      "run": 1,
+      "duration_seconds": 0.63,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F04",
+      "file": "F04_matematicas_algebra_fracciones.pdf",
+      "run": 2,
+      "duration_seconds": 0.62,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F05",
+      "file": "F05_tabla_sencilla_precios.pdf",
+      "run": 1,
+      "duration_seconds": 0.58,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F05",
+      "file": "F05_tabla_sencilla_precios.pdf",
+      "run": 2,
+      "duration_seconds": 0.62,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F06",
+      "file": "F06_tabla_extensa_estadistica.pdf",
+      "run": 1,
+      "duration_seconds": 0.78,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F06",
+      "file": "F06_tabla_extensa_estadistica.pdf",
+      "run": 2,
+      "duration_seconds": 0.69,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F07",
+      "file": "F07_grafica_barras_lineas.pdf",
+      "run": 1,
+      "duration_seconds": 0.64,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F07",
+      "file": "F07_grafica_barras_lineas.pdf",
+      "run": 2,
+      "duration_seconds": 0.57,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F08",
+      "file": "F08_diagrama_piezas_conexiones.pdf",
+      "run": 1,
+      "duration_seconds": 0.63,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F08",
+      "file": "F08_diagrama_piezas_conexiones.pdf",
+      "run": 2,
+      "duration_seconds": 0.61,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F09",
+      "file": "F09_articulo_dos_columnas.pdf",
+      "run": 1,
+      "duration_seconds": 0.94,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F09",
+      "file": "F09_articulo_dos_columnas.pdf",
+      "run": 2,
+      "duration_seconds": 0.81,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F10",
+      "file": "F10_folleto_turistico_con_fotografia.pdf",
+      "run": 1,
+      "duration_seconds": 0.72,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F10",
+      "file": "F10_folleto_turistico_con_fotografia.pdf",
+      "run": 2,
+      "duration_seconds": 0.85,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F11",
+      "file": "F11_texto_pequeno_borroso.pdf",
+      "run": 1,
+      "duration_seconds": 0.77,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F11",
+      "file": "F11_texto_pequeno_borroso.pdf",
+      "run": 2,
+      "duration_seconds": 0.8,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F12",
+      "file": "F12_instrucciones_enganosas.pdf",
+      "run": 1,
+      "duration_seconds": 0.79,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    },
+    {
+      "case": "F12",
+      "file": "F12_instrucciones_enganosas.pdf",
+      "run": 2,
+      "duration_seconds": 0.64,
+      "automated_status": "error",
+      "error": "HTTP 530: error code: 1033\n"
+    }
+  ],
+  "finished_at": "2026-09-27T02:13:44.462984+00:00"
+}
