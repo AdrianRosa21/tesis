@@ -112,6 +112,36 @@ export function parseModelDescription(description: string): PageElement[] {
   return elements;
 }
 
+// Umbral en caracteres a partir del cual un bloque de texto se considera
+// "largo" y conviene dividirlo por oracion, para que la lectura y la
+// navegacion con las flechas avancen oracion por oracion en vez de leer
+// un parrafo entero de corrido sin poder pausar en un punto intermedio.
+const LONG_TEXT_THRESHOLD = 150;
+const SPLITTABLE_TYPES = new Set(['Texto', 'Contenido dudoso']);
+
+function splitIntoSentences(content: string): string[] {
+  const matches = content.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g);
+  const sentences = (matches || [content]).map(s => s.trim()).filter(Boolean);
+  return sentences.length > 0 ? sentences : [content];
+}
+
+function splitLongTextElements(elements: PageElement[]): PageElement[] {
+  const result: PageElement[] = [];
+  for (const element of elements) {
+    if (SPLITTABLE_TYPES.has(element.type) && element.content.length > LONG_TEXT_THRESHOLD) {
+      const sentences = splitIntoSentences(element.content);
+      if (sentences.length > 1) {
+        for (const sentence of sentences) {
+          result.push({ type: element.type, content: sentence });
+        }
+        continue;
+      }
+    }
+    result.push(element);
+  }
+  return result;
+}
+
 function errorMessageForStatus(status: number, backendMessage?: string): string {
   switch (status) {
     case 401:
@@ -165,12 +195,12 @@ export async function analyzePageStructure(canvasDataUrl: string, nativeText?: s
         type: element.type.trim(),
         content: element.content.trim(),
       }));
-      if (structuredElements.length > 0) return structuredElements;
+      if (structuredElements.length > 0) return splitLongTextElements(structuredElements);
     }
 
     if (data.description?.trim()) {
       const parsedElements = parseModelDescription(data.description);
-      if (parsedElements.length > 0) return parsedElements;
+      if (parsedElements.length > 0) return splitLongTextElements(parsedElements);
     }
 
     return [{ type: 'Texto', content: 'Página en blanco o sin contenido reconocible.' }];
