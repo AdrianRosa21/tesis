@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>AURA - Logs en vivo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    background: #0b0f14;
+    color: #d7e0e8;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    background: #12181f;
+    border-bottom: 1px solid #2a333d;
+    padding: 0.75rem 1rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 1rem; margin: 0; font-family: sans-serif; }
+  header input {
+    background: #0b0f14;
+    border: 1px solid #2a333d;
+    color: #d7e0e8;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-family: inherit;
+    min-width: 260px;
+  }
+  header button {
+    background: #1f6feb;
+    border: none;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: sans-serif;
+  }
+  header button.secondary { background: #2a333d; }
+  #status { font-family: sans-serif; font-size: 0.85rem; }
+  #status.ok { color: #3fb950; }
+  #status.err { color: #f85149; }
+  #status.wait { color: #d29922; }
+  #log {
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .line { border-bottom: 1px solid #1a2129; padding: 0.15rem 0; }
+  .line.err { color: #ff7b72; }
+  .line.warn { color: #d29922; }
+  #bottom { height: 1px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AURA — Logs en vivo del backend</h1>
+  <input id="apiUrl" placeholder="https://api.aura4blinds.online" />
+  <input id="apiKey" type="password" placeholder="Clave (LOGS_STREAM_KEY o API_KEY)" />
+  <button id="connectBtn">Conectar</button>
+  <button id="clearBtn" class="secondary">Limpiar</button>
+  <label style="font-family:sans-serif;font-size:0.85rem;display:flex;gap:0.3rem;align-items:center;">
+    <input type="checkbox" id="autoscroll" checked /> auto-scroll
+  </label>
+  <span id="status" class="wait">Desconectado</span>
+</header>
+<div id="log"></div>
+<div id="bottom"></div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const logEl = $('log');
+  const statusEl = $('status');
+  let source = null;
+
+  function loadSaved() {
+    $('apiUrl').value = localStorage.getItem('aura_debug_url') || 'https://api.aura4blinds.online';
+    $('apiKey').value = localStorage.getItem('aura_debug_key') || '';
+  }
+
+  function appendLine(text) {
+    const div = document.createElement('div');
+    div.className = 'line';
+    const lower = text.toLowerCase();
+    if (lower.includes('error') || lower.includes('rechaz') || lower.includes('fallida')) {
+      div.className += ' err';
+    } else if (lower.includes('aviso') || lower.includes('sin tiempo')) {
+      div.className += ' warn';
+    }
+    div.textContent = text;
+    logEl.appendChild(div);
+    if ($('autoscroll').checked) {
+      $('bottom').scrollIntoView({ block: 'end' });
+    }
+  }
+
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = cls;
+  }
+
+  function connect() {
+    if (source) {
+      source.close();
+      source = null;
+    }
+    const base = $('apiUrl').value.trim().replace(/\/$/, '');
+    const key = $('apiKey').value.trim();
+    localStorage.setItem('aura_debug_url', base);
+    localStorage.setItem('aura_debug_key', key);
+
+    if (!base || !key) {
+      setStatus('Falta URL o clave', 'err');
+      return;
+    }
+
+    setStatus('Conectando...', 'wait');
+    const url = `${base}/api/logs/stream?key=${encodeURIComponent(key)}`;
+    source = new EventSource(url);
+
+    source.onopen = () => setStatus('Conectado — esperando actividad', 'ok');
+    source.onmessage = (event) => appendLine(event.data);
+    source.onerror = () => {
+      setStatus('Desconectado (revisa la URL/clave, o que el backend este arriba)', 'err');
+    };
+  }
+
+  $('connectBtn').addEventListener('click', connect);
+  $('clearBtn').addEventListener('click', () => { logEl.innerHTML = ''; });
+  loadSaved();
+</script>
+</body>
+</html>

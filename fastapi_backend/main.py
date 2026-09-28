@@ -4,13 +4,15 @@ import time
 import hashlib
 import asyncio
 import re
-from collections import OrderedDict
+import logging
+from collections import OrderedDict, deque
 from pathlib import Path
 from typing import Any
 
 import httpx
 from fastapi import FastAPI, HTTPException, Depends, Header, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -37,6 +39,42 @@ app.add_middleware(
 
 # 2. SEGURIDAD: API Key compartida solo entre el proxy de Vercel y este backend.
 API_KEY_SECRET = os.getenv("API_KEY")
+
+# ---------------------------------------------------------------------------
+# Logs en vivo: un logger central que guarda las ultimas lineas y las
+# transmite a quien este viendo /api/logs/stream (pantalla de depuracion).
+# ---------------------------------------------------------------------------
+LOG_BUFFER_SIZE = 500
+log_buffer: deque[str] = deque(maxlen=LOG_BUFFER_SIZE)
+log_subscribers: set[asyncio.Queue] = set()
+
+
+class BroadcastLogHandler(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            msg = self.format(record)
+        except Exception:
+            return
+        log_buffer.append(msg)
+        for queue in list(log_subscribers):
+            try:
+                queue.put_nowait(msg)
+            except asyncio.QueueFull:
+                pass
+
+
+logger = logging.getLogger("aura")
+logger.setLevel(logging.INFO)
+_handler = BroadcastLogHandler()
+_handler.setFormatter(logging.Formatter("%(asctime)s | %(message)s", datefmt="%H:%M:%S"))
+logger.addHandler(_handler)
+logger.addHandler(logging.StreamHandler())  # sigue imprimiendo en la terminal tambien
+logger.propagate = False
+
+# Clave para ver los logs en vivo. Por defecto usa la misma API_KEY, pero se
+# puede fijar una distinta con LOGS_STREAM_KEY si se quiere compartir el
+# visor de logs sin dar la clave que habla con Ollama.
+LOGS_STREAM_KEY = os.getenv("LOGS_STREAM_KEY") or API_KEY_SECRET
 
 
 async def verify_api_key(x_api_key: str = Header(None)):
@@ -678,8 +716,8 @@ async def run_pipeline_v4(client: httpx.AsyncClient, image_b64: str, context: st
             "columnas": max(int(page_a.get("columnas") or 1), int(page_b.get("columnas") or 1)),
         }
     except httpx.HTTPError as exc:
-        print(f"Clasificacion fallida, se continua sin ella: {exc}")
-    print(f"Clasificacion: {page}")
+        logger.info(f"Clasificacion fallida, se continua sin ella: {exc}")
+    logger.info(f"Clasificacion: {page}")
 
     # Paso 2: extraccion estructurada.
     # Las tablas densas necesitan mas "empuje" contra la repeticion: al
@@ -699,7 +737,7 @@ async def run_pipeline_v4(client: httpx.AsyncClient, image_b64: str, context: st
     data = parse_json_lenient(raw)
     if data is None:
         # Ultimo recurso: tratar la salida como texto libre.
-        print("La salida JSON no se pudo interpretar; se usa el texto libre.")
+        logger.info("La salida JSON no se pudo interpretar; se usa el texto libre.")
         description = strip_markdown(raw)
         return {
             "description": description,
@@ -707,7 +745,7 @@ async def run_pipeline_v4(client: httpx.AsyncClient, image_b64: str, context: st
             "page": page,
         }
     if done_reason == "length" or data.get("_truncado"):
-        print("Aviso: la salida se corto por longitud; se rescataron los bloques completos.")
+        logger.info("Aviso: la salida se corto por longitud; se rescataron los bloques completos.")
 
     blocks = [b for b in data.get("bloques", []) if isinstance(b, dict)]
 
@@ -717,7 +755,7 @@ async def run_pipeline_v4(client: httpx.AsyncClient, image_b64: str, context: st
     # el clasificador.
     if not page.get("tabla") and looks_like_missed_table(blocks):
         if time.monotonic() - started < AURA_TIME_BUDGET_S * 0.5:
-            print("Posible tabla no detectada por el clasificador; se reintenta forzando reglas de tabla.")
+            logger.info("Posible tabla no detectada por el clasificador; se reintenta forzando reglas de tabla.")
             forced_prompt = build_extraction_prompt({**page, "tabla": True}, context)
             raw_forced, _ = await ollama_chat(
                 client, forced_prompt, image_b64, fmt=EXTRACT_SCHEMA, num_predict=4096, repeat_penalty=1.2
@@ -735,10 +773,10 @@ async def run_pipeline_v4(client: httpx.AsyncClient, image_b64: str, context: st
         if followups >= AURA_MAX_FOLLOWUPS:
             break
         if time.monotonic() - started > AURA_TIME_BUDGET_S * 0.6:
-            print("Sin tiempo para la llamada enfocada; se omite.")
+            logger.info("Sin tiempo para la llamada enfocada; se omite.")
             break
         followups += 1
-        print(f"Llamada enfocada para: {kind}")
+        logger.info(f"Llamada enfocada para: {kind}")
         text, _ = await ollama_chat(client, FOLLOWUP_PROMPTS[kind], image_b64, num_predict=700)
         blocks = merge_followup(blocks, kind, text)
 
@@ -801,19 +839,19 @@ async def describe_image(req: ImageRequest):
     # 1. VALIDACIÓN DE TAMAÑO
     image_bytes_size = (len(base64_data) * 3) / 4
     if image_bytes_size > MAX_BYTES:
-        print(f"Rechazado: Imagen pesada ({image_bytes_size / (1024*1024):.2f} MB)")
+        logger.info(f"Rechazado: Imagen pesada ({image_bytes_size / (1024*1024):.2f} MB)")
         raise HTTPException(status_code=413, detail="Imagen muy pesada.")
 
     # 2. CACHÉ (responde al instante si ya leyó la misma imagen con el mismo prompt)
     img_hash = build_cache_key(base64_data, req.context)
     if img_hash in image_cache:
-        print("Respondiendo desde caché (Página ya procesada)...")
+        logger.info("Respondiendo desde caché (Página ya procesada)...")
         image_cache.move_to_end(img_hash)
         return {**image_cache[img_hash], "cached": True}
 
     # 3. COLA DE PETICIONES: una sola pagina a la vez en la GPU.
     async with ollama_lock:
-        print(f"Procesando pagina con pipeline {AURA_PIPELINE} ({OLLAMA_MODEL})...")
+        logger.info(f"Procesando pagina con pipeline {AURA_PIPELINE} ({OLLAMA_MODEL})...")
         started = time.monotonic()
         try:
             async with httpx.AsyncClient(timeout=300.0) as client:
@@ -822,22 +860,22 @@ async def describe_image(req: ImageRequest):
                 else:
                     result = await run_pipeline_v4(client, base64_data, req.context)
         except httpx.ReadTimeout:
-            print("Error: Ollama tardó demasiado en responder.")
+            logger.error("Error: Ollama tardó demasiado en responder.")
             raise HTTPException(status_code=504, detail="La IA está tardando mucho en procesar. Por favor, intenta de nuevo.")
         except httpx.HTTPStatusError as exc:
-            print(f"Ollama respondio con HTTP {exc.response.status_code}: {exc.response.text[:300]}")
+            logger.error(f"Ollama respondio con HTTP {exc.response.status_code}: {exc.response.text[:300]}")
             raise HTTPException(status_code=502, detail="Ollama rechazó la solicitud.") from exc
         except httpx.RequestError as exc:
-            print(f"No fue posible conectar con Ollama: {exc}")
+            logger.error(f"No fue posible conectar con Ollama: {exc}")
             raise HTTPException(status_code=503, detail="Ollama no está disponible.") from exc
         except HTTPException:
             raise
         except Exception as e:
-            print(f"Ollama API error: {e}")
+            logger.error(f"Ollama API error: {e}")
             raise HTTPException(status_code=500, detail="Error interno al procesar la imagen con la IA.") from e
 
         elapsed = round(time.monotonic() - started, 2)
-        print(f"Pagina procesada en {elapsed} s con {len(result['elements'])} elementos.")
+        logger.info(f"Pagina procesada en {elapsed} s con {len(result['elements'])} elementos.")
 
         response_body = {
             "success": True,
@@ -853,3 +891,31 @@ async def describe_image(req: ImageRequest):
         while len(image_cache) > MAX_CACHE_ENTRIES:
             image_cache.popitem(last=False)
         return response_body
+
+
+@app.get("/api/logs/stream")
+async def stream_logs(key: str = ""):
+    """Transmite los logs del backend en vivo (Server-Sent Events) para la
+    pantalla de depuracion en public/debug.html. La clave va en la URL
+    porque EventSource del navegador no permite mandar headers propios."""
+    if not LOGS_STREAM_KEY or key != LOGS_STREAM_KEY:
+        raise HTTPException(status_code=401, detail="Clave invalida para ver los logs.")
+
+    queue: asyncio.Queue[str] = asyncio.Queue(maxsize=200)
+    log_subscribers.add(queue)
+
+    async def event_generator():
+        try:
+            for line in list(log_buffer):
+                yield f"data: {line}\n\n"
+            while True:
+                line = await queue.get()
+                yield f"data: {line}\n\n"
+        finally:
+            log_subscribers.discard(queue)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
