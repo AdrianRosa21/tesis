@@ -5,6 +5,7 @@ import hashlib
 import asyncio
 import re
 import logging
+import logging.handlers
 from collections import OrderedDict, deque
 from pathlib import Path
 from typing import Any
@@ -70,6 +71,24 @@ _handler.setFormatter(logging.Formatter("%(asctime)s | %(message)s", datefmt="%H
 logger.addHandler(_handler)
 logger.addHandler(logging.StreamHandler())  # sigue imprimiendo en la terminal tambien
 logger.propagate = False
+
+# Historial persistente: se guarda en /workspace (el volumen que sobrevive
+# a los reinicios del pod), no en el disco del contenedor. Si la ruta no
+# existe o no se puede escribir (por ejemplo en una maquina local de
+# desarrollo), simplemente se omite sin tumbar el servidor.
+LOG_FILE_PATH = os.getenv("LOG_FILE_PATH", "/workspace/aura/logs/backend.log")
+LOG_HISTORY_PATH: Path | None = None
+try:
+    LOG_HISTORY_PATH = Path(LOG_FILE_PATH)
+    LOG_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _file_handler = logging.handlers.RotatingFileHandler(
+        LOG_HISTORY_PATH, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
+    )
+    _file_handler.setFormatter(logging.Formatter("%(asctime)s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+    logger.addHandler(_file_handler)
+except OSError as exc:
+    LOG_HISTORY_PATH = None
+    print(f"No se pudo abrir el archivo de logs persistente ({LOG_FILE_PATH}): {exc}")
 
 # Clave para ver los logs en vivo. Por defecto usa la misma API_KEY, pero se
 # puede fijar una distinta con LOGS_STREAM_KEY si se quiere compartir el
@@ -919,3 +938,20 @@ async def stream_logs(key: str = ""):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@app.get("/api/logs/history")
+async def logs_history(key: str = "", lines: int = 1000):
+    """Historial persistente: sobrevive a los reinicios del pod porque se lee
+    del archivo en /workspace, no de la memoria del proceso actual."""
+    if not LOGS_STREAM_KEY or key != LOGS_STREAM_KEY:
+        raise HTTPException(status_code=401, detail="Clave invalida para ver los logs.")
+
+    if LOG_HISTORY_PATH is None or not LOG_HISTORY_PATH.exists():
+        return {"available": False, "lines": []}
+
+    lines = max(1, min(lines, 5000))
+    with LOG_HISTORY_PATH.open("r", encoding="utf-8", errors="replace") as f:
+        all_lines = f.readlines()
+    tail = [line.rstrip("\n") for line in all_lines[-lines:]]
+    return {"available": True, "path": str(LOG_HISTORY_PATH), "lines": tail}

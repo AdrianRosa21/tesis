@@ -57,6 +57,17 @@
   .line { border-bottom: 1px solid #1a2129; padding: 0.15rem 0; }
   .line.err { color: #ff7b72; }
   .line.warn { color: #d29922; }
+  .line.history { color: #7d8590; }
+  .separator {
+    font-family: sans-serif;
+    font-size: 0.75rem;
+    color: #6e7681;
+    text-align: center;
+    padding: 0.5rem 0;
+    border-top: 1px dashed #2a333d;
+    border-bottom: 1px dashed #2a333d;
+    margin: 0.5rem 0;
+  }
   #bottom { height: 1px; }
 </style>
 </head>
@@ -66,6 +77,7 @@
   <input id="apiUrl" placeholder="https://api.aura4blinds.online" />
   <input id="apiKey" type="password" placeholder="Clave (LOGS_STREAM_KEY o API_KEY)" />
   <button id="connectBtn">Conectar</button>
+  <button id="historyBtn" class="secondary">Cargar historial</button>
   <button id="clearBtn" class="secondary">Limpiar</button>
   <label style="font-family:sans-serif;font-size:0.85rem;display:flex;gap:0.3rem;align-items:center;">
     <input type="checkbox" id="autoscroll" checked /> auto-scroll
@@ -85,7 +97,7 @@
     $('apiKey').value = localStorage.getItem('aura_debug_key') || '';
   }
 
-  function appendLine(text) {
+  function appendLine(text, isHistory) {
     const div = document.createElement('div');
     div.className = 'line';
     const lower = text.toLowerCase();
@@ -93,11 +105,53 @@
       div.className += ' err';
     } else if (lower.includes('aviso') || lower.includes('sin tiempo')) {
       div.className += ' warn';
+    } else if (isHistory) {
+      div.className += ' history';
     }
     div.textContent = text;
     logEl.appendChild(div);
     if ($('autoscroll').checked) {
       $('bottom').scrollIntoView({ block: 'end' });
+    }
+  }
+
+  function appendSeparator(text) {
+    const div = document.createElement('div');
+    div.className = 'separator';
+    div.textContent = text;
+    logEl.appendChild(div);
+  }
+
+  async function loadHistory() {
+    const base = $('apiUrl').value.trim().replace(/\/$/, '');
+    const key = $('apiKey').value.trim();
+    localStorage.setItem('aura_debug_url', base);
+    localStorage.setItem('aura_debug_key', key);
+
+    if (!base || !key) {
+      setStatus('Falta URL o clave', 'err');
+      return;
+    }
+
+    setStatus('Cargando historial...', 'wait');
+    try {
+      const res = await fetch(`${base}/api/logs/history?key=${encodeURIComponent(key)}&lines=1000`);
+      if (!res.ok) {
+        setStatus(`El backend respondió ${res.status} al pedir el historial`, 'err');
+        return;
+      }
+      const data = await res.json();
+      if (!data.available) {
+        appendSeparator('El pod todavía no tiene un archivo de historial guardado (es normal la primera vez).');
+        setStatus('Historial vacío', 'wait');
+        return;
+      }
+      appendSeparator(`— Historial guardado (${data.lines.length} líneas, ${data.path}) —`);
+      data.lines.forEach((line) => appendLine(line, true));
+      appendSeparator('— Fin del historial —');
+      setStatus('Historial cargado', 'ok');
+    } catch (err) {
+      setStatus('No se pudo conectar — el pod puede estar apagado', 'err');
     }
   }
 
@@ -133,6 +187,7 @@
   }
 
   $('connectBtn').addEventListener('click', connect);
+  $('historyBtn').addEventListener('click', loadHistory);
   $('clearBtn').addEventListener('click', () => { logEl.innerHTML = ''; });
   loadSaved();
 </script>
