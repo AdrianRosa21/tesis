@@ -1,0 +1,243 @@
+{
+  "R03": {
+    "error": "Expecting value: line 1 column 1 (char 0)"
+  },
+  "R04": {
+    "success": true,
+    "description": "[IMAGEN] Una imagen con el título \"Tu Estado de Cuenta en línea\". La imagen muestra a una persona sosteniendo un teléfono móvil rojo y sonriendo. A su lado, hay texto que dice: \"Descarga y consulta tu Estado de Cuenta en segundos desde tu app HSBC México.\" Abajo del texto, hay dos iconos: uno con el ojo y la palabra \"Revisa\", y otro con las flechas cruzadas y la palabra \"Comparte\".\n[TEXTO] Ingresa a la app HSBC México\nEn Mis Cuentas da clic en la cuenta o tarjeta que deseas consultar\n[IMAGEN] Una imagen de una pantalla de un teléfono móvil con el texto \"Hola, Erandi\" y \"Cuentas de débito\". Abajo del texto, hay un número de cuenta y el saldo \"5,621.26 MXN\".\n[TEXTO] Da clic en Ver Estados de cuenta\nConfirmá con tu Token Móvil, Touch ID o Face ID\n[IMAGEN] Una imagen de una pantalla de un teléfono móvil con el texto \"19:27\" y \"Nómina Flexible HSBC\". Abajo del texto, hay un número de cuenta y el saldo \"5,621.26 MXN\". En la parte inferior, hay dos opciones: \"Ver Estados de cuenta\" y \"Usar tarjeta digital\".\n[TEXTO] Selecciona el mes que deseas consultar, recuerda que puedes consultar los últimos 12 meses.\n[IMAGEN] Una imagen de una pantalla de un teléfono móvil con el texto \"19:28\" y \"Estados de cuenta\". Abajo del texto, hay un número de cuenta y el saldo \"5,621.26 MXN\". En la parte inferior, hay dos opciones: \"Ver Estados de cuenta\" y \"Usar tarjeta digital\".\n[TEXTO] ¡Listo! Ya tienes tu Estado de cuenta. Puedes descargarlo en tu celular dando clic en el icono superior derecho.\n[IMAGEN] Una imagen de una pantalla de un teléfono móvil con el texto \"19:28\" y \"2023-05-31_Estado de cuenta...\". En la parte inferior, hay un icono con flechas que apuntan hacia arriba y abajo.",
+    "elements": [
+      {
+        "type": "Descripción Visual",
+        "content": "Una imagen con el título \"Tu Estado de Cuenta en línea\". La imagen muestra a una persona sosteniendo un teléfono móvil rojo y sonriendo. A su lado, hay texto que dice: \"Descarga y consulta tu Estado de Cuenta en segundos desde tu app HSBC México.\" Abajo del texto, hay dos iconos: uno con el ojo y la palabra \"Revisa\", y otro con las flechas cruzadas y la palabra \"Comparte\"."
+      },
+      {
+        "type": "Texto",
+        "content": "Ingresa a la app HSBC México\nEn Mis Cuentas da clic en la cuenta o tarjeta que deseas consultar"
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Una imagen de una pantalla de un teléfono móvil con el texto \"Hola, Erandi\" y \"Cuentas de débito\". Abajo del texto, hay un número de cuenta y el saldo \"5,621.26 MXN\"."
+      },
+      {
+        "type": "Texto",
+        "content": "Da clic en Ver Estados de cuenta\nConfirmá con tu Token Móvil, Touch ID o Face ID"
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Una imagen de una pantalla de un teléfono móvil con el texto \"19:27\" y \"Nómina Flexible HSBC\". Abajo del texto, hay un número de cuenta y el saldo \"5,621.26 MXN\". En la parte inferior, hay dos opciones: \"Ver Estados de cuenta\" y \"Usar tarjeta digital\"."
+      },
+      {
+        "type": "Texto",
+        "content": "Selecciona el mes que deseas consultar, recuerda que puedes consultar los últimos 12 meses."
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Una imagen de una pantalla de un teléfono móvil con el texto \"19:28\" y \"Estados de cuenta\". Abajo del texto, hay un número de cuenta y el saldo \"5,621.26 MXN\". En la parte inferior, hay dos opciones: \"Ver Estados de cuenta\" y \"Usar tarjeta digital\"."
+      },
+      {
+        "type": "Texto",
+        "content": "¡Listo! Ya tienes tu Estado de cuenta. Puedes descargarlo en tu celular dando clic en el icono superior derecho."
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Una imagen de una pantalla de un teléfono móvil con el texto \"19:28\" y \"2023-05-31_Estado de cuenta...\". En la parte inferior, hay un icono con flechas que apuntan hacia arriba y abajo."
+      }
+    ],
+    "page_type": {
+      "tabla": false,
+      "grafica": false,
+      "diagrama": false,
+      "imagen": true,
+      "matematicas": false,
+      "columnas": 5
+    },
+    "prompt_version": "faithful-reader-v4",
+    "model": "qwen2.5vl",
+    "processing_seconds": 12.76
+  },
+  "R06": {
+    "success": true,
+    "description": "[TEXTO] COMUNICADO DE PRENSA NÚM. 266/2020\n3 DE JUNIO DE 2020\nPÁGINA 2/2\n\n2 030 sitios de disposición final carecían de infraestructura para una correcta contención y control de las emisiones al aire, suelo y agua que resultan de la disposición de esos residuos.\n\nSe anexa Nota Técnica\n\nPara consultas de medios y periodistas, contactar a: comunicacionsocial@inegi.org.mx\no llamar al teléfono (55) 52-78-10-00, ext. 1134, 1260 y 1241.\nDirección de Atención a Medios / Dirección General Adjunta de Comunicación\n\nf INEGI Informa\n\nCOMUNICACIÓN SOCIAL",
+    "elements": [
+      {
+        "type": "Texto",
+        "content": "COMUNICADO DE PRENSA NÚM. 266/2020\n3 DE JUNIO DE 2020\nPÁGINA 2/2\n\n2 030 sitios de disposición final carecían de infraestructura para una correcta contención y control de las emisiones al aire, suelo y agua que resultan de la disposición de esos residuos.\n\nSe anexa Nota Técnica\n\nPara consultas de medios y periodistas, contactar a: comunicacionsocial@inegi.org.mx\no llamar al teléfono (55) 52-78-10-00, ext. 1134, 1260 y 1241.\nDirección de Atención a Medios / Dirección General Adjunta de Comunicación\n\nf INEGI Informa\n\nCOMUNICACIÓN SOCIAL"
+      }
+    ],
+    "page_type": {
+      "tabla": false,
+      "grafica": false,
+      "diagrama": false,
+      "imagen": false,
+      "matematicas": false,
+      "columnas": 1
+    },
+    "prompt_version": "faithful-reader-v4",
+    "model": "qwen2.5vl",
+    "processing_seconds": 9.91
+  },
+  "R07": {
+    "success": true,
+    "description": "[TEXTO] COMUNICADO DE PRENSA NÚM. 528/20\n11 DE NOVIEMBRE DE 2020\nPÁGINA 2/2\n[IMAGEN] Prevalencia de obesidad en la población de 5 años o más por sexo y grupos de edad\n2018. Datos: Hombres: 26%; Mujeres: 46%\n[TEXTO] En el grupo de mujeres de 20 a 29 años, la prevalencia de obesidad es de 26% y aumenta a 46% en el\ngrupo de 30 a 59 años; en los hombres se observa un aumento menos pronunciado al pasar de 24 a 35\npor ciento. Los adultos mayores tienen otra dinámica: las mujeres presentan una prevalencia de\nobesidad más alta (40%) con respecto a los hombres; la diferencia es de 14 puntos porcentuales.\n[TEXTO] Nota: La prevalencia se refiere a la población con obesidad entre la población total de cada grupo de edad, multiplicada por cien.\nFuente: INEGI/INSP. Encuesta Nacional de Salud y Nutrición (ENSANUT) 2018.\n[TEXTO] Se anexa Nota técnica\n[TEXTO] Para consultas de medios y periodistas, contactar a: comunicacionsocial@inegi.org.mx\no llamar al teléfono (55) 52-78-10-00, exts. 1134, 1260 y 1241.\n[TEXTO] Dirección de Atención a Medios / Dirección General Adjunta de Comunicación\n[IMAGEN] Gráfica. Datos: 5 a 11 años: 20; Hombres: aprox. 35%; Mujeres: 46%\n[TEXTO] f INEGI Informa",
+    "elements": [
+      {
+        "type": "Texto",
+        "content": "COMUNICADO DE PRENSA NÚM. 528/20\n11 DE NOVIEMBRE DE 2020\nPÁGINA 2/2"
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Prevalencia de obesidad en la población de 5 años o más por sexo y grupos de edad\n2018. Datos: Hombres: 26%; Mujeres: 46%"
+      },
+      {
+        "type": "Texto",
+        "content": "En el grupo de mujeres de 20 a 29 años, la prevalencia de obesidad es de 26% y aumenta a 46% en el\ngrupo de 30 a 59 años; en los hombres se observa un aumento menos pronunciado al pasar de 24 a 35\npor ciento. Los adultos mayores tienen otra dinámica: las mujeres presentan una prevalencia de\nobesidad más alta (40%) con respecto a los hombres; la diferencia es de 14 puntos porcentuales."
+      },
+      {
+        "type": "Texto",
+        "content": "Nota: La prevalencia se refiere a la población con obesidad entre la población total de cada grupo de edad, multiplicada por cien.\nFuente: INEGI/INSP. Encuesta Nacional de Salud y Nutrición (ENSANUT) 2018."
+      },
+      {
+        "type": "Texto",
+        "content": "Se anexa Nota técnica"
+      },
+      {
+        "type": "Texto",
+        "content": "Para consultas de medios y periodistas, contactar a: comunicacionsocial@inegi.org.mx\no llamar al teléfono (55) 52-78-10-00, exts. 1134, 1260 y 1241."
+      },
+      {
+        "type": "Texto",
+        "content": "Dirección de Atención a Medios / Dirección General Adjunta de Comunicación"
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Gráfica. Datos: 5 a 11 años: 20; Hombres: aprox. 35%; Mujeres: 46%"
+      },
+      {
+        "type": "Texto",
+        "content": "f INEGI Informa"
+      }
+    ],
+    "page_type": {
+      "tabla": true,
+      "grafica": true,
+      "diagrama": false,
+      "imagen": false,
+      "matematicas": false,
+      "columnas": 2
+    },
+    "prompt_version": "faithful-reader-v4",
+    "model": "qwen2.5vl",
+    "processing_seconds": 15.55
+  },
+  "R08": {
+    "success": true,
+    "description": "[TEXTO] COMUNICADO DE PRENSA 145/25\nESTADÍSTICAS A PROPÓSITO DEL DÍA INTERNACIONAL DE LA ELIMINACIÓN DE LA VIOLENCIA CONTRA LA MUJER \n20 de noviembre de 2025 Página 2/6\n[IMAGEN] Gráfica\nPoblación de 12 años y más que experimentó ciberacoso, según sexo\n2020-2024¹/\n(porcentaje). Datos: Mujeres: 22.5; Hombres: 19.3; Total: 21.0\n[TEXTO] Nota: El porcentaje se calcula respecto al total de mujeres u hombres que utilizaron internet en cada año de referencia.\n¹/ La información correspondiente a cada año se refiere a los siguientes periodos:\n2020: de octubre de 2019 a noviembre de 2020;\n2021: de agosto de 2020 a septiembre de 2021;\n2022: de julio de 2021 a agosto de 2022;\n2023: de julio de 2022 a agosto de 2023;\n2024: de julio de 2023 a agosto de 2024.\nFuente: INEGI. Módulo sobre Ciberacoso (MOCIBA), 2020, 2021, 2022, 2023 y 2024.\n[TEXTO] II. SITUACIONES DE CIBERACOSO\nEn 2024, la situación de ciberacoso con mayor prevalencia para ambos sexos fue el contacto mediante identidades falsas, con 36.0 por ciento.\nEn actos de índole sexual,\n29.0 % de las mujeres y 13.9 % de los hombres fueron víctimas de insinuaciones o propuestas sexuales;\nen tanto que\n27.5 y 15.8 %, respectivamente, recibieron contenido sexual (ver gráfica 2).\nRespecto a provocaciones para reaccionar de forma negativa,\n21.4 % de los hombres y 15.7 % de las mujeres reportaron esta situación;\nmientras que\n24.6 % de los hombres y 21.0 % de las mujeres recibieron llamadas ofensivas; y\n35.9 y 32.4 %, respectivamente,\nrecibieron mensajes ofensivos.",
+    "elements": [
+      {
+        "type": "Texto",
+        "content": "COMUNICADO DE PRENSA 145/25\nESTADÍSTICAS A PROPÓSITO DEL DÍA INTERNACIONAL DE LA ELIMINACIÓN DE LA VIOLENCIA CONTRA LA MUJER \n20 de noviembre de 2025 Página 2/6"
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Gráfica\nPoblación de 12 años y más que experimentó ciberacoso, según sexo\n2020-2024¹/\n(porcentaje). Datos: Mujeres: 22.5; Hombres: 19.3; Total: 21.0"
+      },
+      {
+        "type": "Texto",
+        "content": "Nota: El porcentaje se calcula respecto al total de mujeres u hombres que utilizaron internet en cada año de referencia.\n¹/ La información correspondiente a cada año se refiere a los siguientes periodos:\n2020: de octubre de 2019 a noviembre de 2020;\n2021: de agosto de 2020 a septiembre de 2021;\n2022: de julio de 2021 a agosto de 2022;\n2023: de julio de 2022 a agosto de 2023;\n2024: de julio de 2023 a agosto de 2024.\nFuente: INEGI. Módulo sobre Ciberacoso (MOCIBA), 2020, 2021, 2022, 2023 y 2024."
+      },
+      {
+        "type": "Texto",
+        "content": "II. SITUACIONES DE CIBERACOSO\nEn 2024, la situación de ciberacoso con mayor prevalencia para ambos sexos fue el contacto mediante identidades falsas, con 36.0 por ciento.\nEn actos de índole sexual,\n29.0 % de las mujeres y 13.9 % de los hombres fueron víctimas de insinuaciones o propuestas sexuales;\nen tanto que\n27.5 y 15.8 %, respectivamente, recibieron contenido sexual (ver gráfica 2).\nRespecto a provocaciones para reaccionar de forma negativa,\n21.4 % de los hombres y 15.7 % de las mujeres reportaron esta situación;\nmientras que\n24.6 % de los hombres y 21.0 % de las mujeres recibieron llamadas ofensivas; y\n35.9 y 32.4 %, respectivamente,\nrecibieron mensajes ofensivos."
+      }
+    ],
+    "page_type": {
+      "tabla": true,
+      "grafica": true,
+      "diagrama": false,
+      "imagen": false,
+      "matematicas": false,
+      "columnas": 3
+    },
+    "prompt_version": "faithful-reader-v4",
+    "model": "qwen2.5vl",
+    "processing_seconds": 17.53
+  },
+  "R12": {
+    "success": true,
+    "description": "[TEXTO] MITIGACIÓN\n¿Qué medidas tomar antes de un sismo?\n[IMAGEN] lista de puntos con iconos y descripciones\n[IMAGEN] lista de elementos para una maleta de vida con iconos y descripciones\n[IMAGEN] En la página se observan varias ilustraciones y símbolos relacionados con la mitigación de sismos:\n\n1. En la parte superior izquierda, hay un círculo naranja con una figura humana sosteniendo un papel y un lápiz. Dentro del círculo, se puede leer \"Elabora y actualiza tu Plan Familiar y/o pide a la administración de tu inmueble que genere un Programa Interno de Protección Civil.\"\n\n2. A continuación, hay un círculo azul con una ilustración de una casa y un árbol. Dentro del círculo, se puede leer \"Verifica tu casa periódicamente, revisa hundimientos, desplomes o grietas y fisuras existentes.\"\n\n3. Abajo de esto, hay otro círculo azul con una ilustración de una mochila escolar. Dentro del círculo, se puede leer \"Prepara una maleta de vida con los siguientes elementos:\".\n\n4. A continuación, se muestran iconos representando diferentes elementos que deben incluirse en la maleta de vida. Estos incluyen:\nLlaves del automóvil y dinero extra.\nLinterna y pilas.\nRadio y pilas.\nEquipo de primeros auxilios.\nTeléfonos de emergencias y algún celular extra.\nTratamientos especiales en caso de que alguien de la familia lo requiera.\nAlimentos no perecederos y botellas de agua desechables.\nAbrelatas manual.\nPapel higiénico y otros elementos personales.\nBolsa impermeabilizada para objetos personales.\n\n5. En la parte inferior izquierda, hay un icono de lupa con el texto \"Verifica con frecuencia la fecha de caducidad de los alimentos y medicamentos y revisa su estado.\"\n\n6. A la derecha del icono de lupa, hay otro icono que parece ser una USB con el texto \"Copia o escaneo en una USB de los documentos más importantes (INE, pasaporte, escrituras, factura del auto, cuenta bancaria, Infonavit, crédito bancario, identificación de toda la familia y fotos actualizadas de cada integrante).\"\n\nTodos estos elementos están dispuestos en una disposición clara y organizada, con el texto explicativo enmarcado por círculos de colores y símbolos visuales.",
+    "elements": [
+      {
+        "type": "Texto",
+        "content": "MITIGACIÓN\n¿Qué medidas tomar antes de un sismo?"
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "lista de puntos con iconos y descripciones"
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "lista de elementos para una maleta de vida con iconos y descripciones"
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "En la página se observan varias ilustraciones y símbolos relacionados con la mitigación de sismos:\n\n1. En la parte superior izquierda, hay un círculo naranja con una figura humana sosteniendo un papel y un lápiz. Dentro del círculo, se puede leer \"Elabora y actualiza tu Plan Familiar y/o pide a la administración de tu inmueble que genere un Programa Interno de Protección Civil.\"\n\n2. A continuación, hay un círculo azul con una ilustración de una casa y un árbol. Dentro del círculo, se puede leer \"Verifica tu casa periódicamente, revisa hundimientos, desplomes o grietas y fisuras existentes.\"\n\n3. Abajo de esto, hay otro círculo azul con una ilustración de una mochila escolar. Dentro del círculo, se puede leer \"Prepara una maleta de vida con los siguientes elementos:\".\n\n4. A continuación, se muestran iconos representando diferentes elementos que deben incluirse en la maleta de vida. Estos incluyen:\nLlaves del automóvil y dinero extra.\nLinterna y pilas.\nRadio y pilas.\nEquipo de primeros auxilios.\nTeléfonos de emergencias y algún celular extra.\nTratamientos especiales en caso de que alguien de la familia lo requiera.\nAlimentos no perecederos y botellas de agua desechables.\nAbrelatas manual.\nPapel higiénico y otros elementos personales.\nBolsa impermeabilizada para objetos personales.\n\n5. En la parte inferior izquierda, hay un icono de lupa con el texto \"Verifica con frecuencia la fecha de caducidad de los alimentos y medicamentos y revisa su estado.\"\n\n6. A la derecha del icono de lupa, hay otro icono que parece ser una USB con el texto \"Copia o escaneo en una USB de los documentos más importantes (INE, pasaporte, escrituras, factura del auto, cuenta bancaria, Infonavit, crédito bancario, identificación de toda la familia y fotos actualizadas de cada integrante).\"\n\nTodos estos elementos están dispuestos en una disposición clara y organizada, con el texto explicativo enmarcado por círculos de colores y símbolos visuales."
+      }
+    ],
+    "page_type": {
+      "tabla": false,
+      "grafica": false,
+      "diagrama": true,
+      "imagen": true,
+      "matematicas": false,
+      "columnas": 3
+    },
+    "prompt_version": "faithful-reader-v4",
+    "model": "qwen2.5vl",
+    "processing_seconds": 17.68
+  },
+  "R13": {
+    "success": true,
+    "description": "[TEXTO] Recomendaciones para una alimentación adecuada:\nIncluir al menos un alimento de cada grupo en cada una de las tres comidas diarias.\nComer de acuerdo a tus necesidades y condiciones. Ni de más ni de menos.\nLavar y desinfectar las verduras y frutas antes de consumirlas o cocinarlas.\nComer cinco veces al día, tres comidas principales y dos refrigerios, uno a medio día y otro a media tarde.\nMantener en lo posible los horarios de comidas.\n[IMAGEN] Ilustración de una familia con cinco miembros: dos adultos mayores, una mujer joven, un niño pequeño y una niña. Todos son sonrientes y están juntos. En el fondo se ve un cielo claro y un horizonte lejano.\n[TEXTO] Para mantener la salud y prevenir la aparición de muchas enfermedades hay que seguir un estilo de vida saludable; es decir, hay que elegir una alimentación equilibrada, realizar actividad o ejercicio físico de forma regular (como mínimo caminar al menos 30 minutos al día) y evitar fumar y tomar bebidas alcohólicas de alta graduación.\n[IMAGEN] Ilustraciones de cuatro niños comiendo diferentes alimentos. Uno come una ensalada, otro un sándwich, otro un pastel y el último una pizza. Cada ilustración tiene un vaso de jugo o agua junto al plato de comida.\n[TEXTO] \"Debes cuidar tanto lo que comes, como lo que bebes\".\n[IMAGEN] Logotipos y texto: \"SALUD 2019\" y \"Hospital General de México\". También se ve el logo de la \"Ludoteca Hospitalaria\" con un fondo verde y personajes infantiles. El texto dice: \"Alimentación saludable\".\n[TEXTO] Dirección de Educación y Capacitación en Salud\nDra. Claudia Alejandra Sainos Ramírez.\nLic. Mari José Márquez Martínez.",
+    "elements": [
+      {
+        "type": "Texto",
+        "content": "Recomendaciones para una alimentación adecuada:\nIncluir al menos un alimento de cada grupo en cada una de las tres comidas diarias.\nComer de acuerdo a tus necesidades y condiciones. Ni de más ni de menos.\nLavar y desinfectar las verduras y frutas antes de consumirlas o cocinarlas.\nComer cinco veces al día, tres comidas principales y dos refrigerios, uno a medio día y otro a media tarde.\nMantener en lo posible los horarios de comidas."
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Ilustración de una familia con cinco miembros: dos adultos mayores, una mujer joven, un niño pequeño y una niña. Todos son sonrientes y están juntos. En el fondo se ve un cielo claro y un horizonte lejano."
+      },
+      {
+        "type": "Texto",
+        "content": "Para mantener la salud y prevenir la aparición de muchas enfermedades hay que seguir un estilo de vida saludable; es decir, hay que elegir una alimentación equilibrada, realizar actividad o ejercicio físico de forma regular (como mínimo caminar al menos 30 minutos al día) y evitar fumar y tomar bebidas alcohólicas de alta graduación."
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Ilustraciones de cuatro niños comiendo diferentes alimentos. Uno come una ensalada, otro un sándwich, otro un pastel y el último una pizza. Cada ilustración tiene un vaso de jugo o agua junto al plato de comida."
+      },
+      {
+        "type": "Texto",
+        "content": "\"Debes cuidar tanto lo que comes, como lo que bebes\"."
+      },
+      {
+        "type": "Descripción Visual",
+        "content": "Logotipos y texto: \"SALUD 2019\" y \"Hospital General de México\". También se ve el logo de la \"Ludoteca Hospitalaria\" con un fondo verde y personajes infantiles. El texto dice: \"Alimentación saludable\"."
+      },
+      {
+        "type": "Texto",
+        "content": "Dirección de Educación y Capacitación en Salud\nDra. Claudia Alejandra Sainos Ramírez.\nLic. Mari José Márquez Martínez."
+      }
+    ],
+    "page_type": {
+      "tabla": false,
+      "grafica": false,
+      "diagrama": false,
+      "imagen": true,
+      "matematicas": false,
+      "columnas": 3
+    },
+    "prompt_version": "faithful-reader-v4",
+    "model": "qwen2.5vl",
+    "processing_seconds": 13.65
+  }
+}
