@@ -1,0 +1,554 @@
+"""Pruebas del pipeline hybrid (nube + detector local), los proveedores y los modulos de apoyo.
+
+No usan red ni claves: los proveedores son falsos y las respuestas HTTP simuladas.
+Ejecutar desde la raiz:  python -m unittest fastapi_backend.test_cloud_pipeline
+"""
+import asyncio
+import json
+import unittest
+from unittest import mock
+
+import httpx
+
+from fastapi_backend import pipeline
+from fastapi_backend.cache import ResponseCache, build_cache_key
+from fastapi_backend.config import Settings, load_settings
+from fastapi_backend.normalize import blocks_to_elements
+from fastapi_backend.providers import GeminiProvider, ModelResult, OpenAIProvider, ProviderError
+from fastapi_backend.providers.base import error_from_response
+from fastapi_backend.providers.http import post_json
+from fastapi_backend.ratelimit import RateLimiter
+from fastapi_backend.schemas import EXTRACT_SCHEMA_CLOUD, to_gemini_schema
+
+
+# ---------------------------------------------------------------------------
+# Configuracion
+# ---------------------------------------------------------------------------
+
+class SettingsTests(unittest.TestCase):
+    def test_without_cloud_key_hybrid_falls_back_to_v4(self):
+        settings = load_settings({})
+
+        self.assertEqual(settings.pipeline, "hybrid")
+        self.assertFalse(settings.cloud_ready)
+        self.assertEqual(settings.effective_pipeline, "v4")
+        self.assertEqual(settings.prompt_version, "faithful-reader-v4")
+        self.assertEqual(settings.engine_tag, "v4:qwen2.5vl")
+
+    def test_gemini_key_activates_hybrid(self):
+        settings = load_settings({"GEMINI_API_KEY": "k"})
+
+        self.assertEqual(settings.effective_pipeline, "hybrid")
+        self.assertEqual(settings.prompt_version, "faithful-reader-cloud-v1")
+        self.assertIn("gemini", settings.engine_tag)
+        self.assertIn(settings.gemini_model, settings.engine_tag)
+
+    def test_provider_choice_selects_matching_key_and_model(self):
+        settings = load_settings({"AURA_PROVIDER": "openai", "OPENAI_API_KEY": "k", "GEMINI_API_KEY": "otra"})
+
+        self.assertEqual(settings.cloud_api_key, "k")
+        self.assertEqual(settings.cloud_model, settings.openai_model)
+
+    def test_key_of_the_other_provider_does_not_activate_cloud(self):
+        settings = load_settings({"AURA_PROVIDER": "openai", "GEMINI_API_KEY": "k"})
+
+        self.assertFalse(settings.cloud_ready)
+        self.assertEqual(settings.effective_pipeline, "v4")
+
+    def test_v3_and_v4_can_be_forced_even_with_a_key(self):
+        for pipeline_name in ("v3", "v4"):
+            settings = load_settings({"AURA_PIPELINE": pipeline_name, "GEMINI_API_KEY": "k"})
+            self.assertEqual(settings.effective_pipeline, pipeline_name)
+
+    def test_invalid_values_use_the_default(self):
+        settings = load_settings({"AURA_PIPELINE": "v9", "AURA_PROVIDER": "x", "AURA_TIME_BUDGET_S": "mucho"})
+
+        self.assertEqual(settings.pipeline, "hybrid")
+        self.assertEqual(settings.provider, "gemini")
+        self.assertEqual(settings.time_budget_s, 80.0)
+
+    def test_logs_key_defaults_to_api_key(self):
+        self.assertEqual(load_settings({"API_KEY": "abc"}).logs_stream_key, "abc")
+        self.assertEqual(load_settings({"API_KEY": "abc", "LOGS_STREAM_KEY": "log"}).logs_stream_key, "log")
+
+    def test_engine_tag_changes_with_detector_model(self):
+        with_detector = load_settings({"GEMINI_API_KEY": "k"})
+        without_detector = load_settings({"GEMINI_API_KEY": "k", "AURA_DETECTOR": "off"})
+
+        self.assertNotEqual(with_detector.engine_tag, without_detector.engine_tag)
+
+
+# ---------------------------------------------------------------------------
+# Cache y limite de peticiones
+# ---------------------------------------------------------------------------
+
+class CacheTests(unittest.TestCase):
+    def test_key_depends_on_engine_and_prompt_version(self):
+        base = build_cache_key("img", "ctx", "v4:qwen", "faithful-reader-v4")
+
+        self.assertNotEqual(base, build_cache_key("img", "ctx", "hybrid:gemini", "faithful-reader-v4"))
+        self.assertNotEqual(base, build_cache_key("img", "ctx", "v4:qwen", "faithful-reader-cloud-v1"))
+        self.assertEqual(base, build_cache_key("img", "ctx", "v4:qwen", "faithful-reader-v4"))
+
+    def test_lru_evicts_the_least_recently_used(self):
+        cache = ResponseCache(max_entries=2)
+        cache.put("a", {"n": 1})
+        cache.put("b", {"n": 2})
+        cache.get("a")  # "b" queda como el menos usado
+        cache.put("c", {"n": 3})
+
+        self.assertIsNotNone(cache.get("a"))
+        self.assertIsNone(cache.get("b"))
+        self.assertIsNotNone(cache.get("c"))
+        self.assertEqual(len(cache), 2)
+
+
+class RateLimiterTests(unittest.TestCase):
+    def setUp(self):
+        self.now = 0.0
+        self.limiter = RateLimiter(max_per_window=3, window_s=60, clock=lambda: self.now)
+
+    def test_allows_up_to_the_limit_then_rejects_with_wait_time(self):
+        for _ in range(3):
+            self.assertIsNone(self.limiter.check("1.2.3.4"))
+
+        self.now = 10.0
+        wait = self.limiter.check("1.2.3.4")
+
+        self.assertIsNotNone(wait)
+        self.assertAlmostEqual(wait, 50.0)
+
+    def test_window_slides(self):
+        for _ in range(3):
+            self.limiter.check("1.2.3.4")
+
+        self.now = 61.0
+
+        self.assertIsNone(self.limiter.check("1.2.3.4"))
+
+    def test_clients_are_independent(self):
+        for _ in range(3):
+            self.limiter.check("a")
+
+        self.assertIsNotNone(self.limiter.check("a"))
+        self.assertIsNone(self.limiter.check("b"))
+
+    def test_zero_disables_the_limit(self):
+        limiter = RateLimiter(max_per_window=0)
+        for _ in range(100):
+            self.assertIsNone(limiter.check("a"))
+
+
+# ---------------------------------------------------------------------------
+# Esquemas y proveedores
+# ---------------------------------------------------------------------------
+
+class SchemaTests(unittest.TestCase):
+    def test_gemini_schema_uses_uppercase_types_and_drops_unknown_keys(self):
+        converted = to_gemini_schema(
+            {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string", "title": "x"}}}
+        )
+
+        self.assertEqual(converted["type"], "OBJECT")
+        self.assertNotIn("additionalProperties", converted)
+        self.assertEqual(converted["properties"]["a"], {"type": "STRING"})
+
+    def test_cloud_schema_adds_language_without_touching_the_ollama_schema(self):
+        from fastapi_backend.prompts import EXTRACT_SCHEMA
+
+        cloud_props = EXTRACT_SCHEMA_CLOUD["properties"]["bloques"]["items"]["properties"]
+        ollama_props = EXTRACT_SCHEMA["properties"]["bloques"]["items"]["properties"]
+
+        self.assertIn("idioma", cloud_props)
+        self.assertNotIn("idioma", ollama_props)
+
+
+class GeminiProviderTests(unittest.TestCase):
+    def test_body_has_image_prompt_schema_and_no_thinking_for_flash(self):
+        provider = GeminiProvider(Settings(gemini_api_key="k", gemini_model="gemini-2.5-flash"))
+
+        body = provider.build_body("lee esto", "IMG", {"type": "object"}, 4096, 0.0)
+
+        parts = body["contents"][0]["parts"]
+        self.assertEqual(parts[0]["inline_data"]["data"], "IMG")
+        self.assertEqual(parts[1]["text"], "lee esto")
+        config = body["generationConfig"]
+        self.assertEqual(config["responseMimeType"], "application/json")
+        self.assertEqual(config["responseSchema"]["type"], "OBJECT")
+        self.assertEqual(config["thinkingConfig"], {"thinkingBudget": 0})
+        self.assertEqual(config["maxOutputTokens"], 4096)
+
+    def test_other_models_do_not_get_a_thinking_budget_in_auto_mode(self):
+        provider = GeminiProvider(Settings(gemini_api_key="k", gemini_model="gemini-2.5-pro"))
+
+        body = provider.build_body("p", "IMG", None, 100, 0.0)
+
+        self.assertNotIn("thinkingConfig", body["generationConfig"])
+        self.assertNotIn("responseSchema", body["generationConfig"])
+
+    def test_parse_skips_thought_parts_and_reads_usage(self):
+        result = GeminiProvider.parse_response({
+            "candidates": [{
+                "content": {"parts": [{"text": "pensando", "thought": True}, {"text": '{"bloques": []}'}]},
+                "finishReason": "STOP",
+            }],
+            "usageMetadata": {"promptTokenCount": 10, "candidatesTokenCount": 5, "thoughtsTokenCount": 2},
+        })
+
+        self.assertEqual(result.text, '{"bloques": []}')
+        self.assertEqual(result.usage, {"input": 10, "output": 5, "thinking": 2})
+
+    def test_parse_raises_when_blocked_or_empty(self):
+        with self.assertRaises(ProviderError) as blocked:
+            GeminiProvider.parse_response({"promptFeedback": {"blockReason": "SAFETY"}})
+        self.assertIn("SAFETY", blocked.exception.log_detail)
+
+        with self.assertRaises(ProviderError):
+            GeminiProvider.parse_response({"candidates": [{"content": {"parts": []}, "finishReason": "STOP"}]})
+
+
+class OpenAIProviderTests(unittest.TestCase):
+    def test_body_sends_image_and_json_schema(self):
+        provider = OpenAIProvider(Settings(openai_api_key="k", openai_model="gpt-4.1-mini"))
+
+        body = provider.build_body("lee", "IMG", {"type": "object"}, 2000, 0.0)
+
+        content = body["messages"][0]["content"]
+        self.assertTrue(content[1]["image_url"]["url"].startswith("data:image/jpeg;base64,IMG"))
+        self.assertEqual(body["response_format"]["type"], "json_schema")
+        self.assertEqual(body["temperature"], 0.0)
+        self.assertEqual(body["max_completion_tokens"], 2000)
+
+    def test_reasoning_models_do_not_get_temperature(self):
+        provider = OpenAIProvider(Settings(openai_api_key="k", openai_model="gpt-5-mini"))
+
+        self.assertNotIn("temperature", provider.build_body("p", "IMG", None, 100, 0.0))
+
+    def test_parse_and_empty_response(self):
+        result = OpenAIProvider.parse_response({
+            "choices": [{"message": {"content": "hola"}, "finish_reason": "stop"}],
+            "usage": {"prompt_tokens": 7, "completion_tokens": 3},
+        })
+        self.assertEqual(result.text, "hola")
+        self.assertEqual(result.usage, {"input": 7, "output": 3})
+
+        with self.assertRaises(ProviderError):
+            OpenAIProvider.parse_response({"choices": [{"message": {"content": "", "refusal": "no"}}]})
+
+
+class ErrorMappingTests(unittest.TestCase):
+    def _error(self, status: int, body=None) -> ProviderError:
+        return error_from_response("gemini", httpx.Response(status, json=body or {"error": {"message": "detalle"}}))
+
+    def test_status_codes_map_to_client_facing_errors(self):
+        self.assertEqual(self._error(401).status_code, 502)
+        self.assertEqual(self._error(404).status_code, 502)
+        self.assertEqual(self._error(429).status_code, 503)
+        self.assertEqual(self._error(500).status_code, 502)
+
+    def test_secrets_stay_in_the_log_not_in_the_client_message(self):
+        error = self._error(401, {"error": {"message": "API key not valid: AIza-secreta"}})
+
+        self.assertIn("AIza-secreta", error.log_detail)
+        self.assertNotIn("AIza-secreta", error.message)
+
+
+class PostJsonTests(unittest.IsolatedAsyncioTestCase):
+    async def _post(self, handler, **kwargs):
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            return await post_json(
+                client, "gemini", "https://x.test/y", json={}, headers={}, timeout=5, retry_wait_s=0, **kwargs
+            )
+
+    async def test_retries_once_after_a_5xx(self):
+        calls = []
+
+        def handler(request):
+            calls.append(1)
+            return httpx.Response(503 if len(calls) == 1 else 200, json={"ok": True})
+
+        response = await self._post(handler)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(calls), 2)
+
+    async def test_client_errors_are_returned_without_retry(self):
+        calls = []
+
+        def handler(request):
+            calls.append(1)
+            return httpx.Response(429, json={"error": {"message": "cuota"}})
+
+        response = await self._post(handler)
+
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(len(calls), 1)
+
+    async def test_timeout_is_not_retried_and_maps_to_504(self):
+        calls = []
+
+        def handler(request):
+            calls.append(1)
+            raise httpx.ReadTimeout("lento", request=request)
+
+        with self.assertRaises(ProviderError) as ctx:
+            await self._post(handler)
+
+        self.assertEqual(ctx.exception.status_code, 504)
+        self.assertEqual(len(calls), 1)
+
+    async def test_persistent_5xx_raises_after_the_retry(self):
+        def handler(request):
+            return httpx.Response(500, json={"error": {"message": "caido"}})
+
+        with self.assertRaises(ProviderError) as ctx:
+            await self._post(handler)
+
+        self.assertEqual(ctx.exception.status_code, 502)
+
+
+# ---------------------------------------------------------------------------
+# Idioma en la salida
+# ---------------------------------------------------------------------------
+
+class LanguageOutputTests(unittest.TestCase):
+    def test_english_blocks_get_english_labels_and_lang(self):
+        elements = blocks_to_elements([{
+            "tipo": "tabla", "idioma": "en", "contenido": "",
+            "encabezados": ["Name", "Age"], "filas": [["Ann", "30"]],
+        }])
+
+        self.assertEqual(elements[0]["lang"], "en")
+        self.assertIn("Table. 1 rows", elements[0]["content"])
+        self.assertIn("Columns: Name; Age", elements[0]["content"])
+        self.assertEqual(elements[1]["content"], "Row 1. Name: Ann; Age: 30")
+
+    def test_visual_descriptions_are_always_spanish(self):
+        elements = blocks_to_elements([{"tipo": "imagen", "idioma": "en", "contenido": "Un gato sobre una mesa."}])
+
+        self.assertEqual(elements[0]["lang"], "es")
+
+    def test_blocks_without_language_keep_the_previous_shape(self):
+        elements = blocks_to_elements([{"tipo": "texto", "contenido": "Hola mundo."}])
+
+        self.assertEqual(elements, [{"type": "Texto", "content": "Hola mundo."}])
+
+    def test_region_codes_are_normalized(self):
+        elements = blocks_to_elements([{"tipo": "texto", "idioma": "en-US", "contenido": "Hello."}])
+
+        self.assertEqual(elements[0]["lang"], "en")
+
+
+# ---------------------------------------------------------------------------
+# Pipeline hybrid
+# ---------------------------------------------------------------------------
+
+class FakeProvider:
+    """Proveedor falso: devuelve respuestas en orden o lanza el error indicado."""
+
+    def __init__(self, name: str, model: str, responses=(), delay: float = 0.0):
+        self.name = name
+        self.model = model
+        self._responses = list(responses)
+        self._delay = delay
+        self.calls: list[dict] = []
+
+    async def generate(self, client, prompt, image_b64, *, schema=None, max_tokens=4096,
+                       temperature=0.0, repeat_penalty=None):
+        self.calls.append({"prompt": prompt, "schema": schema, "max_tokens": max_tokens})
+        if self._delay:
+            await asyncio.sleep(self._delay)
+        response = self._responses.pop(0) if len(self._responses) > 1 else self._responses[0]
+        if isinstance(response, Exception):
+            raise response
+        return response
+
+
+def _json_result(blocks: list[dict]) -> ModelResult:
+    return ModelResult(text=json.dumps({"bloques": blocks}), finish_reason="STOP")
+
+
+def _classification(**flags) -> ModelResult:
+    page = {"tabla": False, "grafica": False, "diagrama": False, "imagen": False, "matematicas": False, "columnas": 1}
+    page.update(flags)
+    return ModelResult(text=json.dumps(page))
+
+
+class HybridPipelineTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.settings = Settings(gemini_api_key="k", pipeline="hybrid")
+        self.lock = asyncio.Lock()
+        self.client = mock.Mock()  # los proveedores falsos no lo usan
+
+    async def _run(self, cloud, local, settings=None):
+        return await pipeline.run_pipeline(
+            self.client, "IMG", None, settings or self.settings, cloud, local, self.lock
+        )
+
+    async def test_cloud_reads_the_page_and_ollama_only_detects(self):
+        cloud = FakeProvider("gemini", "gemini-2.5-flash", [_json_result([
+            {"tipo": "texto", "contenido": "Hola mundo.", "idioma": "es"},
+        ])])
+        local = FakeProvider("ollama", "qwen2.5vl", [_classification(columnas=2)])
+
+        result = await self._run(cloud, local)
+
+        self.assertEqual(result.provider, "gemini")
+        self.assertEqual(result.model, "gemini-2.5-flash")
+        self.assertEqual(result.detector, "ollama")
+        self.assertEqual(result.elements, [{"type": "Texto", "content": "Hola mundo.", "lang": "es"}])
+        self.assertEqual(result.page["columnas"], 2)
+        self.assertIsNone(result.fallback_reason)
+        self.assertEqual([step["name"] for step in result.steps], ["deteccion", "extraccion"])
+        self.assertEqual(len(local.calls), 1)  # solo clasifica, no extrae
+        self.assertEqual(local.calls[0]["max_tokens"], 120)
+
+    async def test_detector_off_skips_ollama_and_infers_page_from_blocks(self):
+        settings = Settings(gemini_api_key="k", detector="off")
+        cloud = FakeProvider("gemini", "m", [_json_result([
+            {"tipo": "tabla", "contenido": "Ventas", "encabezados": ["A"], "filas": [["1"]]},
+        ])])
+        local = FakeProvider("ollama", "qwen2.5vl", [_classification()])
+
+        result = await self._run(cloud, local, settings)
+
+        self.assertIsNone(result.detector)
+        self.assertEqual(local.calls, [])
+        self.assertTrue(result.page["tabla"])
+
+    async def test_followup_goes_to_the_cloud_when_detector_sees_an_undescribed_image(self):
+        cloud = FakeProvider("gemini", "m", [
+            _json_result([{"tipo": "texto", "contenido": "Solo texto."}]),
+            ModelResult(text="Un gato negro sobre una mesa."),
+        ])
+        local = FakeProvider("ollama", "qwen2.5vl", [_classification(imagen=True)])
+
+        result = await self._run(cloud, local)
+
+        self.assertEqual(len(cloud.calls), 2)
+        self.assertEqual(len(local.calls), 1)
+        self.assertIn("Un gato negro sobre una mesa.", result.description)
+        self.assertIn("llamada_enfocada", [step["name"] for step in result.steps])
+
+    async def test_slow_detector_does_not_delay_the_answer(self):
+        cloud = FakeProvider("gemini", "m", [_json_result([{"tipo": "texto", "contenido": "Listo."}])])
+        local = FakeProvider("ollama", "qwen2.5vl", [_classification(imagen=True)], delay=5.0)
+
+        with mock.patch.object(pipeline, "DETECT_GRACE_S", 0.05):
+            result = await asyncio.wait_for(self._run(cloud, local), timeout=2.0)
+
+        self.assertEqual(result.elements[0]["content"], "Listo.")
+        detection = next(step for step in result.steps if step["name"] == "deteccion")
+        self.assertEqual(detection["detail"], "omitida por tiempo")
+        self.assertFalse(self.lock.locked())  # el detector cancelado libero el candado de la GPU
+
+    async def test_detector_failure_does_not_break_the_request(self):
+        cloud = FakeProvider("gemini", "m", [_json_result([{"tipo": "texto", "contenido": "Listo."}])])
+        local = FakeProvider("ollama", "qwen2.5vl", [httpx.ConnectError("apagado")])
+
+        result = await self._run(cloud, local)
+
+        self.assertEqual(result.elements[0]["content"], "Listo.")
+        self.assertEqual(result.steps[0]["detail"], "no disponible")
+
+    async def test_free_text_answer_is_used_when_json_is_unreadable(self):
+        cloud = FakeProvider("gemini", "m", [ModelResult(text="[TEXTO] Respuesta sin JSON.")])
+        local = FakeProvider("ollama", "qwen2.5vl", [_classification()])
+
+        result = await self._run(cloud, local)
+
+        self.assertEqual(result.elements[0]["content"], "Respuesta sin JSON.")
+
+
+class FallbackTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.lock = asyncio.Lock()
+        self.client = mock.Mock()
+
+    def _local(self) -> FakeProvider:
+        return FakeProvider("ollama", "qwen2.5vl", [
+            _classification(),                                               # clasificacion 1
+            _classification(),                                               # clasificacion 2
+            _json_result([{"tipo": "texto", "contenido": "Leido en local."}]),  # extraccion
+        ])
+
+    async def test_cloud_failure_falls_back_to_ollama_v4(self):
+        settings = Settings(gemini_api_key="k")
+        cloud = FakeProvider("gemini", "m", [ProviderError(503, "limite", log_detail="gemini respondio HTTP 429: cuota")])
+
+        result = await pipeline.run_pipeline(
+            mock.Mock(), "IMG", None, settings, cloud, self._local(), self.lock
+        )
+
+        self.assertEqual(result.provider, "ollama")
+        self.assertEqual(result.elements[0]["content"], "Leido en local.")
+        self.assertIn("cuota", result.fallback_reason)
+        self.assertEqual(result.steps[0]["engine"], "gemini")
+        self.assertEqual(result.steps[0]["detail"], "fallo")
+        self.assertFalse(self.lock.locked())
+
+    async def test_network_error_also_falls_back(self):
+        settings = Settings(gemini_api_key="k")
+        cloud = FakeProvider("gemini", "m", [httpx.ConnectError("sin internet")])
+
+        result = await pipeline.run_pipeline(
+            mock.Mock(), "IMG", None, settings, cloud, self._local(), self.lock
+        )
+
+        self.assertEqual(result.provider, "ollama")
+        self.assertIsNotNone(result.fallback_reason)
+
+    async def test_fallback_off_returns_the_provider_error(self):
+        settings = Settings(gemini_api_key="k", fallback="off")
+        cloud = FakeProvider("gemini", "m", [ProviderError(503, "limite")])
+
+        with self.assertRaises(ProviderError) as ctx:
+            await pipeline.run_pipeline(mock.Mock(), "IMG", None, settings, cloud, self._local(), self.lock)
+
+        self.assertEqual(ctx.exception.status_code, 503)
+
+    async def test_no_fallback_when_the_cloud_already_used_the_time_budget(self):
+        # Presupuesto 0: cualquier fallo se considera tardio y no se repite toda la pagina en local.
+        settings = Settings(gemini_api_key="k", time_budget_s=0.0)
+        cloud = FakeProvider("gemini", "m", [ProviderError(504, "tardo", log_detail="sin respuesta")], delay=0.05)
+
+        with self.assertRaises(ProviderError) as ctx:
+            await pipeline.run_pipeline(mock.Mock(), "IMG", None, settings, cloud, self._local(), self.lock)
+
+        self.assertEqual(ctx.exception.status_code, 504)
+
+    async def test_network_error_without_fallback_becomes_a_503(self):
+        settings = Settings(gemini_api_key="k", fallback="off")
+        cloud = FakeProvider("gemini", "m", [httpx.ConnectError("sin internet")])
+
+        with self.assertRaises(ProviderError) as ctx:
+            await pipeline.run_pipeline(mock.Mock(), "IMG", None, settings, cloud, self._local(), self.lock)
+
+        self.assertEqual(ctx.exception.status_code, 503)
+
+
+class PipelineSelectionTests(unittest.IsolatedAsyncioTestCase):
+    async def test_without_cloud_provider_hybrid_setting_runs_v4(self):
+        settings = Settings(pipeline="hybrid")  # sin clave => v4
+        local = FakeProvider("ollama", "qwen2.5vl", [
+            _classification(), _classification(), _json_result([{"tipo": "texto", "contenido": "Local."}]),
+        ])
+
+        result = await pipeline.run_pipeline(mock.Mock(), "IMG", None, settings, None, local, asyncio.Lock())
+
+        self.assertEqual(result.provider, "ollama")
+        self.assertEqual(result.detector, "ollama")
+        self.assertEqual(result.elements[0]["content"], "Local.")
+
+    async def test_v3_uses_a_single_call(self):
+        settings = Settings(pipeline="v3")
+        local = FakeProvider("ollama", "qwen2.5vl", [ModelResult(text="[TEXTO] Una linea.")])
+
+        result = await pipeline.run_pipeline(mock.Mock(), "IMG", None, settings, None, local, asyncio.Lock())
+
+        self.assertEqual(len(local.calls), 1)
+        self.assertEqual(result.elements[0]["content"], "Una linea.")
+
+
+if __name__ == "__main__":
+    unittest.main()

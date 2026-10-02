@@ -14,6 +14,9 @@ export function AnalysisDetail({ meta }: { meta: AnalysisMeta | null }) {
       <p style={{ margin: 0 }}><strong>Detalle del análisis</strong></p>
       {pageType && <p style={{ margin: 0 }}>Se detectó: {pageType}</p>}
       {engine && <p style={{ margin: 0 }}>Motor: {engine}</p>}
+      {meta.fallbackReason && (
+        <p style={{ margin: 0 }}>Se usó el respaldo local porque el servicio en la nube falló: {meta.fallbackReason}</p>
+      )}
       {meta.steps.map((step, index) => (
         <p key={`${step.name}-${index}`} style={{ margin: 0 }}>
           {STEP_LABELS[step.name] ?? step.name}

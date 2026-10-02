@@ -29,7 +29,8 @@ Reemplaza, en la parte técnica, a `analisis-arquitectura/12-presentacion-tesis.
 *   **Puntos:**
     *   **Antes:** navegador → Gemini directo, con Tesseract para OCR. La API key estaba en el código público del navegador y cualquiera podía copiarla (ver `docs/despliegue-seguro.md`).
     *   **Ahora:** navegador → proxy en Vercel → túnel de Cloudflare → FastAPI + Ollama con un modelo de visión abierto, en una GPU de RunPod.
-    *   **Por qué:** la clave deja de estar expuesta; los PDFs no se envían a un proveedor comercial; el costo es fijo por hora de GPU; controlamos el prompt y el modelo.
+    *   **Por qué:** la clave deja de estar expuesta; en modo local los PDFs no se envían a un proveedor comercial; el costo es fijo por hora de GPU; controlamos el prompt y el modelo.
+    *   **Novedad (sin medir todavía):** el backend ahora admite un modo `hybrid` donde Gemini u OpenAI lee la página y Ollama solo detecta qué contiene y sirve de respaldo. Ese modo sí envía las páginas a un tercero, así que la garantía de privacidad solo aplica al modo local.
 *   **Nota del ponente:** "El precio de la autonomía es que hay que operar el servidor: cada vez que se enciende el pod hay que restaurarlo. Es una limitación que declaramos."
 
 ---
@@ -184,7 +185,7 @@ Prueba rápida del 29/09 con 7 páginas elegidas por su contenido visual. Cada r
 ---
 
 ### Diapositiva 14: Conclusión
-*   **Nota del ponente (30 s):** "AURA muestra que un modelo de visión abierto, en una GPU propia, puede describir páginas de PDF para lectura por voz, con costo fijo y sin enviar documentos a terceros. Ya transcribe bien texto, escaneos y esquemas sencillos, y mantiene las reglas de fidelidad. Los puntos débiles que medimos son las gráficas con varias series y las tablas grandes; por eso el siguiente paso es validar los datos de las gráficas, correr la batería completa y probar con usuarios."
+*   **Nota del ponente (30 s):** "AURA muestra que un modelo de visión abierto, en una GPU propia, puede describir páginas de PDF para lectura por voz, con costo fijo y, en su modo local, sin enviar documentos a terceros. Ya transcribe bien texto, escaneos y esquemas sencillos, y mantiene las reglas de fidelidad. Los puntos débiles que medimos son las gráficas con varias series y las tablas grandes; por eso el siguiente paso es validar los datos de las gráficas, correr la batería completa y probar con usuarios."
 
 ---
 

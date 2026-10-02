@@ -2,6 +2,13 @@ const MAX_BODY_BYTES = 8 * 1024 * 1024;
 
 export const maxDuration = 300;
 
+// IP real de quien usa AURA: el backend limita las peticiones por persona, no por proxy.
+// Vercel sobrescribe x-forwarded-for, asi que el visitante no puede falsificarla.
+function clientIp(request) {
+  const forwarded = String(request.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return forwarded || String(request.headers['x-real-ip'] || '').trim();
+}
+
 export default async function handler(request, response) {
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
@@ -20,12 +27,16 @@ export default async function handler(request, response) {
   }
 
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+    };
+    const ip = clientIp(request);
+    if (ip) headers['x-aura-client-ip'] = ip;
+
     const upstream = await fetch(`${backendUrl}/api/describe-image`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-      },
+      headers,
       body: JSON.stringify(request.body),
       signal: AbortSignal.timeout(295_000),
     });
@@ -34,6 +45,9 @@ export default async function handler(request, response) {
     if (!contentType.includes('application/json')) {
       return response.status(502).json({ detail: 'El servidor de análisis devolvió una respuesta inválida.' });
     }
+
+    const retryAfter = upstream.headers.get('retry-after');
+    if (retryAfter) response.setHeader('Retry-After', retryAfter);
 
     const payload = await upstream.json();
     return response.status(upstream.status).json(payload);

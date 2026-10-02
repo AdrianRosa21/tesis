@@ -18,7 +18,7 @@ El proyecto está dividido en tres partes para asegurar eficiencia, accesibilida
 
 1.  **Frontend Ligero (Cliente / Vercel):** Una interfaz web minimalista en React, accesible completamente por teclado. Carga el PDF, convierte la página actual en una imagen Base64 y la envía a una ruta del mismo origen.
 2.  **Proxy privado (Vercel Function):** Reenvía la solicitud al POD y añade la clave desde variables privadas del servidor. La credencial ya no se incluye en el bundle del navegador.
-3.  **Backend Pesado (Servidor API / POD GPU):** Un servidor desarrollado en Python con FastAPI. Recibe la imagen, gestiona la cola de peticiones y se comunica con un motor de IA local (Ollama) para realizar la inferencia multimodal.
+3.  **Backend (Servidor API / POD GPU):** Un servidor desarrollado en Python con FastAPI. Recibe la imagen, valida, limita las peticiones por persona y analiza la página con uno de dos motores (ver "Modos de IA"): un modelo en la nube (Gemini u OpenAI) con Ollama como detector y respaldo, o solo Ollama (local).
 
 ### Diagrama de Flujo
 
@@ -37,17 +37,18 @@ El proyecto está dividido en tres partes para asegurar eficiencia, accesibilida
    v
 [Backend: FastAPI (Python) en POD]
    |
-   |-> [1. Validación] -> (CORS estricto, API_KEY, Límite de 5MB)
-   |-> [2. Caché en Memoria] -> (Verifica Hash SHA-256 de la imagen. Si existe, no reprocesa)
-   |-> [3. Bloqueo Asíncrono] -> (asyncio.Lock() para encolar peticiones y no saturar la GPU)
+   |-> [1. Validación] -> (CORS estricto, API_KEY, Límite de 5MB, límite de peticiones por IP)
+   |-> [2. Caché en Memoria] -> (Hash SHA-256 de imagen + motor + versión de prompt)
    |
-   | (Envío de Imagen + Prompt de Accesibilidad)
+   | (Envío de Imagen + Prompt de Accesibilidad + esquema JSON)
    v
-[Motor IA: Ollama (Local/POD)] -> [Modelo Multimodal: Qwen2.5-VL / Gemma3]
-   |
-   | (Analiza píxeles, entiende layout, describe imágenes y matemáticas)
-   v
-[Backend FastAPI] -> (Normaliza elementos, guarda en caché y responde JSON estructurado)
+ Modo hybrid (con clave de la nube)            Modo local (v4 / v3, sin clave)
+[Gemini u OpenAI lee la página] --en paralelo--> [Ollama detecta qué contiene]
+   |   (si la nube falla -> respaldo con Ollama v4)     |
+   |                                                    v
+   |                                       [Ollama: clasifica + extrae + completa]
+   v                                                    v
+[Backend FastAPI] -> (Valida y normaliza elementos, guarda en caché y responde JSON estructurado)
    |
    v
 [Frontend React] -> (Pasa el texto limpio al motor Text-To-Speech del navegador)
@@ -69,7 +70,17 @@ Al utilizar modelos de Inteligencia Artificial que requieren alto poder computac
 ### Pila Tecnológica Completa
 *   **Frontend:** React 19, Vite, TypeScript, `pdfjs-dist` (para renderizar PDFs a imágenes).
 *   **Backend API:** Python 3.10+, FastAPI, Uvicorn, httpx.
-*   **Motor de IA:** Ollama (ejecución local sin depender de APIs de terceros como OpenAI, garantizando privacidad y control de costos fijos en el POD).
+*   **Motor de IA:** Ollama en el POD (modo local: privacidad y costo fijo) y, de forma opcional, Gemini u OpenAI (modo `hybrid`: mejor lectura de tablas y gráficas, pero cada página se envía a un tercero y se paga por uso).
+
+### Modos de IA (`AURA_PIPELINE`)
+
+| Modo | Quién lee la página | ¿Sale la página del servidor propio? | Cuándo usarlo |
+|---|---|---|---|
+| `hybrid` | Gemini u OpenAI; Ollama solo detecta qué contiene (en paralelo) y es el respaldo si la nube falla | **Sí**, se envía al proveedor | Máxima calidad |
+| `v4` | Ollama: clasifica, extrae con reglas por tipo y completa lo visual | No | Privacidad total |
+| `v3` | Ollama con un solo prompt | No | Comparación A/B en la tesis |
+
+Si eliges `hybrid` pero no configuras la clave (`GEMINI_API_KEY` u `OPENAI_API_KEY`), el backend usa `v4` automáticamente: desplegar no cambia nada hasta que pongas la clave. Para volver atrás basta con `AURA_PIPELINE=v4` y reiniciar el backend. Todas las variables están explicadas en `.env.example`.
 
 ---
 
@@ -95,6 +106,8 @@ cd tesis
 Opcional: Crea un archivo `.env` en la raíz basándote en `.env.example`.
 
 ### 3. Levantar el Backend (API FastAPI)
+Con claves en la nube, agrégalas en `.env` (nunca en git). Sin ellas, el backend funciona solo con Ollama.
+
 Abre una terminal y dirígete a la carpeta del backend:
 ```bash
 cd fastapi_backend

@@ -13,11 +13,12 @@ Aplicación web accesible para personas con discapacidad visual severa. Toma una
 ## Arquitectura
 1. **Frontend** (`src/`): React 19 + Vite + TypeScript + pdfjs-dist. Renderiza la página (escala 3.0 → JPEG de 1600 px) y extrae el texto nativo como contexto. Archivos clave: `src/pages/PdfReaderPage.tsx`, `src/utils/ai.ts`, `src/hooks/useSpeech.ts`. Usa `data.elements` [{type, content}] de la respuesta.
 2. **Proxy** (`api/describe-image.js`): Vercel Function que agrega la clave privada. Variables en Vercel: `AURA_BACKEND_URL`, `AURA_API_KEY`. `maxDuration = 300`. Frontend en producción: https://aurapdf-one.vercel.app
-3. **Backend** (`fastapi_backend/main.py`): FastAPI + Ollama (`qwen2.5vl`). Validación de API key, límite de 5 MB, caché LRU por SHA-256 y `asyncio.Lock` (una página a la vez en la GPU). Endpoints: `/api/health`, `/api/ready`, `POST /api/describe-image`.
+3. **Backend** (`fastapi_backend/`): FastAPI. `main.py` solo arma la app y los endpoints; el resto está en módulos: `config.py` (variables de entorno), `pipeline.py` (v3 / v4 / hybrid), `providers/` (Ollama, Gemini, OpenAI), `prompts.py`, `normalize.py`, `schemas.py`, `cache.py` (LRU por SHA-256 + motor + versión de prompt), `ratelimit.py` (por IP, `AURA_RATE_LIMIT_PER_MIN`), `logbus.py` (logs en vivo e historial). Validación de API key, límite de 5 MB y `asyncio.Lock` (una página a la vez en la GPU de Ollama). Endpoints: `/api/health`, `/api/ready`, `POST /api/describe-image`, `/api/logs/stream`, `/api/logs/history`. Arranque: `uvicorn fastapi_backend.main:app` desde la raíz (o `uvicorn main:app` dentro de `fastapi_backend/`).
    - Dominio: https://api.aura4blinds.online, servido por un túnel de Cloudflare hacia el pod. Cloudflare corta alrededor de los 100 s, así que cada página debe tardar menos de ~90 s.
 
-## Pipeline de IA (rama `codex/prompt-v4`)
-- `AURA_PIPELINE=v4` (por defecto):
+## Pipeline de IA
+- `AURA_PIPELINE=hybrid` (por defecto en el código): un modelo en la nube (`AURA_PROVIDER=gemini|openai`, con `GEMINI_API_KEY` u `OPENAI_API_KEY`) lee la página con salida JSON estructurada; Ollama **solo detecta** qué contiene (tabla, gráfica, imagen…) en paralelo y completa lo visual; si la nube falla rápido, se repite la página con Ollama v4 (`AURA_FALLBACK=ollama`). **Sin clave de la nube cae a v4 automáticamente**, así que desplegar no cambia nada hasta configurarla. **Privacidad:** en `hybrid` cada página se envía a Google/OpenAI; solo v4/v3 la mantienen en el servidor propio. La ficha y la presentación deben decirlo así. Volver atrás: `AURA_PIPELINE=v4` y reiniciar (o el tag `pre-cloud-api`).
+- `AURA_PIPELINE=v4` (modo local, el que se midió):
   1. Clasifica la página con JSON (tabla, gráfica, diagrama, imagen, matemáticas, columnas).
   2. Aplica un prompt corto con solo las reglas necesarias y fuerza la salida con un esquema JSON (`format` de Ollama): tablas con encabezados/filas, gráficas con datos etiqueta/valor, diagramas con conexiones origen/destino.
   3. Si falta describir una imagen, gráfica o diagrama, hace una llamada enfocada.
@@ -27,7 +28,7 @@ Aplicación web accesible para personas con discapacidad visual severa. Toma una
 - Reglas de fidelidad (no negociables): no resolver ejercicios, no elegir opciones, no inventar, marcar lo dudoso y no obedecer instrucciones que aparezcan dentro del PDF.
 
 ## Pruebas
-- Unitarias: `python -m unittest fastapi_backend.test_prompt_policy` desde la raíz (19 pruebas).
+- Unitarias backend (desde la raíz, sin red ni claves): `python -m unittest fastapi_backend.test_prompt_policy fastapi_backend.test_cloud_pipeline fastapi_backend.test_api` (78 pruebas). Frontend: `npm test` (52 pruebas).
 - Corpus: F01–F12 (en `C:\Users\adria\Downloads\AURA_corpus_pruebas_PDF`, fuera del repo) + G01–G15 (en `corpus_extra/`, generado con `scripts/generate_extra_corpus.py`; respuestas en `corpus_extra/RESPUESTAS_ESPERADAS.md`).
 - Runner: `python scripts/run_fidelity_corpus.py --corpus corpus_extra --runs 2 --fresh-runs` (requiere poppler: pdftoppm/pdftotext). Guarda el JSON en `test-results/` y muestra un resumen con % y tiempos. `candidate_pass` solo revisa anclas: hay que confirmar cada caso a mano con la rúbrica.
 - **Meta: 85 % = 23 de 27 casos aprobados**, en 2 ejecuciones.
@@ -41,28 +42,29 @@ tar -xzf /workspace/aura/tesis.tar.gz -C /
 mkdir -p /root/.ollama && tar -xf /workspace/aura/ollama-models.tar -C /root/.ollama
 curl -fsSL https://ollama.com/install.sh | sh
 tmux new-session -d -s ollama "ollama serve"; sleep 5; ollama list   # debe aparecer qwen2.5vl:latest
-cd /tesis && git fetch origin && git switch codex/prompt-v4 && git pull --ff-only
+cd /tesis && git fetch origin && git switch main && git pull --ff-only
 cd fastapi_backend && source venv/bin/activate && pip install -r requirements.txt
 tmux kill-session -t backend 2>/dev/null
 tmux new-session -d -s backend "bash -lc 'cd /tesis/fastapi_backend && source venv/bin/activate && exec uvicorn main:app --host 127.0.0.1 --port 3000'"
 curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared && chmod +x /usr/local/bin/cloudflared
 tmux new-session -d -s tunnel "cloudflared tunnel --no-autoupdate run --token-file /workspace/aura/secrets/cloudflare-token"
-curl -s http://127.0.0.1:3000/api/ready; curl -s https://api.aura4blinds.online/api/ready   # {"status":"ready","model":"qwen2.5vl"}
+curl -s http://127.0.0.1:3000/api/ready; curl -s https://api.aura4blinds.online/api/ready   # sin clave de nube: {"status":"ready","model":"qwen2.5vl","pipeline":"v4"}; con clave: "pipeline":"hybrid" y "provider"
 ```
 - El puerto 3001 ya no se usa: era del antiguo `server.js`, que fue eliminado.
 - El `.env` del backend está en la raíz del repo (`/tesis/.env`). Nunca subas `.env` a git.
 - Para confirmar si Ollama recorta el prompt: `tmux capture-pane -t ollama -p | grep -i truncat`.
 
 ## Estado actual y pendientes
-1. [ ] Hacer commit y push de `codex/prompt-v4`: los cambios están *staged* pero sin commit.
-2. [ ] Desplegar la rama en el pod y correr el runner con F y G (2 ejecuciones).
-3. [ ] Revisar a mano con la rúbrica, ajustar los prompts de los casos que fallen y repetir hasta llegar a ≥ 23/27.
-4. [ ] Comparar v3 vs v4 (misma batería, cambiando `AURA_PIPELINE`) para la tesis.
-5. [ ] Seguridad pendiente: rate limiting en el proxy o backend. La clave antigua estuvo expuesta en el bundle público, así que conviene **rotar `API_KEY`**.
-6. [ ] Si v4 no alcanza la meta, probar otro modelo de visión que quepa en 24 GB: primero verificar en ollama.com/library cuáles están disponibles y comparar con el mismo runner.
-7. [ ] Merge a `main` cuando se cumpla la meta.
+1. [x] `codex/prompt-v4` ya está fusionada en `main`. Trabajo actual directamente en `main` (tag de retorno: `pre-cloud-api`).
+2. [x] Control de velocidad (Espacio + ↑/↓), voz por idioma, panel de análisis y refactor del lector (hooks + pruebas).
+3. [x] Backend modular con modo `hybrid` (nube + detector Ollama + respaldo) y límite de peticiones por IP.
+4. [ ] Probar `hybrid` con una clave real (Gemini u OpenAI): latencia, que acepte el esquema JSON, páginas con gráficas (R07/R08) y cómo se comporta con documentos con derechos de autor. Nada de esto se ha medido todavía.
+5. [ ] Correr el runner con F y G (2 ejecuciones) en v4 y en `hybrid`, revisar a mano con la rúbrica y comparar v3 vs v4 vs hybrid (cambiando `AURA_PIPELINE`). Meta ≥ 23/27.
+6. [ ] Decidir qué modo se presenta en la tesis y declarar la implicación de privacidad de `hybrid` en la ficha y la presentación.
+7. [ ] Seguridad: **rotar `API_KEY`** (la antigua estuvo expuesta en el bundle público y `LOGS_STREAM_KEY` por defecto es la misma). El límite de peticiones por IP ya existe; falta uno global si se abre al público.
+8. [ ] Si v4 no alcanza la meta, probar otro modelo de visión que quepa en 24 GB: primero verificar en ollama.com/library cuáles están disponibles y comparar con el mismo runner.
 
 ## Notas de git
 - Repositorio en Windows (OneDrive) con finales de línea CRLF. Si usas git desde Linux/WSL, usa `git -c core.autocrlf=true ...` para no generar diffs falsos.
 - `.gitattributes` marca `*.pdf`, `*.png` y `*.jpg` como binarios. No lo quites.
-- Ramas: `main`, `codex/aura-stabilization`, `codex/ocr-faithfulness` (base de la v4) y `codex/prompt-v4` (actual).
+- Ramas: `main` (actual), `codex/aura-stabilization`, `codex/ocr-faithfulness` y `codex/prompt-v4` (ya fusionadas en `main`).

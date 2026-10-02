@@ -56,7 +56,7 @@ Contexto con cifras (verificadas en fuentes públicas):
 - **Social:** acceso autónomo a libros, guías, exámenes y artículos sin depender de un lector humano o de PDFs "accesibles" que casi nadie prepara.
 - **Educativo:** estudiantes con discapacidad visual pueden usar el mismo material que sus compañeros (tablas, gráficas, diagramas).
 - **Técnico/científico:** evidencia comparativa de prompts v3 vs v4 y de fidelidad en modelos de visión pequeños que corren en una GPU de 24 GB.
-- **Privacidad y soberanía:** los documentos no se envían a terceros comerciales; el costo es fijo y controlable.
+- **Privacidad y soberanía:** en el modo local (v4/v3, el que se midió) los documentos no salen de nuestra GPU y el costo es fijo y controlable. El modo opcional `hybrid` lee la página con un modelo en la nube (Gemini u OpenAI): puede mejorar tablas y gráficas, pero **envía cada página a un tercero** y su costo es por uso. **[PENDIENTE]** decidir qué modo se presenta y declararlo con claridad; el modo `hybrid` aún no tiene medición.
 - **Escalable a:** escuelas, bibliotecas, universidades y asociaciones de personas ciegas. **[PENDIENTE]** definir el usuario/institución piloto concreto.
 
 ## 6. Viabilidad de implementación
@@ -141,7 +141,7 @@ Conviene defender **4 y 10** como principales; los otros dos, como impactos indi
 
 ## Guion de 1 minuto
 
-"Las personas ciegas no pueden leer muchos PDFs porque los lectores de pantalla solo leen texto: fallan con escaneos, tablas, gráficas y diagramas. AURA toma una captura de cada página, la describe con IA multimodal que corre en nuestra propia GPU y la lee en voz alta, todo por teclado. Medimos la fidelidad con un corpus de 27 documentos; la línea base fue 58 %, y con un pipeline v4 que clasifica la página y fuerza salida estructurada buscamos llegar al 85 %. Opera a US$0.49 por hora de GPU encendida, sin enviar documentos a terceros, y contribuye a los ODS 4 y 10."
+"Las personas ciegas no pueden leer muchos PDFs porque los lectores de pantalla solo leen texto: fallan con escaneos, tablas, gráficas y diagramas. AURA toma una captura de cada página, la describe con IA multimodal que corre en nuestra propia GPU y la lee en voz alta, todo por teclado. Medimos la fidelidad con un corpus de 27 documentos; la línea base fue 58 %, y con un pipeline v4 que clasifica la página y fuerza salida estructurada buscamos llegar al 85 %. Opera a US$0.49 por hora de GPU encendida, sin enviar documentos a terceros en su modo local, y contribuye a los ODS 4 y 10."
 
 ## Preguntas que probablemente harán, y qué falta para responderlas
 

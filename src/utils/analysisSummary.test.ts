@@ -11,6 +11,7 @@ function meta(overrides: Partial<AnalysisMeta> = {}): AnalysisMeta {
     model: null,
     detector: null,
     steps: [],
+    fallbackReason: null,
     cached: false,
     elementCount: 2,
     ...overrides,

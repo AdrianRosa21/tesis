@@ -34,6 +34,8 @@ export interface AnalysisMeta {
   model: string | null;
   detector: string | null;
   steps: AnalysisStep[];
+  /** Si la nube fallo y se uso el respaldo local, el motivo (para mostrarlo, no para leerlo en voz alta). */
+  fallbackReason: string | null;
   cached: boolean;
   elementCount: number;
 }
@@ -59,6 +61,7 @@ interface ApiSuccessPayload {
   model?: string;
   detector?: string | null;
   steps?: unknown;
+  fallback_reason?: string;
   cached?: boolean;
 }
 
@@ -213,6 +216,7 @@ function buildMeta(data: ApiSuccessPayload, elementCount: number, clientSeconds:
     model: data.model ?? null,
     detector: data.detector ?? null,
     steps: parseSteps(data.steps),
+    fallbackReason: typeof data.fallback_reason === 'string' && data.fallback_reason ? data.fallback_reason : null,
     cached: Boolean(data.cached),
     elementCount,
   };
