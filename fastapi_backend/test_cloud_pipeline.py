@@ -163,6 +163,27 @@ class SchemaTests(unittest.TestCase):
         self.assertNotIn("idioma", ollama_props)
 
 
+class OllamaWarmUpTests(unittest.IsolatedAsyncioTestCase):
+    async def test_warm_up_uses_the_same_context_size_as_real_requests(self):
+        from fastapi_backend.providers import OllamaProvider
+
+        sent = []
+
+        def handler(request):
+            sent.append(json.loads(request.content))
+            return httpx.Response(200, json={"done": True})
+
+        provider = OllamaProvider(Settings(ollama_num_ctx=16384, ollama_keep_alive="30m"))
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            await provider.warm_up(client)
+            await provider.generate(client, "p", "IMG")  # peticion real (usa /api/chat)
+
+        warm_up_body = sent[0]
+        self.assertEqual(warm_up_body["options"]["num_ctx"], sent[1]["options"]["num_ctx"])
+        self.assertEqual(warm_up_body["keep_alive"], "30m")
+        self.assertNotIn("prompt", warm_up_body)  # sin prompt: solo carga, no genera
+
+
 class GeminiProviderTests(unittest.TestCase):
     def test_body_has_image_prompt_schema_and_no_thinking_for_flash(self):
         provider = GeminiProvider(Settings(gemini_api_key="k", gemini_model="gemini-2.5-flash"))

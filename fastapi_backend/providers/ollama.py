@@ -19,7 +19,12 @@ class OllamaProvider:
         de encender el pod pagaba la carga del modelo (~85 s) y casi llegaba al corte de Cloudflare."""
         response = await client.post(
             f"{self._settings.ollama_base_url}/api/generate",
-            json={"model": self.model, "keep_alive": self._settings.ollama_keep_alive},
+            json={
+                "model": self.model,
+                "keep_alive": self._settings.ollama_keep_alive,
+                # Mismo num_ctx que las peticiones reales: si difiere, Ollama recarga el modelo.
+                "options": {"num_ctx": self._settings.ollama_num_ctx},
+            },
             timeout=300.0,
         )
         response.raise_for_status()
