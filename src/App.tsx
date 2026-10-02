@@ -10,15 +10,8 @@ type Page = 'home' | 'reader' | 'tutorial';
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const pageBeforeTutorialRef = useRef<'home' | 'reader'>('home');
-  const {
-    speak,
-    pause,
-    resume,
-    stop,
-    isSpeaking,
-    isPaused,
-    highlight
-  } = useSpeech();
+  const speech = useSpeech();
+  const { speak, stop } = speech;
 
   const handleStart = useCallback(() => {
     stop();
@@ -120,7 +113,7 @@ function App() {
       }
 
       if (text) {
-        speak(text);
+        speak(text, { lang: 'es' });
       }
     };
 
@@ -141,32 +134,20 @@ function App() {
         <HomePage
           onStart={handleStart}
           onOpenTutorial={handleOpenTutorial}
-          speak={speak}
-          stopSpeech={stop}
+          speech={speech}
         />
       )}
       {currentPage === 'reader' && (
         <PdfReaderPage
           onBack={handleBack}
           onOpenTutorial={handleOpenTutorial}
-          speak={speak}
-          pauseSpeech={pause}
-          resumeSpeech={resume}
-          stopSpeech={stop}
-          isSpeaking={isSpeaking}
-          isPaused={isPaused}
-          highlight={highlight}
+          speech={speech}
         />
       )}
       {currentPage === 'tutorial' && (
         <TutorialPage
           onExit={handleExitTutorial}
-          speak={speak}
-          pauseSpeech={pause}
-          resumeSpeech={resume}
-          stopSpeech={stop}
-          isSpeaking={isSpeaking}
-          isPaused={isPaused}
+          speech={speech}
         />
       )}
     </>

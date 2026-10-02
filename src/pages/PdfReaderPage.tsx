@@ -1,447 +1,192 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
-import workerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url';
-import { savePdfFile, getPdfFile, deletePdfFile } from '../utils/db';
-import { analyzePageStructure, type PageElement } from '../utils/ai';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
-
-interface HighlightState {
-  start: number;
-  length: number;
-}
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ChangeEvent, KeyboardEvent } from 'react';
+import type { SpeechApi } from '../hooks/useSpeech';
+import { usePdfDocument } from '../hooks/usePdfDocument';
+import { usePageAnalysis } from '../hooks/usePageAnalysis';
+import { useReadingNavigation } from '../hooks/useReadingNavigation';
+import { useSpaceRate } from '../hooks/useSpaceRate';
+import { isTypingTarget, useWindowKeydown } from '../hooks/useWindowKeydown';
+import { formatRate } from '../utils/speechRate';
+import { AnalysisDetail } from '../components/AnalysisDetail';
+import { PdfViewer } from '../components/PdfViewer';
+import { ReaderControls } from '../components/ReaderControls';
+import { ReaderStatusBox } from '../components/ReaderStatusBox';
+import { ReadingBox } from '../components/ReadingBox';
 
 interface PdfReaderPageProps {
   onBack: () => void;
   onOpenTutorial: () => void;
-  speak: (text: string) => void;
-  pauseSpeech: () => void;
-  resumeSpeech: () => void;
-  stopSpeech: () => void;
-  isSpeaking: boolean;
-  isPaused: boolean;
-  highlight: HighlightState | null;
+  speech: SpeechApi;
 }
 
-interface PageData {
-  pageNum: number;
-  elements: PageElement[] | null;
-  canvasDataUrl: string | null;
-  nativeText: string | null;
-  isProcessing: boolean;
-}
+const INITIAL_STATUS =
+  'Página de lectura de PDF abierta. Presiona la letra R para seleccionar un archivo, o usa el botón Seleccionar PDF.';
 
-export function PdfReaderPage({
-  onBack,
-  onOpenTutorial,
-  speak,
-  pauseSpeech,
-  resumeSpeech,
-  stopSpeech,
-  isSpeaking,
-  isPaused,
-  highlight
-}: PdfReaderPageProps) {
-  const [fileName, setFileName] = useState<string>('');
-  const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(0);
-  const [pageCache, setPageCache] = useState<Record<number, PageData>>({});
-  
-  const [status, setStatus] = useState<string>('Página de lectura de PDF abierta. Presiona la letra R para seleccionar un archivo, o usa el botón Seleccionar PDF.');
-  
-  const [currentElementIndex, setCurrentElementIndex] = useState<number>(0);
-  const [readingText, setReadingText] = useState<string>('');
-  const [pageInputValue, setPageInputValue] = useState<string>('1');
-  
+export function PdfReaderPage({ onBack, onOpenTutorial, speech }: PdfReaderPageProps) {
+  const { speak, stop: stopSpeech, pause, resume, isSpeaking, isPaused, highlight, rate, adjustRate, announce } = speech;
+
+  const [status, setStatus] = useState(INITIAL_STATUS);
+  const [pageInputValue, setPageInputValue] = useState('1');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const headerRef = useRef<HTMLHeadingElement>(null);
-  const visualCanvasRef = useRef<HTMLCanvasElement>(null);
-  const hasInitialized = useRef<boolean>(false);
-  const renderIdRef = useRef<number>(0);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderTaskRef = useRef<any>(null);
+  const hasInitialized = useRef(false);
+
+  const updateStatus = useCallback((message: string) => {
+    setStatus(message);
+    speak(message, { lang: 'es' });
+  }, [speak]);
+
+  const analysis = usePageAnalysis();
+  const reading = useReadingNavigation(speech);
+
+  const pdf = usePdfDocument({
+    onNavigate: (pageNum, totalPages) => {
+      stopSpeech();
+      reading.reset();
+      setPageInputValue(pageNum.toString());
+      headerRef.current?.focus();
+      updateStatus(`Página ${pageNum} de ${totalPages}`);
+    },
+    onMessage: updateStatus,
+    onDocumentReplaced: analysis.reset,
+  });
+
+  const { currentPage, totalPages, pdfDoc, snapshot } = pdf;
+  const pageAnalysis = analysis.analyses[currentPage];
+  const elements = pageAnalysis?.elements;
+  const currentElement = elements?.[reading.index];
+  const isProcessing = analysis.isProcessing;
+  const pageIsRendered = snapshot?.pageNum === currentPage;
 
   useEffect(() => {
-    const initSavedPdf = async () => {
+    const init = async () => {
       if (hasInitialized.current) return;
       hasInitialized.current = true;
-      
-      try {
-        const savedBuffer = await getPdfFile('currentPdf');
-        if (savedBuffer) {
-          const doc = await pdfjsLib.getDocument({ data: savedBuffer }).promise;
-          setPdfDoc(doc);
-          setTotalPages(doc.numPages);
-          
-          const savedPage = localStorage.getItem('currentPage');
-          const savedName = localStorage.getItem('fileName');
-          
-          if (savedName) setFileName(savedName);
-          
-          const pageToLoad = savedPage ? parseInt(savedPage, 10) : 1;
-          setTimeout(() => goToPage(doc, pageToLoad), 100);
-          
-          const msg = `Sesión restaurada. Documento ${savedName || ''} cargado en la página ${pageToLoad}.`;
-          setStatus(msg);
-          speak(msg);
-          return;
-        }
-      } catch (err) {
-        console.error("Error loading saved PDF", err);
-      }
-      speak(status);
+
+      const restored = await pdf.restoreSession();
+      if (!restored) speak(INITIAL_STATUS, { lang: 'es' });
     };
 
-    initSavedPdf();
+    init();
     return () => stopSpeech();
+    // Solo al montar: restaurar la sesion guardada.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const updateStatus = useCallback((newStatus: string) => {
-    setStatus(newStatus);
-    speak(newStatus);
-  }, [speak]);
-
-  async function goToPage(doc: pdfjsLib.PDFDocumentProxy, pageNum: number) {
-    if (pageNum < 1 || pageNum > doc.numPages) return;
-    
-    const currentRenderId = ++renderIdRef.current;
-
-    stopSpeech();
-    setReadingText('');
-    setCurrentElementIndex(0);
-    setCurrentPage(pageNum);
-    setPageInputValue(pageNum.toString());
-    localStorage.setItem('currentPage', pageNum.toString());
-    const msg = `Página ${pageNum} de ${doc.numPages}`;
-    
-    if (headerRef.current) {
-      headerRef.current.focus();
-    }
-    updateStatus(msg);
-
-    try {
-      const page = await doc.getPage(pageNum);
-      if (currentRenderId !== renderIdRef.current) return;
-
-      let nativeText: string | null = null;
-      try {
-        const textContent = await page.getTextContent();
-        nativeText = textContent.items
-          .map(item => {
-            if (!('str' in item)) return '';
-            return `${item.str}${item.hasEOL ? '\n' : ' '}`;
-          })
-          .join('')
-          .replace(/[ \t]+\n/g, '\n')
-          .replace(/[ \t]{2,}/g, ' ')
-          .trim() || null;
-      } catch (error) {
-        console.warn('No fue posible extraer la capa de texto del PDF.', error);
-      }
-      
-      let dataUrl: string | null = null;
-      if (visualCanvasRef.current) {
-        const canvas = visualCanvasRef.current;
-        const context = canvas.getContext('2d');
-        if (context) {
-          if (renderTaskRef.current) {
-            try { await renderTaskRef.current.cancel(); } catch { /* ignore cancellation errors */ }
-          }
-          
-          // Aumentar la escala a 3.0 para Alta Definición (mejora radicalmente el OCR)
-          const viewport = page.getViewport({ scale: 3.0 });
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
-          
-          // Fondo blanco forzado para evitar problemas de transparencia
-          context.fillStyle = '#ffffff';
-          context.fillRect(0, 0, canvas.width, canvas.height);
-          
-          const renderContext = { canvasContext: context, viewport };
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const renderTask = page.render(renderContext as any);
-          renderTaskRef.current = renderTask;
-          
-          await renderTask.promise;
-          renderTaskRef.current = null;
-          
-          // Usar JPEG de alta calidad para evitar un string Base64 gigante con resolución 3x
-          dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-        }
-      }
-
-      setPageCache(prev => {
-        const nextCache = Object.fromEntries(
-          Object.entries(prev).map(([key, value]) => [
-            key,
-            { ...value, canvasDataUrl: null }
-          ])
-        ) as Record<number, PageData>;
-
-        nextCache[pageNum] = {
-          pageNum,
-          elements: prev[pageNum]?.elements || null,
-          canvasDataUrl: dataUrl,
-          nativeText,
-          isProcessing: false
-        };
-
-        return nextCache;
-      });
-
-    } catch (error: unknown) {
-      if (currentRenderId !== renderIdRef.current) return; 
-      const err = error as Error;
-      if (err?.name === 'RenderingCancelledException' || err?.message?.includes('cancelled')) return; 
-      console.error("Error real al renderizar:", err);
-      updateStatus("Error al renderizar la página.");
-    }
-  }
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const hasPdfExtension = file.name.toLowerCase().endsWith('.pdf');
-    if (file.type !== 'application/pdf' && !hasPdfExtension) {
-      updateStatus('El archivo seleccionado no es un PDF válido.');
-      return;
-    }
-
-    setFileName(file.name);
-    updateStatus(`Archivo seleccionado: ${file.name}. Procesando PDF, por favor espera.`);
-    setPdfDoc(null);
-    setPageCache({});
-    setCurrentPage(1);
-    setTotalPages(0);
-    stopSpeech();
-
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      await savePdfFile('currentPdf', arrayBuffer.slice(0));
-      localStorage.setItem('fileName', file.name);
-      localStorage.setItem('currentPage', '1');
-
-      const doc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      setPdfDoc(doc);
-      setTotalPages(doc.numPages);
-      
-      setTimeout(() => goToPage(doc, 1), 100);
-    } catch (error) {
-      console.error(error);
-      updateStatus('Ocurrió un error al procesar el PDF. Asegúrate de que no esté dañado o protegido con contraseña.');
-    }
-  };
-
-  const readElement = (elements: PageElement[], index: number) => {
-    if (index < 0 || index >= elements.length) return;
-    
-    const el = elements[index];
-    let prefix = '';
-    const typeLower = el.type.toLowerCase();
-    
-    // Ignorar prefijo para párrafos normales para que la lectura sea natural
-    if (!['párrafo', 'parrafo', 'texto', 'paragraph'].includes(typeLower)) {
-      // Capitalizar la primera letra del tipo
-      const capitalizedType = el.type.charAt(0).toUpperCase() + el.type.slice(1);
-      prefix = `${capitalizedType}: `;
-    }
-    
-    const textToSpeak = `${prefix}${el.content}`;
-    setReadingText(textToSpeak);
-    speak(textToSpeak);
+  const goTo = (pageNum: number) => {
+    if (pdfDoc) pdf.goToPage(pdfDoc, pageNum);
   };
 
   const handleRead = async () => {
-    const data = pageCache[currentPage];
-    if (!data || data.isProcessing) return;
+    if (isProcessing) return;
 
-    if (data.elements) {
-      setCurrentElementIndex(0);
-      readElement(data.elements, 0);
-    } else {
-      if (!data.canvasDataUrl) {
-        updateStatus("La pagina todavia se esta preparando. Intenta de nuevo en un momento.");
-        return;
-      }
+    if (elements) {
+      reading.start(elements);
+      return;
+    }
 
-      updateStatus("Analizando estructura de la página con inteligencia artificial, por favor espera unos segundos.");
-      stopSpeech();
-      speak("Analizando la página con inteligencia artificial. Por favor, espera...");
-      setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessing: true } }));
-      
-      try {
-        const elements = await analyzePageStructure(data.canvasDataUrl, data.nativeText);
-        setPageCache(prev => ({ 
-          ...prev, 
-          [currentPage]: {
-            ...prev[currentPage],
-            elements,
-            canvasDataUrl: null,
-            isProcessing: false
-          }
-        }));
+    if (!pageIsRendered || !snapshot?.canvasDataUrl) {
+      updateStatus('La pagina todavia se esta preparando. Intenta de nuevo en un momento.');
+      return;
+    }
 
-        setStatus(`Análisis completado. Se encontraron ${elements.length} elementos en la página ${currentPage}.`);
-        setCurrentElementIndex(0);
-        readElement(elements, 0);
-      } catch (e) {
-        console.error(e);
-        const message = e instanceof Error
-          ? e.message
-          : 'No fue posible analizar la página con AURA.';
-        updateStatus(message);
-        setPageCache(prev => ({ ...prev, [currentPage]: { ...prev[currentPage], isProcessing: false } }));
-      }
+    updateStatus('Analizando estructura de la página con inteligencia artificial, por favor espera unos segundos.');
+    stopSpeech();
+    speak('Analizando la página con inteligencia artificial. Por favor, espera...', { lang: 'es' });
+
+    try {
+      const result = await analysis.analyze(currentPage, snapshot.canvasDataUrl, snapshot.nativeText);
+      pdf.releaseImage(currentPage);
+      setStatus(`Análisis completado. Se encontraron ${result.elements.length} elementos en la página ${currentPage}.`);
+      reading.start(result.elements);
+    } catch (error) {
+      console.error(error);
+      updateStatus(error instanceof Error ? error.message : 'No fue posible analizar la página con AURA.');
     }
   };
 
   const handlePauseResume = () => {
-    if (isPaused) resumeSpeech();
-    else if (isSpeaking) pauseSpeech();
+    if (isPaused) resume();
+    else if (isSpeaking) pause();
   };
 
-  const handlePrevPage = () => { if (pdfDoc) goToPage(pdfDoc, currentPage - 1); };
-  const handleNextPage = () => { if (pdfDoc) goToPage(pdfDoc, currentPage + 1); };
-
-  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPageInputValue(e.target.value);
+  const handleBack = () => {
+    stopSpeech();
+    pdf.forgetDocument();
+    onBack();
   };
 
-  const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      const val = parseInt(pageInputValue, 10);
-      if (!isNaN(val) && pdfDoc && val >= 1 && val <= totalPages) {
-        goToPage(pdfDoc, val);
-      } else {
-        setPageInputValue(currentPage.toString());
-        speak(`Página no válida. El documento tiene ${totalPages} páginas.`);
-      }
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    stopSpeech();
+    pdf.openFile(file);
+  };
+
+  const handlePageInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    const value = parseInt(pageInputValue, 10);
+    if (!isNaN(value) && pdfDoc && value >= 1 && value <= totalPages) {
+      goTo(value);
+    } else {
+      setPageInputValue(currentPage.toString());
+      speak(`Página no válida. El documento tiene ${totalPages} páginas.`, { lang: 'es' });
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.tagName === 'SELECT'
-      ) return;
-
-      const key = e.key;
-      
-      if (key.toLowerCase() === 'f') {
-        if (pdfDoc && !isProcessing) {
-          handleRead();
-        }
-      } 
-      else if (key.toLowerCase() === 'r') {
-        if (!isProcessing) fileInputRef.current?.click();
-      }
-      else if (key === ' ') {
-        e.preventDefault(); 
-        handlePauseResume();
-      } 
-      else if (key.toLowerCase() === 'g') {
-        stopSpeech();
-      } 
-      else if (key.toLowerCase() === 'j') {
-        stopSpeech();
-        deletePdfFile('currentPdf').catch(console.error);
-        localStorage.removeItem('currentPage');
-        localStorage.removeItem('fileName');
-        onBack();
-      } 
-      else if (key === 'ArrowDown') {
-        e.preventDefault();
-        const data = pageCache[currentPage];
-        if (data?.elements) {
-          if (currentElementIndex < data.elements.length - 1) {
-            const nextIdx = currentElementIndex + 1;
-            setCurrentElementIndex(nextIdx);
-            readElement(data.elements, nextIdx);
-          } else if (currentElementIndex === data.elements.length - 1) {
-            setCurrentElementIndex(data.elements.length);
-            const msg = "Fin de la página.";
-            setReadingText(msg);
-            speak(msg);
-          }
-        }
-      }
-      else if (key === 'ArrowUp') {
-        e.preventDefault();
-        const data = pageCache[currentPage];
-        if (data?.elements) {
-          if (currentElementIndex > 0 && currentElementIndex <= data.elements.length - 1) {
-            const prevIdx = currentElementIndex - 1;
-            setCurrentElementIndex(prevIdx);
-            readElement(data.elements, prevIdx);
-          } else if (currentElementIndex === data.elements.length) {
-            // Si estabamos en el "Fin de la página", regresamos al último elemento
-            const prevIdx = data.elements.length - 1;
-            setCurrentElementIndex(prevIdx);
-            readElement(data.elements, prevIdx);
-          } else if (currentElementIndex === 0) {
-            setCurrentElementIndex(-1);
-            const msg = "Inicio de la página.";
-            setReadingText(msg);
-            speak(msg);
-          } else if (currentElementIndex === -1) {
-            // Ya estamos en el inicio, solo repetimos
-            const msg = "Inicio de la página.";
-            setReadingText(msg);
-            speak(msg);
-          }
-        }
-      }
-      else if (key.toLowerCase() === 'v') {
-        e.preventDefault();
-        const data = pageCache[currentPage];
-        if (data?.elements) {
-          if (currentElementIndex >= 0 && currentElementIndex < data.elements.length) {
-            readElement(data.elements, currentElementIndex);
-          } else if (currentElementIndex === data.elements.length) {
-            speak("Fin de la página.");
-          } else if (currentElementIndex === -1) {
-            speak("Inicio de la página.");
-          }
-        }
-      }
-      else if (key === 'ArrowRight') {
-        e.preventDefault();
-        if (!isProcessing) handleNextPage();
-      } 
-      else if (key === 'ArrowLeft') {
-        e.preventDefault();
-        if (!isProcessing) handlePrevPage();
-      } 
-      else if (key === 'Home') {
-        e.preventDefault();
-        if (pdfDoc && !isProcessing) goToPage(pdfDoc, 1);
-      } 
-      else if (key === 'End') {
-        e.preventDefault();
-        if (pdfDoc && !isProcessing) goToPage(pdfDoc, totalPages);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+  const spaceRate = useSpaceRate({
+    onTap: handlePauseResume,
+    onAdjust: adjustRate,
+    onRelease: () => announce(`Velocidad ${formatRate(rate)}`),
   });
 
-  const currentData = pageCache[currentPage];
-  const isProcessing = currentData?.isProcessing || false;
-  const currentElement = currentData?.elements?.[currentElementIndex];
+  useWindowKeydown((event) => {
+    if (isTypingTarget(document.activeElement)) return;
+    if (spaceRate.handleKeyDown(event)) return;
+
+    const key = event.key;
+    const lower = key.toLowerCase();
+
+    if (lower === 'f') {
+      if (pdfDoc && !isProcessing) handleRead();
+    } else if (lower === 'r') {
+      if (!isProcessing) fileInputRef.current?.click();
+    } else if (lower === 'g') {
+      stopSpeech();
+    } else if (lower === 'j') {
+      handleBack();
+    } else if (key === 'ArrowDown') {
+      event.preventDefault();
+      if (elements) reading.next(elements);
+    } else if (key === 'ArrowUp') {
+      event.preventDefault();
+      if (elements) reading.previous(elements);
+    } else if (lower === 'v') {
+      event.preventDefault();
+      if (elements) reading.repeat(elements);
+    } else if (key === 'ArrowRight') {
+      event.preventDefault();
+      if (!isProcessing) goTo(currentPage + 1);
+    } else if (key === 'ArrowLeft') {
+      event.preventDefault();
+      if (!isProcessing) goTo(currentPage - 1);
+    } else if (key === 'Home') {
+      event.preventDefault();
+      if (pdfDoc && !isProcessing) goTo(1);
+    } else if (key === 'End') {
+      event.preventDefault();
+      if (pdfDoc && !isProcessing) goTo(totalPages);
+    }
+  });
 
   return (
     <main style={{ maxWidth: '1000px', padding: '1rem', margin: '0 auto' }}>
       <h1 ref={headerRef} tabIndex={-1} style={{ outline: 'none', margin: '0 0 1rem 0' }}>
         Lector de PDF
       </h1>
-      
+
       {/* AURA lee este texto con su propia voz (speak()). Se oculta del lector
           de pantalla nativo (aria-hidden) para que no hablen dos voces a la
           vez sobre el mismo estado. */}
@@ -449,160 +194,45 @@ export function PdfReaderPage({
         {status}
       </div>
 
-      <div className="status-box" aria-hidden="true" style={{ marginBottom: '1rem', padding: '0.5rem' }}>
-        <p style={{ margin: 0 }}><strong>Estado:</strong> {status}</p>
-        {fileName && <p style={{ margin: 0 }}><strong>Archivo:</strong> {fileName}</p>}
-        {totalPages > 0 && <p style={{ margin: 0 }}><strong>Página {currentPage} de {totalPages}</strong></p>}
-      </div>
+      <ReaderStatusBox
+        status={status}
+        fileName={pdf.fileName}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        rate={rate}
+      />
 
-      <div className="controls" style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-        <input
-          type="file"
-          accept="application/pdf"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          aria-label="Seleccionar archivo PDF"
-          id="file-upload"
-          style={{ display: 'none' }}
-        />
-        <button 
-          onClick={() => { if (isProcessing) return; fileInputRef.current?.click(); }} 
-          disabled={isProcessing}
-          aria-disabled={isProcessing ? 'true' : 'false'}
-          style={{ opacity: isProcessing ? 0.5 : 1, cursor: isProcessing ? 'not-allowed' : 'pointer' }}
-        >
-          Seleccionar PDF (R)
-        </button>
+      <AnalysisDetail meta={pageAnalysis?.meta ?? null} />
 
-        {totalPages > 0 && (
-          <>
-            <button 
-              onClick={() => { if (currentPage <= 1) return; handlePrevPage(); }} 
-              disabled={currentPage <= 1 || isProcessing}
-              aria-disabled={currentPage <= 1 || isProcessing ? 'true' : 'false'}
-              style={{ opacity: currentPage <= 1 || isProcessing ? 0.5 : 1, cursor: currentPage <= 1 || isProcessing ? 'not-allowed' : 'pointer' }}
-            >
-              Página anterior (Flecha Izq)
-            </button>
-            <button 
-              onClick={() => { if (currentPage >= totalPages) return; handleNextPage(); }} 
-              disabled={currentPage >= totalPages || isProcessing}
-              aria-disabled={currentPage >= totalPages || isProcessing ? 'true' : 'false'}
-              style={{ opacity: currentPage >= totalPages || isProcessing ? 0.5 : 1, cursor: currentPage >= totalPages || isProcessing ? 'not-allowed' : 'pointer' }}
-            >
-              Página siguiente (Flecha Der)
-            </button>
-            
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
-              Ir a página:
-              <input 
-                type="number" 
-                min={1} 
-                max={totalPages} 
-                value={pageInputValue} 
-                disabled={isProcessing}
-                aria-disabled={isProcessing ? 'true' : 'false'}
-                onChange={handlePageInputChange}
-                onKeyDown={handlePageInputKeyDown}
-                style={{ fontSize: '1.25rem', padding: '0.5rem', width: '80px' }}
-                aria-label="Ir a la página. Escribe el número y presiona Enter o Espacio."
-              />
-            </label>
-            
-            <button 
-              onClick={() => { if (!currentData || isProcessing) return; handleRead(); }} 
-              disabled={!currentData || isProcessing}
-              aria-disabled={(!currentData || isProcessing) ? 'true' : 'false'}
-              style={{ opacity: (!currentData || isProcessing) ? 0.5 : 1, cursor: (!currentData || isProcessing) ? 'not-allowed' : 'pointer' }}
-            >
-              Leer página actual (F)
-            </button>
-            <button 
-              onClick={() => { if (!isSpeaking && !isPaused) return; handlePauseResume(); }} 
-              disabled={!isSpeaking && !isPaused}
-              aria-disabled={(!isSpeaking && !isPaused) ? 'true' : 'false'}
-              style={{ opacity: (!isSpeaking && !isPaused) ? 0.5 : 1, cursor: (!isSpeaking && !isPaused) ? 'not-allowed' : 'pointer' }}
-            >
-              {isPaused ? 'Continuar (Espacio)' : 'Pausar (Espacio)'}
-            </button>
-            <button onClick={stopSpeech}>
-              Detener (G)
-            </button>
-            <button 
-              disabled={!currentData?.elements || isProcessing}
-              onClick={() => {
-                const data = pageCache[currentPage];
-                if (data?.elements && currentElementIndex >= 0 && currentElementIndex < data.elements.length) {
-                  readElement(data.elements, currentElementIndex);
-                }
-              }}
-            >
-              Repetir línea (V)
-            </button>
-          </>
-        )}
-        
-        <button onClick={() => { 
-          stopSpeech(); 
-          deletePdfFile('currentPdf').catch(console.error);
-          localStorage.removeItem('currentPage');
-          localStorage.removeItem('fileName');
-          onBack(); 
-        }}>
-          Volver al inicio (J)
-        </button>
-        <button onClick={onOpenTutorial}>
-          Tutorial (H)
-        </button>
-      </div>
+      <ReaderControls
+        fileInputRef={fileInputRef}
+        onFileChange={handleFileChange}
+        isProcessing={isProcessing}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageInputValue={pageInputValue}
+        onPageInputChange={(event) => setPageInputValue(event.target.value)}
+        onPageInputKeyDown={handlePageInputKeyDown}
+        canRead={pageIsRendered || Boolean(elements)}
+        canRepeat={Boolean(elements)}
+        isSpeaking={isSpeaking}
+        isPaused={isPaused}
+        onSelectFile={() => fileInputRef.current?.click()}
+        onPrevious={() => goTo(currentPage - 1)}
+        onNext={() => goTo(currentPage + 1)}
+        onRead={handleRead}
+        onPauseResume={handlePauseResume}
+        onStop={stopSpeech}
+        onRepeat={() => elements && reading.repeat(elements)}
+        onBack={handleBack}
+        onOpenTutorial={onOpenTutorial}
+      />
 
-      {readingText && currentElement && (
-        <div 
-          className="reading-box" 
-          aria-hidden="true"
-          style={{ 
-            backgroundColor: 'var(--bg-color)', 
-            padding: '1rem', 
-            borderRadius: '4px', 
-            marginBottom: '1rem',
-            border: '2px solid var(--focus-color)',
-            fontSize: currentElement.type.toLowerCase().includes('título') || currentElement.type.toLowerCase().includes('titulo') ? '2rem' : '1.5rem',
-            fontWeight: currentElement.type.toLowerCase().includes('título') || currentElement.type.toLowerCase().includes('titulo') ? 'bold' : 'normal',
-            lineHeight: '1.8'
-          }}
-        >
-          {currentElement.type.toLowerCase().includes('imagen') && <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>🖼️ Imagen: </span>}
-          {currentElement.type.toLowerCase().includes('tabla') && <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>📊 Tabla: </span>}
-          
-          {highlight ? (
-            <>
-              {readingText.substring(0, highlight.start)}
-              <mark className="highlight-word" style={{ backgroundColor: 'yellow', color: 'black', borderRadius: '2px' }}>
-                {readingText.substring(highlight.start, highlight.start + highlight.length)}
-              </mark>
-              {readingText.substring(highlight.start + highlight.length)}
-            </>
-          ) : (
-            <>{readingText}</>
-          )}
-        </div>
+      {reading.readingText && currentElement && (
+        <ReadingBox element={currentElement} text={reading.readingText} highlight={highlight} />
       )}
 
-      {/* Visual PDF Viewer Container */}
-      <div 
-        style={{ 
-          border: '1px solid var(--text-color)', 
-          backgroundColor: '#eaeaea',
-          display: pdfDoc ? 'block' : 'none', 
-          overflow: 'auto',
-          padding: '1rem',
-          maxHeight: '70vh',
-          textAlign: 'center'
-        }}
-        aria-hidden="true" 
-      >
-        <canvas ref={visualCanvasRef} style={{ maxWidth: '100%', height: 'auto', display: 'inline-block', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }} />
-      </div>
+      <PdfViewer canvasRef={pdf.canvasRef} visible={Boolean(pdfDoc)} />
     </main>
   );
 }

@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import type { SpeechApi } from '../hooks/useSpeech';
+import { useSpaceRate } from '../hooks/useSpaceRate';
+import { isTypingTarget, useWindowKeydown } from '../hooks/useWindowKeydown';
+import { formatRate } from '../utils/speechRate';
 
 interface TutorialPageProps {
   onExit: () => void;
-  speak: (text: string) => void;
-  pauseSpeech: () => void;
-  resumeSpeech: () => void;
-  stopSpeech: () => void;
-  isSpeaking: boolean;
-  isPaused: boolean;
+  speech: SpeechApi;
 }
 
 interface TutorialStep {
@@ -18,7 +17,7 @@ interface TutorialStep {
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
     title: 'Cómo se usa este tutorial',
-    text: 'Te voy a explicar, paso a paso y a tu propio ritmo, cómo usar AURA. Usa la flecha derecha o la flecha hacia abajo para escuchar el siguiente paso, y la flecha izquierda o la flecha hacia arriba para volver al paso anterior. Presiona la tecla V en cualquier momento para repetir el paso actual desde el inicio. Usa la barra espaciadora para pausar o continuar. Cuando quieras salir, presiona Escape.',
+    text: 'Te voy a explicar, paso a paso y a tu propio ritmo, cómo usar AURA. Usa la flecha derecha o la flecha hacia abajo para escuchar el siguiente paso, y la flecha izquierda o la flecha hacia arriba para volver al paso anterior. Presiona la tecla V en cualquier momento para repetir el paso actual desde el inicio. Un toque a la barra espaciadora pausa o continúa. Cuando quieras salir, presiona Escape.',
   },
   {
     title: 'Seleccionar un documento',
@@ -26,11 +25,11 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     title: 'Analizar una página',
-    text: 'Cuando el documento ya está cargado, presiona la tecla F para que AURA analice la página actual con inteligencia artificial y empiece a leerla. El análisis puede tardar unos segundos, sobre todo si la página tiene tablas, gráficas o imágenes.',
+    text: 'Cuando el documento ya está cargado, presiona la tecla F para que AURA analice la página actual con inteligencia artificial y empiece a leerla. El análisis puede tardar unos segundos, sobre todo si la página tiene tablas, gráficas o imágenes. En pantalla verás qué detectó en la página y cuánto tardó.',
   },
   {
     title: 'Moverte dentro de una página',
-    text: 'Cuando AURA termina de analizar una página, la divide en partes: párrafos, títulos, tablas o descripciones de imágenes. Usa la flecha hacia abajo para escuchar la siguiente parte, y la flecha hacia arriba para escuchar la parte anterior.',
+    text: 'Cuando AURA termina de analizar una página, la divide en partes: oraciones, títulos, tablas o descripciones de imágenes. Usa la flecha hacia abajo para escuchar la siguiente parte, y la flecha hacia arriba para escuchar la parte anterior.',
   },
   {
     title: 'Repetir lo que estás escuchando',
@@ -38,7 +37,15 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     title: 'Pausar y continuar',
-    text: 'Presiona la barra espaciadora para pausar la lectura en cualquier momento, y vuelve a presionarla para continuar exactamente donde te quedaste.',
+    text: 'Da un toque a la barra espaciadora para pausar la lectura en cualquier momento, y otro toque para continuar exactamente donde te quedaste.',
+  },
+  {
+    title: 'Velocidad de la voz',
+    text: 'Mantén presionada la barra espaciadora y, sin soltarla, presiona la flecha hacia arriba para leer más rápido, o la flecha hacia abajo para leer más lento. Cada pulsación cambia la velocidad en cero punto cero cinco, y la voz se adapta al instante. Al soltar la barra, AURA te dice la velocidad en que quedó, y la recuerda la próxima vez. Prueba ahora mismo con este paso.',
+  },
+  {
+    title: 'Idiomas',
+    text: 'Si una página está en inglés, AURA cambia sola a una voz en inglés, siempre que tu navegador la tenga instalada. Las descripciones de imágenes, gráficas y tablas se leen en español.',
   },
   {
     title: 'Detener la lectura',
@@ -58,73 +65,63 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-export function TutorialPage({
-  onExit,
-  speak,
-  pauseSpeech,
-  resumeSpeech,
-  stopSpeech,
-  isSpeaking,
-  isPaused,
-}: TutorialPageProps) {
+function spokenStep(index: number): string {
+  const step = TUTORIAL_STEPS[index];
+  return `Paso ${index + 1} de ${TUTORIAL_STEPS.length}. ${step.title}. ${step.text}`;
+}
+
+export function TutorialPage({ onExit, speech }: TutorialPageProps) {
+  const { speak, stop: stopSpeech, pause, resume, isSpeaking, isPaused, rate, adjustRate, announce } = speech;
   const [stepIndex, setStepIndex] = useState(0);
   const headerRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    if (headerRef.current) {
-      headerRef.current.focus();
-    }
+    headerRef.current?.focus();
     return () => stopSpeech();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    const step = TUTORIAL_STEPS[stepIndex];
-    speak(`Paso ${stepIndex + 1} de ${TUTORIAL_STEPS.length}. ${step.title}. ${step.text}`);
+    speak(spokenStep(stepIndex), { lang: 'es' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIndex]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA'
-      ) return;
+  const spaceRate = useSpaceRate({
+    onTap: () => {
+      if (isPaused) resume();
+      else if (isSpeaking) pause();
+    },
+    onAdjust: adjustRate,
+    onRelease: () => announce(`Velocidad ${formatRate(rate)}`),
+  });
 
-      const key = e.key;
+  useWindowKeydown((event) => {
+    if (isTypingTarget(document.activeElement)) return;
+    if (spaceRate.handleKeyDown(event)) return;
 
-      if (key === 'Escape') {
-        e.preventDefault();
-        onExit();
-      } else if (key === 'ArrowDown' || key === 'ArrowRight') {
-        e.preventDefault();
-        if (stepIndex < TUTORIAL_STEPS.length - 1) {
-          setStepIndex(stepIndex + 1);
-        } else {
-          stopSpeech();
-          speak('Ya escuchaste el último paso. Presiona Escape para salir del tutorial.');
-        }
-      } else if (key === 'ArrowUp' || key === 'ArrowLeft') {
-        e.preventDefault();
-        if (stepIndex > 0) {
-          setStepIndex(stepIndex - 1);
-        } else {
-          stopSpeech();
-          speak('Este es el primer paso del tutorial.');
-        }
-      } else if (key.toLowerCase() === 'v') {
-        e.preventDefault();
-        const step = TUTORIAL_STEPS[stepIndex];
-        speak(`Paso ${stepIndex + 1} de ${TUTORIAL_STEPS.length}. ${step.title}. ${step.text}`);
-      } else if (key === ' ') {
-        e.preventDefault();
-        if (isPaused) resumeSpeech();
-        else if (isSpeaking) pauseSpeech();
+    const key = event.key;
+
+    if (key === 'Escape') {
+      event.preventDefault();
+      onExit();
+    } else if (key === 'ArrowDown' || key === 'ArrowRight') {
+      event.preventDefault();
+      if (stepIndex < TUTORIAL_STEPS.length - 1) {
+        setStepIndex(stepIndex + 1);
+      } else {
+        speak('Ya escuchaste el último paso. Presiona Escape para salir del tutorial.', { lang: 'es' });
       }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    } else if (key === 'ArrowUp' || key === 'ArrowLeft') {
+      event.preventDefault();
+      if (stepIndex > 0) {
+        setStepIndex(stepIndex - 1);
+      } else {
+        speak('Este es el primer paso del tutorial.', { lang: 'es' });
+      }
+    } else if (key.toLowerCase() === 'v') {
+      event.preventDefault();
+      speak(spokenStep(stepIndex), { lang: 'es' });
+    }
   });
 
   const step = TUTORIAL_STEPS[stepIndex];
@@ -142,6 +139,9 @@ export function TutorialPage({
           <strong>Paso {stepIndex + 1} de {TUTORIAL_STEPS.length}: {step.title}</strong>
         </p>
         <p style={{ margin: 0, lineHeight: '1.6' }}>{step.text}</p>
+        <p style={{ margin: '0.5rem 0 0 0' }}>
+          <strong>Velocidad de lectura:</strong> {formatRate(rate)}×
+        </p>
       </div>
 
       <div className="controls" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -159,7 +159,7 @@ export function TutorialPage({
         >
           Paso siguiente (Flecha Der)
         </button>
-        <button onClick={() => speak(`Paso ${stepIndex + 1} de ${TUTORIAL_STEPS.length}. ${step.title}. ${step.text}`)}>
+        <button onClick={() => speak(spokenStep(stepIndex), { lang: 'es' })}>
           Repetir paso (V)
         </button>
         <button onClick={onExit}>

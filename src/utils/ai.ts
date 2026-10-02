@@ -3,6 +3,44 @@ export type ElementType = string;
 export interface PageElement {
   type: ElementType;
   content: string;
+  /** Idioma del contenido (ej. "es", "en"), si el backend lo informa. */
+  lang?: string;
+}
+
+export interface PageType {
+  tabla?: boolean;
+  grafica?: boolean;
+  diagrama?: boolean;
+  imagen?: boolean;
+  matematicas?: boolean;
+  columnas?: number;
+}
+
+export interface AnalysisStep {
+  name: string;
+  engine?: string;
+  seconds: number;
+  detail?: string;
+}
+
+/** Lo que se muestra en pantalla sobre como se analizo la pagina. */
+export interface AnalysisMeta {
+  pageType: PageType | null;
+  /** Tiempo que reporta el backend para procesar la pagina. */
+  serverSeconds: number | null;
+  /** Tiempo total medido en el navegador (incluye red, proxy y cola). */
+  clientSeconds: number;
+  provider: string | null;
+  model: string | null;
+  detector: string | null;
+  steps: AnalysisStep[];
+  cached: boolean;
+  elementCount: number;
+}
+
+export interface AnalysisResult {
+  elements: PageElement[];
+  meta: AnalysisMeta;
 }
 
 interface ApiErrorPayload {
@@ -15,6 +53,13 @@ interface ApiSuccessPayload {
   description?: string;
   elements?: unknown;
   prompt_version?: string;
+  page_type?: PageType | null;
+  processing_seconds?: number;
+  provider?: string;
+  model?: string;
+  detector?: string | null;
+  steps?: unknown;
+  cached?: boolean;
 }
 
 export class AuraAnalysisError extends Error {
@@ -119,20 +164,20 @@ export function parseModelDescription(description: string): PageElement[] {
 const LONG_TEXT_THRESHOLD = 150;
 const SPLITTABLE_TYPES = new Set(['Texto', 'Contenido dudoso']);
 
-function splitIntoSentences(content: string): string[] {
+export function splitIntoSentences(content: string): string[] {
   const matches = content.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g);
   const sentences = (matches || [content]).map(s => s.trim()).filter(Boolean);
   return sentences.length > 0 ? sentences : [content];
 }
 
-function splitLongTextElements(elements: PageElement[]): PageElement[] {
+export function splitLongTextElements(elements: PageElement[]): PageElement[] {
   const result: PageElement[] = [];
   for (const element of elements) {
     if (SPLITTABLE_TYPES.has(element.type) && element.content.length > LONG_TEXT_THRESHOLD) {
       const sentences = splitIntoSentences(element.content);
       if (sentences.length > 1) {
         for (const sentence of sentences) {
-          result.push({ type: element.type, content: sentence });
+          result.push({ ...element, content: sentence });
         }
         continue;
       }
@@ -142,12 +187,45 @@ function splitLongTextElements(elements: PageElement[]): PageElement[] {
   return result;
 }
 
+function parseSteps(value: unknown): AnalysisStep[] {
+  if (!Array.isArray(value)) return [];
+  const steps: AnalysisStep[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== 'object') continue;
+    const step = item as Record<string, unknown>;
+    if (typeof step.name !== 'string' || typeof step.seconds !== 'number') continue;
+    steps.push({
+      name: step.name,
+      seconds: step.seconds,
+      engine: typeof step.engine === 'string' ? step.engine : undefined,
+      detail: typeof step.detail === 'string' ? step.detail : undefined,
+    });
+  }
+  return steps;
+}
+
+function buildMeta(data: ApiSuccessPayload, elementCount: number, clientSeconds: number): AnalysisMeta {
+  return {
+    pageType: data.page_type ?? null,
+    serverSeconds: typeof data.processing_seconds === 'number' ? data.processing_seconds : null,
+    clientSeconds,
+    provider: data.provider ?? null,
+    model: data.model ?? null,
+    detector: data.detector ?? null,
+    steps: parseSteps(data.steps),
+    cached: Boolean(data.cached),
+    elementCount,
+  };
+}
+
 function errorMessageForStatus(status: number, backendMessage?: string): string {
   switch (status) {
     case 401:
       return 'AURA no está autorizada para usar el servicio de análisis. Revisa la configuración del servidor.';
     case 413:
       return 'La página genera una imagen demasiado grande para analizarla. Intenta con un PDF de menor resolución.';
+    case 429:
+      return 'Se hicieron demasiadas solicitudes seguidas. Espera un momento e intenta nuevamente.';
     case 502:
       return 'El modelo de inteligencia artificial rechazó la página. Intenta nuevamente.';
     case 503:
@@ -159,8 +237,9 @@ function errorMessageForStatus(status: number, backendMessage?: string): string 
   }
 }
 
-export async function analyzePageStructure(canvasDataUrl: string, nativeText?: string | null): Promise<PageElement[]> {
+export async function analyzePageStructure(canvasDataUrl: string, nativeText?: string | null): Promise<AnalysisResult> {
   const optimizedDataUrl = await optimizeImage(canvasDataUrl);
+  const startedAt = performance.now();
 
   try {
     const API_URL = import.meta.env.DEV
@@ -190,20 +269,26 @@ export async function analyzePageStructure(canvasDataUrl: string, nativeText?: s
       throw new AuraAnalysisError('El servicio respondió sin confirmar el análisis de la página.');
     }
 
+    const finish = (elements: PageElement[]): AnalysisResult => {
+      const clientSeconds = Math.round(((performance.now() - startedAt) / 1000) * 100) / 100;
+      return { elements, meta: buildMeta(data, elements.length, clientSeconds) };
+    };
+
     if (Array.isArray(data.elements)) {
       const structuredElements = data.elements.filter(isPageElement).map(element => ({
         type: element.type.trim(),
         content: element.content.trim(),
+        lang: typeof element.lang === 'string' ? element.lang : undefined,
       }));
-      if (structuredElements.length > 0) return splitLongTextElements(structuredElements);
+      if (structuredElements.length > 0) return finish(splitLongTextElements(structuredElements));
     }
 
     if (data.description?.trim()) {
       const parsedElements = parseModelDescription(data.description);
-      if (parsedElements.length > 0) return splitLongTextElements(parsedElements);
+      if (parsedElements.length > 0) return finish(splitLongTextElements(parsedElements));
     }
 
-    return [{ type: 'Texto', content: 'Página en blanco o sin contenido reconocible.' }];
+    return finish([{ type: 'Texto', content: 'Página en blanco o sin contenido reconocible.' }]);
   } catch (error) {
     console.error('Error contactando al backend de IA:', error);
     if (error instanceof AuraAnalysisError) throw error;

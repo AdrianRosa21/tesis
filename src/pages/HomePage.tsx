@@ -1,17 +1,18 @@
 import { useEffect, useRef } from 'react';
+import type { SpeechApi } from '../hooks/useSpeech';
 
 interface HomePageProps {
   onStart: () => void;
   onOpenTutorial: () => void;
-  speak: (text: string) => void;
-  stopSpeech: () => void;
+  speech: SpeechApi;
 }
 
-export function HomePage({ onStart, onOpenTutorial, speak, stopSpeech }: HomePageProps) {
+export function HomePage({ onStart, onOpenTutorial, speech }: HomePageProps) {
+  const { speak, stop: stopSpeech } = speech;
   const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    speak('Bienvenido a AURA. Esta aplicación tiene su propio lector de voz integrado y se controla con el teclado. Si tienes activado un lector de pantalla como NVDA, JAWS, VoiceOver o TalkBack, puedes desactivarlo ahora: a partir de aquí, AURA leerá todo el contenido por ti. Una excepción: cuando se abra la ventana para elegir tu archivo PDF, esa ventana es del sistema operativo, no de AURA, así que ahí sí necesitas tu lector de pantalla si lo desactivaste. Si es tu primera vez, presiona la tecla H para escuchar un tutorial completo, a tu propio ritmo, con todos los controles. Presiona Enter, la barra espaciadora o el botón Comenzar para continuar sin tutorial.');
+    speak('Bienvenido a AURA. Esta aplicación tiene su propio lector de voz integrado y se controla con el teclado. Si tienes activado un lector de pantalla como NVDA, JAWS, VoiceOver o TalkBack, puedes desactivarlo ahora: a partir de aquí, AURA leerá todo el contenido por ti. Una excepción: cuando se abra la ventana para elegir tu archivo PDF, esa ventana es del sistema operativo, no de AURA, así que ahí sí necesitas tu lector de pantalla si lo desactivaste. Si es tu primera vez, presiona la tecla H para escuchar un tutorial completo, a tu propio ritmo, con todos los controles. Presiona Enter, la barra espaciadora o el botón Comenzar para continuar sin tutorial.', { lang: 'es' });
 
     // Auto focus button
     if (btnRef.current) {
