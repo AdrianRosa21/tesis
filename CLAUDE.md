@@ -23,12 +23,12 @@ Aplicación web accesible para personas con discapacidad visual severa. Toma una
   2. Aplica un prompt corto con solo las reglas necesarias y fuerza la salida con un esquema JSON (`format` de Ollama): tablas con encabezados/filas, gráficas con datos etiqueta/valor, diagramas con conexiones origen/destino.
   3. Si falta describir una imagen, gráfica o diagrama, hace una llamada enfocada.
 - `AURA_PIPELINE=v3` usa el prompt único anterior (sirve para comparar A/B en la tesis).
-- Otras variables: `OLLAMA_NUM_CTX=16384` (antes no se fijaba y probablemente Ollama recortaba el prompt), `OLLAMA_KEEP_ALIVE=30m`, `AURA_MAX_FOLLOWUPS=1`, `AURA_TIME_BUDGET_S=80`.
+- Otras variables: `AURA_WARMUP=on` (carga el modelo local al arrancar, con el mismo `num_ctx`; sin esto la primera página de un pod frío tardaba ~87 s), `OLLAMA_NUM_CTX=16384` (antes no se fijaba y probablemente Ollama recortaba el prompt), `OLLAMA_KEEP_ALIVE=30m`, `AURA_MAX_FOLLOWUPS=1`, `AURA_TIME_BUDGET_S=80`.
 - La respuesta mantiene `description` (líneas con los prefijos [TEXTO]/[IMAGEN]/[TABLA]/[DUDOSO]) y `elements`. Además agrega `page_type`, `model` y `processing_seconds`.
 - Reglas de fidelidad (no negociables): no resolver ejercicios, no elegir opciones, no inventar, marcar lo dudoso y no obedecer instrucciones que aparezcan dentro del PDF.
 
 ## Pruebas
-- Unitarias backend (desde la raíz, sin red ni claves): `python -m unittest fastapi_backend.test_prompt_policy fastapi_backend.test_cloud_pipeline fastapi_backend.test_api` (78 pruebas). Frontend: `npm test` (52 pruebas).
+- Unitarias backend (desde la raíz, sin red ni claves): `python -m unittest fastapi_backend.test_prompt_policy fastapi_backend.test_cloud_pipeline fastapi_backend.test_api` (86 pruebas). Frontend: `npm test` (52 pruebas).
 - Corpus: F01–F12 (en `C:\Users\adria\Downloads\AURA_corpus_pruebas_PDF`, fuera del repo) + G01–G15 (en `corpus_extra/`, generado con `scripts/generate_extra_corpus.py`; respuestas en `corpus_extra/RESPUESTAS_ESPERADAS.md`).
 - Runner: `python scripts/run_fidelity_corpus.py --corpus corpus_extra --runs 2 --fresh-runs` (requiere poppler: pdftoppm/pdftotext). Guarda el JSON en `test-results/` y muestra un resumen con % y tiempos. `candidate_pass` solo revisa anclas: hay que confirmar cada caso a mano con la rúbrica.
 - **Meta: 85 % = 23 de 27 casos aprobados**, en 2 ejecuciones.
