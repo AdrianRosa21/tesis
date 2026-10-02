@@ -15,6 +15,7 @@ if _REPO_ROOT not in sys.path:
 
 import asyncio  # noqa: E402
 import time  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
 
 import httpx  # noqa: E402
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status  # noqa: E402
@@ -62,12 +63,33 @@ __all__ = [
 
 settings = load_settings()
 PROMPT_VERSION = settings.prompt_version
-logbus.setup_history_file(settings.log_file_path)
 
 local_provider = build_local_provider(settings)
 cloud_provider = build_cloud_provider(settings)
 
-app = FastAPI(title="AURA - PDF Reader AI API")
+
+def _describe_engine() -> str:
+    pipeline = settings.effective_pipeline
+    if pipeline == "hybrid" and cloud_provider is not None:
+        detector = f"detector {local_provider.model}" if settings.detector == "ollama" else "sin detector"
+        return f"hybrid: {cloud_provider.name} ({cloud_provider.model}) + {detector}"
+    return f"{pipeline} ({local_provider.model})"
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # Solo cuando el servidor arranca de verdad. Importar este modulo (por ejemplo desde las
+    # pruebas) no debe escribir en el historial de logs de produccion.
+    logbus.setup_history_file(settings.log_file_path)
+    logger.info(f"AURA lista. Motor: {_describe_engine()}")
+    if settings.pipeline == "hybrid" and cloud_provider is None:
+        logger.info(
+            f"AURA_PIPELINE=hybrid pero falta la clave de {settings.provider}: se usa el pipeline v4 con Ollama."
+        )
+    yield
+
+
+app = FastAPI(title="AURA - PDF Reader AI API", lifespan=lifespan)
 
 # 1. SEGURIDAD: CORS. El flujo de produccion pasa por el proxy de Vercel
 # (servidor a servidor), asi que CORS solo aplica a pruebas desde navegador.
@@ -108,21 +130,6 @@ async def verify_api_key(x_api_key: str = Header(None)):
 class ImageRequest(BaseModel):
     image: str
     context: str | None = None
-
-
-def _describe_engine() -> str:
-    pipeline = settings.effective_pipeline
-    if pipeline == "hybrid" and cloud_provider is not None:
-        detector = f"detector {local_provider.model}" if settings.detector == "ollama" else "sin detector"
-        return f"hybrid: {cloud_provider.name} ({cloud_provider.model}) + {detector}"
-    return f"{pipeline} ({local_provider.model})"
-
-
-logger.info(f"AURA lista. Motor: {_describe_engine()}")
-if settings.pipeline == "hybrid" and cloud_provider is None:
-    logger.info(
-        f"AURA_PIPELINE=hybrid pero falta la clave de {settings.provider}: se usa el pipeline v4 con Ollama."
-    )
 
 
 # ---------------------------------------------------------------------------

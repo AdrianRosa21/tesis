@@ -2,13 +2,18 @@
 
 Ejecutar desde la raiz:  python -m unittest fastapi_backend.test_api
 """
+import logging
+import logging.handlers
+import tempfile
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from fastapi.testclient import TestClient
 
-from fastapi_backend import main
+from fastapi_backend import logbus, main
 from fastapi_backend.cache import ResponseCache
+from fastapi_backend.config import Settings
 from fastapi_backend.pipeline import PipelineResult
 from fastapi_backend.providers import ProviderError
 from fastapi_backend.ratelimit import RateLimiter
@@ -136,6 +141,37 @@ class DescribeImageEndpointTests(unittest.TestCase):
         response = self._post(mock.AsyncMock(return_value=_result()), body={"image": ""})
 
         self.assertEqual(response.status_code, 400)
+
+
+class StartupTests(unittest.TestCase):
+    """El historial de logs es de produccion: solo se abre cuando el servidor arranca de verdad."""
+
+    @staticmethod
+    def _file_handlers():
+        return [h for h in logbus.logger.handlers if isinstance(h, logging.handlers.RotatingFileHandler)]
+
+    def test_importing_the_module_does_not_open_the_production_log(self):
+        production_path = str(Path(main.settings.log_file_path))
+
+        self.assertNotIn(production_path, [h.baseFilename for h in self._file_handlers()])
+
+    def test_starting_the_server_opens_the_history_file(self):
+        with tempfile.TemporaryDirectory() as folder:
+            log_path = Path(folder) / "backend.log"
+            before = set(self._file_handlers())
+            with mock.patch.object(main, "settings", Settings(log_file_path=str(log_path))):
+                with TestClient(main.app):  # entrar al "with" ejecuta el arranque (lifespan)
+                    opened = [h for h in self._file_handlers() if h not in before]
+                    self.assertEqual([h.baseFilename for h in opened], [str(log_path)])
+                    logbus.logger.info("linea de prueba")
+                    for handler in opened:
+                        handler.flush()
+                    self.assertIn("AURA lista", log_path.read_text(encoding="utf-8"))
+            for handler in self._file_handlers():
+                if handler not in before:
+                    logbus.logger.removeHandler(handler)
+                    handler.close()
+            logbus.LOG_HISTORY_PATH = None
 
 
 class HealthTests(unittest.TestCase):

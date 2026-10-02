@@ -295,7 +295,11 @@ def elements_to_description(elements: list[dict[str, str]]) -> str:
     lines = []
     for element in elements:
         prefix = TYPE_TO_PREFIX.get(element["type"], "TEXTO")
-        lines.append(f"[{prefix}] {element['content']}")
+        # Un bloque puede traer saltos de linea; cada linea lleva su prefijo para que
+        # quien lea "description" (el runner de pruebas) no encuentre lineas sueltas.
+        for line in str(element["content"]).splitlines() or [""]:
+            if line.strip():
+                lines.append(f"[{prefix}] {line.strip()}")
     return "\n".join(lines)
 
 

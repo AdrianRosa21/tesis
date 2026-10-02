@@ -333,6 +333,23 @@ class LanguageOutputTests(unittest.TestCase):
 
         self.assertEqual(elements, [{"type": "Texto", "content": "Hola mundo."}])
 
+    def test_every_line_of_a_multiline_block_keeps_its_prefix(self):
+        from fastapi_backend.normalize import elements_to_description
+
+        description = elements_to_description([
+            {"type": "Texto", "content": "Actividad: Un día en el parque\nObserva la ilustración."},
+            {"type": "Descripción Visual", "content": "Un parque con árboles."},
+        ])
+
+        self.assertEqual(
+            description.split("\n"),
+            [
+                "[TEXTO] Actividad: Un día en el parque",
+                "[TEXTO] Observa la ilustración.",
+                "[IMAGEN] Un parque con árboles.",
+            ],
+        )
+
     def test_region_codes_are_normalized(self):
         elements = blocks_to_elements([{"tipo": "texto", "idioma": "en-US", "contenido": "Hello."}])
 
