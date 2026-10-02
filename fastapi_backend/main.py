@@ -14,6 +14,7 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 import asyncio  # noqa: E402
+import contextlib  # noqa: E402
 import time  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 
@@ -76,6 +77,19 @@ def _describe_engine() -> str:
     return f"{pipeline} ({local_provider.model})"
 
 
+async def _warm_up_ollama() -> None:
+    """Carga el modelo local en la GPU. Corre en segundo plano: nunca debe tumbar el arranque."""
+    started = time.monotonic()
+    logger.info("Precalentando el modelo local (Ollama)...")
+    try:
+        async with httpx.AsyncClient() as client:
+            await local_provider.warm_up(client)
+    except Exception as exc:  # noqa: BLE001 - es solo una optimizacion
+        logger.info(f"No se pudo precalentar el modelo local: {type(exc).__name__}: {exc}")
+        return
+    logger.info(f"Modelo local listo en {time.monotonic() - started:.1f} s.")
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     # Solo cuando el servidor arranca de verdad. Importar este modulo (por ejemplo desde las
@@ -86,7 +100,12 @@ async def lifespan(_app: FastAPI):
         logger.info(
             f"AURA_PIPELINE=hybrid pero falta la clave de {settings.provider}: se usa el pipeline v4 con Ollama."
         )
+    warm_up_task = asyncio.create_task(_warm_up_ollama()) if settings.warmup else None
     yield
+    if warm_up_task is not None:
+        warm_up_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await warm_up_task
 
 
 app = FastAPI(title="AURA - PDF Reader AI API", lifespan=lifespan)

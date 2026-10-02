@@ -14,6 +14,16 @@ class OllamaProvider:
         self._settings = settings
         self.model = settings.ollama_model
 
+    async def warm_up(self, client: httpx.AsyncClient) -> None:
+        """Carga el modelo en la GPU sin generar texto. Sin esto, la primera pagina despues
+        de encender el pod pagaba la carga del modelo (~85 s) y casi llegaba al corte de Cloudflare."""
+        response = await client.post(
+            f"{self._settings.ollama_base_url}/api/generate",
+            json={"model": self.model, "keep_alive": self._settings.ollama_keep_alive},
+            timeout=300.0,
+        )
+        response.raise_for_status()
+
     async def generate(
         self,
         client: httpx.AsyncClient,

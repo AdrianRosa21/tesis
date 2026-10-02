@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import httpx
 from fastapi.testclient import TestClient
 
 from fastapi_backend import logbus, main
@@ -159,7 +160,7 @@ class StartupTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             log_path = Path(folder) / "backend.log"
             before = set(self._file_handlers())
-            with mock.patch.object(main, "settings", Settings(log_file_path=str(log_path))):
+            with mock.patch.object(main, "settings", Settings(log_file_path=str(log_path), warmup=False)):
                 with TestClient(main.app):  # entrar al "with" ejecuta el arranque (lifespan)
                     opened = [h for h in self._file_handlers() if h not in before]
                     self.assertEqual([h.baseFilename for h in opened], [str(log_path)])
@@ -172,6 +173,53 @@ class StartupTests(unittest.TestCase):
                     logbus.logger.removeHandler(handler)
                     handler.close()
             logbus.LOG_HISTORY_PATH = None
+
+
+class WarmUpTests(unittest.TestCase):
+    """El modelo local se carga al arrancar para que la primera pagina no pague la carga en frio."""
+
+    def _start(self, *, warmup: bool, warm_up: mock.AsyncMock) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            settings = Settings(log_file_path=str(Path(folder) / "backend.log"), warmup=warmup)
+            before = set(StartupTests._file_handlers())
+            with (
+                mock.patch.object(main, "settings", settings),
+                mock.patch.object(main.local_provider, "warm_up", warm_up),
+                TestClient(main.app),
+            ):
+                pass  # entrar y salir del "with" ejecuta el arranque y el cierre
+            for handler in StartupTests._file_handlers():
+                if handler not in before:
+                    logbus.logger.removeHandler(handler)
+                    handler.close()
+            logbus.LOG_HISTORY_PATH = None
+
+    def test_model_is_loaded_in_the_background_on_startup(self):
+        warm_up = mock.AsyncMock()
+
+        self._start(warmup=True, warm_up=warm_up)
+
+        warm_up.assert_awaited_once()
+
+    def test_can_be_turned_off(self):
+        warm_up = mock.AsyncMock()
+
+        self._start(warmup=False, warm_up=warm_up)
+
+        warm_up.assert_not_called()
+
+    def test_a_failing_warm_up_does_not_break_startup(self):
+        warm_up = mock.AsyncMock(side_effect=httpx.ConnectError("ollama apagado"))
+
+        self._start(warmup=True, warm_up=warm_up)  # no debe lanzar
+
+        warm_up.assert_awaited_once()
+
+    def test_setting_reads_the_environment(self):
+        from fastapi_backend.config import load_settings
+
+        self.assertTrue(load_settings({}).warmup)
+        self.assertFalse(load_settings({"AURA_WARMUP": "off"}).warmup)
 
 
 class HealthTests(unittest.TestCase):

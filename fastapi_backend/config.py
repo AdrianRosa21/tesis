@@ -45,6 +45,7 @@ class Settings:
     ollama_model: str = "qwen2.5vl"
     ollama_num_ctx: int = 16384
     ollama_keep_alive: str = "30m"
+    warmup: bool = True  # cargar el modelo local al arrancar, en segundo plano
 
     # Que pipeline corre: hybrid (nube + detector local), v4 o v3 (solo Ollama)
     pipeline: str = "hybrid"
@@ -124,6 +125,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         ollama_model=_text(env, "OLLAMA_MODEL", "qwen2.5vl"),
         ollama_num_ctx=_number(env, "OLLAMA_NUM_CTX", 16384, int),
         ollama_keep_alive=_text(env, "OLLAMA_KEEP_ALIVE", "30m"),
+        warmup=_choice(env, "AURA_WARMUP", "on", ("on", "off")) == "on",
         pipeline=_choice(env, "AURA_PIPELINE", "hybrid", PIPELINES),
         provider=_choice(env, "AURA_PROVIDER", "gemini", PROVIDERS),
         detector=_choice(env, "AURA_DETECTOR", "ollama", ("ollama", "off")),
