@@ -152,6 +152,8 @@ RULE_COLUMNS = """COLUMNAS: la pagina tiene varias columnas. Lee la columna izqu
 # respaldo local se comporta igual que cuando se midio.
 RULE_CHART_CLOUD = """GRAFICAS: usa tipo "grafica". contenido = tipo de grafica, titulo, que mide cada eje y su escala, leyenda y colores si existen. datos = un par {etiqueta, valor} por cada barra, punto o sector visible. Si hay varias series (por ejemplo Hombres y Mujeres, o varias lineas), escribe un dato por cada serie y cada categoria, con la etiqueta en la forma "serie, categoria" (por ejemplo {"etiqueta": "Mujeres, 30 a 59 años", "valor": "46"}). En graficas de lineas incluye TODOS los años o puntos de cada serie, no solo el primero. Cada dato lleva "valor_impreso": true si ese numero aparece IMPRESO en la pagina (sobre o junto a la barra, punto o sector, en una etiqueta, leyenda o tabla); false si NO se ve impreso y lo obtuviste mirando la altura contra la escala del eje, aunque lo leas con exactitud. Nunca le asignes un valor a una serie o categoria que no le corresponde; si no estas seguro, usa un bloque "dudoso"."""
 
+RULE_TABLE_CLOUD = RULE_TABLE + """ Una lista alineada en columnas con encabezados TAMBIEN es una tabla, aunque no tenga lineas de cuadricula ni bordes (por ejemplo, una lista con nombre y telefono, o ciudad y poblacion): usa el tipo "tabla", nunca varias lineas de texto."""
+
 # Los ejemplos de estas reglas son genericos a proposito: no deben coincidir con el contenido del
 # corpus de pruebas (ver test_cloud_rules_do_not_leak_benchmark_answers).
 RULE_IMAGE_CLOUD = """IMAGENES: por cada fotografia, ilustracion, mapa o figura usa un bloque tipo "imagen". contenido = descripcion concreta de lo que se ve: objetos o personas, su color, posicion (primer plano, fondo, izquierda, derecha) y cualquier texto dentro de la imagen. Cuando un objeto tiene partes que pueden estar encendidas o apagadas, activas o inactivas (interruptores, pantallas, indicadores, casillas), di explicitamente el estado de CADA parte: una parte apagada o inactiva se ve oscura, opaca o vacia, y no es lo mismo que una encendida. No supongas el estado por el tipo de objeto; describe solo lo que se ve. Si hay un reloj analogico, di la hora que marca (por ejemplo "las 4:30"). Es OBLIGATORIO describirla aunque un pie de imagen ya la mencione; transcribe tambien el pie como texto. Describe solo lo que se ve; no inventes."""
@@ -220,7 +222,7 @@ def build_extraction_prompt(
         sections += [
             _conditional(label, rule)
             for label, rule in (
-                ("SI LA PAGINA TIENE TABLAS", RULE_TABLE),
+                ("SI LA PAGINA TIENE TABLAS", RULE_TABLE_CLOUD),
                 ("SI LA PAGINA TIENE GRAFICAS", RULE_CHART_CLOUD),
                 ("SI LA PAGINA TIENE DIAGRAMAS", RULE_DIAGRAM),
                 ("SI LA PAGINA TIENE FOTOGRAFIAS, ILUSTRACIONES O MAPAS", RULE_IMAGE_CLOUD),
@@ -233,7 +235,7 @@ def build_extraction_prompt(
     page = page or {}
     sections = [BASE_RULES]
     if page.get("tabla"):
-        sections.append(RULE_TABLE)
+        sections.append(RULE_TABLE_CLOUD if cloud else RULE_TABLE)
     if page.get("grafica"):
         sections.append(RULE_CHART_CLOUD if cloud else RULE_CHART)
     if page.get("diagrama"):
