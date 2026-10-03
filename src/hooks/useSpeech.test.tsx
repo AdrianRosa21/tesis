@@ -69,6 +69,17 @@ describe('useSpeech', () => {
     expect(queued[0].voice?.lang).toBe('en-US');
   });
 
+  it('dice con que idioma y voz se leyo la ultima frase', () => {
+    const { result } = renderHook(() => useSpeech());
+    expect(result.current.lastVoice).toBe('');
+
+    act(() => result.current.speak('Hola mundo, esta es una prueba.', { lang: 'es' }));
+    expect(result.current.lastVoice).toBe('español · es-MX');
+
+    act(() => result.current.speak('Table 5', { lang: 'en' }));
+    expect(result.current.lastVoice).toBe('inglés · en-US');
+  });
+
   it('usa voz en espanol por defecto y respeta el idioma indicado', () => {
     const { result } = renderHook(() => useSpeech());
     act(() => result.current.speak('1250'));

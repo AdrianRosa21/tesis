@@ -40,6 +40,8 @@ export interface SpeechApi {
   highlight: HighlightState | null;
   /** De dónde sale la voz que lee en inglés (para mostrarlo en pantalla). */
   englishVoice: string;
+  /** Idioma y voz con que se leyó la última frase (para ver de inmediato si sonó la voz equivocada). */
+  lastVoice: string;
 }
 
 const MAX_RETRIES = 2;
@@ -59,6 +61,7 @@ export function useSpeech(): SpeechApi {
   const [rate, setRateState] = useState<number>(() => loadRate());
   const synth = window.speechSynthesis;
   const [englishSource, setEnglishSource] = useState<EnglishVoiceSource>(() => currentEnglishSource(synth));
+  const [lastVoice, setLastVoice] = useState('');
   const onEndCallbackRef = useRef<(() => void) | null>(null);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const rateRef = useRef<number>(rate);
@@ -165,6 +168,7 @@ export function useSpeech(): SpeechApi {
     // se leen con la voz del navegador: nunca se queda en silencio.
     const playChunkWithServer = (chunkObj: { text: string; startIndex: number }) => {
       serverActiveRef.current = true;
+      setLastVoice('inglés · voz del servidor (Piper)');
       setIsSpeaking(true);
       setIsPaused(serverPausedRef.current);
       // El audio no avisa palabra por palabra: se resalta la frase completa.
@@ -236,6 +240,7 @@ export function useSpeech(): SpeechApi {
       const utterance = new SpeechSynthesisUtterance(chunkText);
       utterance.rate = rateRef.current;
       applyVoice(utterance, lang);
+      setLastVoice(`${lang === 'en' ? 'inglés' : 'español'} · ${utterance.voice?.name ?? 'voz predeterminada del navegador'}`);
       currentUtteranceRef.current = utterance;
 
       utterance.onboundary = (event) => {
@@ -378,5 +383,6 @@ export function useSpeech(): SpeechApi {
     isPaused,
     highlight,
     englishVoice: describeEnglishSource(englishSource),
+    lastVoice,
   };
 }

@@ -19,11 +19,15 @@ function isVisualDescription(type: string): boolean {
   return type.toLowerCase().startsWith('descripci');
 }
 
+/**
+ * Idioma de la voz para un bloque. El TEXTO manda sobre la etiqueta del modelo: si el modelo dice "ingles" pero el
+ * texto es claramente espanol (o al reves), se lee con la voz del texto. La etiqueta solo decide cuando el texto
+ * es demasiado corto o ambiguo para saberlo ("Table 5", "1250"); y si no hay etiqueta, el idioma de la pagina.
+ */
 export function resolveElementLang(element: PageElement, fallback: SpeechLang = 'es'): SpeechLang {
   const declared = normalizeLang(element.lang);
-  if (declared) return declared;
-  if (isVisualDescription(element.type)) return 'es';
-  return detectLanguage(element.content) ?? fallback;
+  if (isVisualDescription(element.type)) return declared ?? 'es';
+  return detectLanguage(element.content) ?? declared ?? fallback;
 }
 
 export interface SpokenElement {
@@ -51,7 +55,7 @@ export function pageLanguage(elements: PageElement[]): SpeechLang {
   let en = 0;
   for (const element of elements) {
     if (isVisualDescription(element.type)) continue;
-    const lang = normalizeLang(element.lang) ?? detectLanguage(element.content);
+    const lang = detectLanguage(element.content) ?? normalizeLang(element.lang);
     const weight = element.content.length;
     if (lang === 'es') es += weight;
     if (lang === 'en') en += weight;

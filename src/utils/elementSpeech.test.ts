@@ -30,6 +30,55 @@ describe('buildSpokenElement', () => {
   });
 });
 
+describe('resolveElementLang: el texto manda sobre la etiqueta del modelo', () => {
+  const SPANISH = 'Cada porción equivale a la energía de los cereales y del pan tostado.';
+  const ENGLISH = 'The kid was so fast that no one saw him in the park.';
+
+  it('texto en espanol con etiqueta "en" equivocada se lee en espanol', () => {
+    expect(resolveElementLang({ type: 'Texto', content: SPANISH, lang: 'en' })).toBe('es');
+  });
+
+  it('texto en ingles con etiqueta "es" equivocada se lee en ingles', () => {
+    expect(resolveElementLang({ type: 'Texto', content: ENGLISH, lang: 'es' })).toBe('en');
+  });
+
+  it('cuando etiqueta y texto coinciden, no cambia nada', () => {
+    expect(resolveElementLang({ type: 'Texto', content: SPANISH, lang: 'es' })).toBe('es');
+    expect(resolveElementLang({ type: 'Texto', content: ENGLISH, lang: 'en' })).toBe('en');
+  });
+
+  it('un texto corto con tildes es espanol aunque el modelo lo marque en ingles ("Energía 70 kcal")', () => {
+    expect(resolveElementLang({ type: 'Texto', content: 'Energía 70 kcal', lang: 'en' })).toBe('es');
+    expect(resolveElementLang({ type: 'Texto', content: '¿Cuántos?', lang: 'en' })).toBe('es');
+  });
+
+  it('si el texto es demasiado corto o ambiguo, decide la etiqueta del modelo', () => {
+    expect(resolveElementLang({ type: 'Texto', content: 'a) so   b) too   c) such', lang: 'en' })).toBe('en');
+    expect(resolveElementLang({ type: 'Texto', content: 'Table 5', lang: 'en' }, 'es')).toBe('en');
+    expect(resolveElementLang({ type: 'Texto', content: '1250', lang: 'es' }, 'en')).toBe('es');
+  });
+
+  it('sin etiqueta ni pista en el texto, usa el idioma de la pagina', () => {
+    expect(resolveElementLang({ type: 'Texto', content: '1250' }, 'en')).toBe('en');
+  });
+
+  it('las descripciones visuales no cambian: siempre en espanol, aunque citen ingles', () => {
+    const description = 'The kid was so fast that no one saw him: es el texto que aparece en el cartel.';
+    expect(resolveElementLang({ type: 'Descripción Visual', content: description, lang: 'es' })).toBe('es');
+    expect(resolveElementLang({ type: 'Descripción Visual', content: ENGLISH })).toBe('es');
+  });
+});
+
+describe('pageLanguage con etiquetas equivocadas', () => {
+  it('un texto en espanol mal etiquetado como ingles no vuelve ingles a toda la pagina', () => {
+    const lang = pageLanguage([
+      { type: 'Texto', content: 'Cada porción equivale a la energía de los cereales y del pan tostado.', lang: 'en' },
+      { type: 'Texto', content: 'Los resultados de la encuesta muestran que el consumo aumentó en los últimos años.', lang: 'en' },
+    ]);
+    expect(lang).toBe('es');
+  });
+});
+
 describe('resolveElementLang', () => {
   it('ignora idiomas sin voz configurada y cae a la deteccion', () => {
     expect(resolveElementLang({ type: 'Texto', content: 'Le chat est sur la table', lang: 'fr' })).toBe('es');

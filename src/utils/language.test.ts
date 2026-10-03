@@ -19,6 +19,12 @@ describe('detectLanguage', () => {
     expect(detectLanguage('')).toBeNull();
   });
 
+  it('un texto corto con tildes o ñ es espanol (el ingles casi no las usa)', () => {
+    expect(detectLanguage('Energía 70 kcal')).toBe('es');
+    expect(detectLanguage('Año 2024')).toBe('es');
+    expect(detectLanguage('¿Cuánto?')).toBe('es');
+  });
+
   it('devuelve null cuando no hay palabras reconocibles (cifras, nombres propios)', () => {
     expect(detectLanguage('Alonso Contreras 1250 3x 7/12')).toBeNull();
   });

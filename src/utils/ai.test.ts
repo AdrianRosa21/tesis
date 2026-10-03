@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseModelDescription, splitByLength, splitIntoSentences, splitLongTextElements } from './ai';
+import { parseModelDescription, splitByLength, splitIntoLines, splitIntoSentences, splitLongTextElements } from './ai';
 
 const LONG_PARAGRAPH =
   'Además de la germanía propia de la gente de espada, en la lengua franca utilizada por los militares españoles se mezclaban palabras flamencas. ' +
@@ -94,6 +94,66 @@ describe('splitLongTextElements con bloques largos sin puntuacion', () => {
 
   it('las oraciones normales siguen divididas por punto como antes', () => {
     expect(splitLongTextElements([{ type: 'Texto', content: LONG_PARAGRAPH }])).toHaveLength(3);
+  });
+});
+
+// Lo que el servidor devuelve de verdad para R11 pag. 29: UN bloque con 20 lineas separadas por saltos de linea.
+const FOOD_LIST_WITH_NEWLINES =
+  'ESCUELAS DE TIEMPO COMPLETO EN EL DF\n\nCEREALES SIN GRASA\n\nCada porción equivale a:\nEnergía 70 kcal\nProteína 2 g\n' +
+  'Lípidos 0 g\nCarbohidratos 15 g\n\nCereales sin grasa  Porción\nArroz cocido 1/3 taza\nAvena cocida 3/4 taza\n' +
+  'Bolillo 1/3 pieza\nCereal 1/2 taza\nElote natural 3/4 pieza\nGalletas marías 5 piezas\nPan tostado 3/4 rebanada';
+
+describe('splitIntoLines', () => {
+  it('cada linea de una lista es una unidad', () => {
+    expect(splitIntoLines('Arroz cocido 1/3 taza\nAvena cocida 3/4 taza\n\nBolillo 1/3 pieza')).toEqual([
+      'Arroz cocido 1/3 taza',
+      'Avena cocida 3/4 taza',
+      'Bolillo 1/3 pieza',
+    ]);
+  });
+
+  it('une un renglon cortado a mitad de frase con su continuacion', () => {
+    expect(splitIntoLines('La percepción multimodal combina información\ntextual y visual en los documentos.')).toEqual([
+      'La percepción multimodal combina información textual y visual en los documentos.',
+    ]);
+  });
+
+  it('no une lineas que si terminaron o que empiezan con mayuscula', () => {
+    expect(splitIntoLines('Cada porción equivale a:\nenergía 70 kcal')).toHaveLength(2);
+    expect(splitIntoLines('Primera linea.\nSegunda linea')).toHaveLength(2);
+    expect(splitIntoLines('Proteína 2 g\nLípidos 0 g')).toHaveLength(2);
+  });
+
+  it('un texto sin saltos de linea queda igual', () => {
+    expect(splitIntoLines('Un solo renglon')).toEqual(['Un solo renglon']);
+  });
+});
+
+describe('splitLongTextElements con listas (saltos de linea)', () => {
+  it('"sale de un solo": la lista de 20 lineas pasa a ser 20 elementos que se recorren con las flechas', () => {
+    const result = splitLongTextElements([{ type: 'Texto', content: FOOD_LIST_WITH_NEWLINES, lang: 'es' }]);
+
+    expect(result.map(element => element.content)).toContain('Avena cocida 3/4 taza');
+    expect(result.map(element => element.content)).toContain('ESCUELAS DE TIEMPO COMPLETO EN EL DF');
+    expect(result.length).toBeGreaterThanOrEqual(15);
+    expect(Math.max(...result.map(element => element.content.length))).toBeLessThan(60);
+    expect(result.every(element => element.type === 'Texto' && element.lang === 'es')).toBe(true);
+  });
+
+  it('no pierde ninguna palabra al partir', () => {
+    const result = splitLongTextElements([{ type: 'Texto', content: FOOD_LIST_WITH_NEWLINES }]);
+    const words = (text: string) => text.split(/\s+/).filter(Boolean);
+
+    expect(result.flatMap(element => words(element.content))).toEqual(words(FOOD_LIST_WITH_NEWLINES));
+  });
+
+  it('un bloque corto de dos lineas (titulo y subtitulo) tambien se separa', () => {
+    expect(splitLongTextElements([{ type: 'Texto', content: 'Título\nSubtítulo' }])).toHaveLength(2);
+  });
+
+  it('las tablas no se parten por lineas', () => {
+    const table = [{ type: 'Tabla', content: 'Fila 1. A: 1\nFila 2. A: 2' }];
+    expect(splitLongTextElements(table)).toEqual(table);
   });
 });
 

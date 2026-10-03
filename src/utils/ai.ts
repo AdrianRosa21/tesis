@@ -212,13 +212,36 @@ export function splitByLength(text: string, maxLength = MAX_UNIT_LENGTH): string
   return pieces;
 }
 
+/**
+ * Parte un bloque en sus lineas: una lista ("Arroz cocido 1/3 taza" / "Avena cocida 3/4 taza") llega como UN bloque
+ * con saltos de linea y se leia toda de corrido. Cada linea pasa a ser un elemento. Si una linea sigue a otra que no
+ * terminó (sin punto ni dos puntos) y empieza en minuscula, es la continuacion de un renglon cortado: se une.
+ */
+export function splitIntoLines(content: string): string[] {
+  const units: string[] = [];
+  for (const line of content.split(/\n+/).map(l => l.trim()).filter(Boolean)) {
+    const previous = units[units.length - 1];
+    const continuesPrevious = previous !== undefined && !/[.!?:;]$/.test(previous) && /^[a-záéíóúñü]/.test(line);
+    if (continuesPrevious) units[units.length - 1] = `${previous} ${line}`;
+    else units.push(line);
+  }
+  return units.length > 0 ? units : [content];
+}
+
+/** Una sola linea: si es larga, por oraciones y, si una oracion sigue siendo enorme, por longitud. */
+function splitLine(line: string): string[] {
+  if (line.length <= LONG_TEXT_THRESHOLD) return [line];
+  const units = splitIntoSentences(line).flatMap(sentence =>
+    sentence.length > MAX_UNIT_LENGTH ? splitByLength(sentence) : [sentence],
+  );
+  return units.length > 1 ? units : [line];
+}
+
 export function splitLongTextElements(elements: PageElement[]): PageElement[] {
   const result: PageElement[] = [];
   for (const element of elements) {
-    if (SPLITTABLE_TYPES.has(element.type) && element.content.length > LONG_TEXT_THRESHOLD) {
-      const units = splitIntoSentences(element.content).flatMap(sentence =>
-        sentence.length > MAX_UNIT_LENGTH ? splitByLength(sentence) : [sentence],
-      );
+    if (SPLITTABLE_TYPES.has(element.type)) {
+      const units = splitIntoLines(element.content).flatMap(splitLine);
       if (units.length > 1) {
         for (const unit of units) {
           result.push({ ...element, content: unit });

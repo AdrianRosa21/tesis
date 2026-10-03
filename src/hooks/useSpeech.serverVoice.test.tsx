@@ -125,6 +125,13 @@ describe('useSpeech con la voz del servidor', () => {
     expect(result.current.isSpeaking).toBe(true);
   });
 
+  it('indica en pantalla que la ultima frase salio de la voz del servidor', async () => {
+    const { result } = renderHook(() => useSpeech());
+    await speakEnglish(result);
+
+    expect(result.current.lastVoice).toBe('inglés · voz del servidor (Piper)');
+  });
+
   it('va frase por frase, descarga la siguiente mientras suena la actual y avisa al terminar', async () => {
     const onEnd = vi.fn();
     const { result } = renderHook(() => useSpeech());

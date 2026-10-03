@@ -8,12 +8,14 @@ interface ReaderStatusBoxProps {
   rate: number;
   /** De dónde sale la voz que lee en inglés. */
   englishVoice: string;
+  /** Idioma y voz de la última frase leída. */
+  lastVoice: string;
 }
 
 // AURA lee este contenido con su propia voz, asi que se oculta del lector de
 // pantalla nativo para que no hablen dos voces sobre lo mismo.
 export function ReaderStatusBox({
-  status, fileName, currentPage, totalPages, rate, englishVoice,
+  status, fileName, currentPage, totalPages, rate, englishVoice, lastVoice,
 }: ReaderStatusBoxProps) {
   return (
     <div className="status-box" aria-hidden="true" style={{ marginBottom: '1rem', padding: '0.5rem' }}>
@@ -26,6 +28,11 @@ export function ReaderStatusBox({
       <p style={{ margin: 0 }}>
         <strong>Voz en inglés:</strong> {englishVoice}
       </p>
+      {lastVoice && (
+        <p style={{ margin: 0 }}>
+          <strong>Última lectura:</strong> {lastVoice}
+        </p>
+      )}
     </div>
   );
 }

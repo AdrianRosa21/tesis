@@ -25,7 +25,7 @@ const INITIAL_STATUS =
 
 export function PdfReaderPage({ onBack, onOpenTutorial, speech }: PdfReaderPageProps) {
   const {
-    speak, stop: stopSpeech, pause, resume, isSpeaking, isPaused, highlight, rate, adjustRate, announce, englishVoice,
+    speak, stop: stopSpeech, pause, resume, isSpeaking, isPaused, highlight, rate, adjustRate, announce, englishVoice, lastVoice,
   } = speech;
 
   const [status, setStatus] = useState(INITIAL_STATUS);
@@ -204,6 +204,7 @@ export function PdfReaderPage({ onBack, onOpenTutorial, speech }: PdfReaderPageP
         totalPages={totalPages}
         rate={rate}
         englishVoice={englishVoice}
+        lastVoice={lastVoice}
       />
 
       <AnalysisDetail meta={pageAnalysis?.meta ?? null} />

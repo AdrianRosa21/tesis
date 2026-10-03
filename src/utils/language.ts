@@ -22,7 +22,10 @@ const MIN_MARGIN = 0.25;
 
 export function detectLanguage(text: string): SpeechLang | null {
   const words = text.toLowerCase().match(/[a-záéíóúüñ]+/g);
-  if (!words || words.length < MIN_WORDS) return null;
+  if (!words || words.length < MIN_WORDS) {
+    // El ingles casi no usa tildes ni ñ: un texto corto que las tiene ("Energía 70 kcal") es espanol.
+    return /[ñ¿¡áéíóúü]/i.test(text) ? 'es' : null;
+  }
 
   let es = 0;
   let en = 0;
