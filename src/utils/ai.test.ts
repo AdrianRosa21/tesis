@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { buildSpokenElement } from './elementSpeech';
 import { parseModelDescription, splitByLength, splitIntoLines, splitIntoSentences, splitLongTextElements } from './ai';
 
 const LONG_PARAGRAPH =
@@ -124,6 +125,10 @@ describe('splitIntoLines', () => {
     expect(splitIntoLines('Proteína 2 g\nLípidos 0 g')).toHaveLength(2);
   });
 
+  it('las opciones de una lista (a) b) c)) no se unen aunque empiecen en minuscula', () => {
+    expect(splitIntoLines('a) uno\nb) dos\nc) tres')).toEqual(['a) uno', 'b) dos', 'c) tres']);
+  });
+
   it('un texto sin saltos de linea queda igual', () => {
     expect(splitIntoLines('Un solo renglon')).toEqual(['Un solo renglon']);
   });
@@ -154,6 +159,66 @@ describe('splitLongTextElements con listas (saltos de linea)', () => {
   it('las tablas no se parten por lineas', () => {
     const table = [{ type: 'Tabla', content: 'Fila 1. A: 1\nFila 2. A: 2' }];
     expect(splitLongTextElements(table)).toEqual(table);
+  });
+});
+
+// Lo que el modelo devolvio de verdad para un examen de ingles con instrucciones en espanol: UN solo bloque "es".
+const MIXED_EXAM =
+  'Examen de inglés - Unidad 3\n\nInstrucciones: elige la opción correcta para completar cada oración.\n\n' +
+  'Nombre: ____________________   Grupo: ______\n\n' +
+  '1.  The kid was .................. fast that no one saw him.\na) so          b) too          c) such\n' +
+  '2.  .............. adults know how to use the Internet.\na) Little          b) Few          c) Much\n' +
+  '3.  .......... to the party next Friday.\na) Do you come          b) Are you coming          c) Did you come';
+
+describe('splitLongTextElements con idiomas mezclados en un bloque', () => {
+  const units = () => splitLongTextElements([{ type: 'Texto', content: MIXED_EXAM, lang: 'es' }]);
+  const langOf = (start: string) => units().find(element => element.content.startsWith(start))?.lang;
+
+  it('las instrucciones en espanol se leen en espanol', () => {
+    expect(langOf('Examen de inglés')).toBe('es');
+    expect(langOf('Instrucciones')).toBe('es');
+    expect(langOf('Nombre')).toBe('es');
+  });
+
+  it('las oraciones en ingles se leen en ingles aunque el bloque venga etiquetado "es"', () => {
+    expect(langOf('1.')).toBe('en');
+    expect(langOf('2.')).toBe('en');
+    expect(langOf('3.')).toBe('en');
+  });
+
+  it('las opciones cortas sin pistas ("a) so b) too c) such") toman el idioma de la oracion que las precede', () => {
+    expect(langOf('a) so')).toBe('en');
+    expect(langOf('a) Little')).toBe('en');
+    expect(langOf('a) Do you come')).toBe('en');
+  });
+
+  it('de punta a punta: la voz de cada linea es la correcta', () => {
+    const voiceFor = (start: string) => {
+      const element = units().find(candidate => candidate.content.startsWith(start))!;
+      return buildSpokenElement(element, 'es').lang;
+    };
+
+    expect(voiceFor('Instrucciones')).toBe('es');
+    expect(voiceFor('2.')).toBe('en');
+    expect(voiceFor('a) Little')).toBe('en');
+  });
+
+  it('el inicio sin pistas toma el idioma de la primera linea clara que sigue', () => {
+    const result = splitLongTextElements([{ type: 'Texto', content: '1.\nThe kid was so fast that no one saw him.', lang: 'es' }]);
+
+    expect(result.map(element => element.lang)).toEqual(['en', 'en']);
+  });
+
+  it('si ninguna linea es clara, se queda la etiqueta del modelo', () => {
+    const result = splitLongTextElements([{ type: 'Texto', content: 'a) 12\nb) 34', lang: 'en' }]);
+
+    expect(result.map(element => element.lang)).toEqual(['en', 'en']);
+  });
+
+  it('una pagina en espanol sigue leyendose entera en espanol', () => {
+    const result = splitLongTextElements([{ type: 'Texto', content: FOOD_LIST_WITH_NEWLINES, lang: 'es' }]);
+
+    expect(result.every(element => element.lang === 'es')).toBe(true);
   });
 });
 

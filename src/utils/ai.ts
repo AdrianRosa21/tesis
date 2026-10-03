@@ -1,3 +1,5 @@
+import { detectLanguage } from './language';
+
 export type ElementType = string;
 
 export interface PageElement {
@@ -221,7 +223,10 @@ export function splitIntoLines(content: string): string[] {
   const units: string[] = [];
   for (const line of content.split(/\n+/).map(l => l.trim()).filter(Boolean)) {
     const previous = units[units.length - 1];
-    const continuesPrevious = previous !== undefined && !/[.!?:;]$/.test(previous) && /^[a-záéíóúñü]/.test(line);
+    // "b) too" o "c) such" empiezan en minuscula pero son opciones de una lista, no la continuacion de un renglon.
+    const isListMarker = /^[a-z]\)/i.test(line);
+    const continuesPrevious =
+      previous !== undefined && !/[.!?:;]$/.test(previous) && /^[a-záéíóúñü]/.test(line) && !isListMarker;
     if (continuesPrevious) units[units.length - 1] = `${previous} ${line}`;
     else units.push(line);
   }
@@ -237,15 +242,35 @@ function splitLine(line: string): string[] {
   return units.length > 1 ? units : [line];
 }
 
+/**
+ * Idioma de cada unidad de un bloque que se partio. El modelo etiqueta el bloque ENTERO con un solo idioma, pero un
+ * examen de ingles con instrucciones en espanol llega como un solo bloque "es" con las oraciones en ingles adentro:
+ * con esa etiqueta se leian con la voz en espanol. Por eso cada unidad se evalua por separado; las que no tienen
+ * pistas ("a) so   b) too   c) such", "1.", "Nombre: ____") toman el idioma de la unidad clara que las precede
+ * (o, al principio, el de la primera clara que sigue). Si ninguna es clara, queda la etiqueta del modelo.
+ */
+function languagesForUnits(units: string[], declared: string | undefined): (string | undefined)[] {
+  const detected = units.map(unit => detectLanguage(unit));
+  const firstClear = detected.find(lang => lang !== null) ?? null;
+
+  let previous: string | null = null;
+  return detected.map(lang => {
+    if (lang) previous = lang;
+    return lang ?? previous ?? firstClear ?? declared;
+  });
+}
+
 export function splitLongTextElements(elements: PageElement[]): PageElement[] {
   const result: PageElement[] = [];
   for (const element of elements) {
     if (SPLITTABLE_TYPES.has(element.type)) {
       const units = splitIntoLines(element.content).flatMap(splitLine);
       if (units.length > 1) {
-        for (const unit of units) {
-          result.push({ ...element, content: unit });
-        }
+        const languages = languagesForUnits(units, element.lang);
+        units.forEach((unit, index) => {
+          const lang = languages[index];
+          result.push({ ...element, content: unit, ...(lang ? { lang } : {}) });
+        });
         continue;
       }
     }
