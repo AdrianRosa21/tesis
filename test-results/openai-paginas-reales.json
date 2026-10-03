@@ -1,0 +1,777 @@
+[
+ {
+  "success": true,
+  "description": "[TEXTO] COMUNICADO DE PRENSA 145/25\n[TEXTO] ESTADÍSTICAS A PROPÓSITO DEL DÍA\n[TEXTO] INTERNACIONAL DE LA ELIMINACIÓN\n[TEXTO] DE LA VIOLENCIA CONTRA LA MUJER\n[TEXTO] 20 de noviembre de 2025\n[TEXTO] Página 2/6\n[TEXTO] Gráfica 1\n[TEXTO] Población de 12 años y más que experimentó ciberacoso,\n[TEXTO] según sexo\n[TEXTO] 2020-20241/\n[TEXTO] (porcentaje)\n[IMAGEN] Gráfica de líneas. Título: Población de 12 años y más que experimentó ciberacoso, según sexo, 2020-2024, porcentaje. Eje horizontal: años 2020, 2021, 2022, 2023, 2024. Eje vertical: porcentaje de 19 a 23 aproximadamente. Tres series: Mujeres (línea morada), Hombres (línea verde), Total (línea gris).. Datos: Mujeres, 2020: 22.5; Mujeres, 2021: 22.8; Mujeres, 2022: 22.4; Mujeres, 2023: 22.0; Mujeres, 2024: 22.2; Hombres, 2020: 19.3; Hombres, 2021: 20.6; Hombres, 2022: 19.1; Hombres, 2023: 19.6; Hombres, 2024: 19.6; Total, 2020: 21.0; Total, 2021: 21.7; Total, 2022: 20.8; Total, 2023: 20.9; Total, 2024: 21.0\n[TEXTO] Nota:\n[TEXTO] El porcentaje se calcula respecto al total de mujeres u hombres que utilizaron internet en cada año de referencia.\n[TEXTO] La información correspondiente a cada año se refiere a los siguientes periodos: 2020: de octubre de 2019 a noviembre de 2020; 2021: de agosto de 2020 a septiembre de 2021; 2022: de julio de 2021 a agosto de 2022; 2023: de julio de 2022 a agosto de 2023; 2024: de julio de 2023 a agosto de 2024.\n[TEXTO] Fuente: INEGI. Módulo sobre Ciberacoso (MOCIBA), 2020, 2021, 2022, 2023 y 2024.\n[TEXTO] 1/\n[TEXTO] II. SITUACIONES DE CIBERACOSO\n[TEXTO] En 2024, la situación de ciberacoso con mayor prevalencia para ambos sexos fue el contacto mediante identidades falsas, con 36.0 por ciento. En actos de índole sexual, 29.0 % de las mujeres y 13.9 % de los hombres fueron víctimas de insinuaciones o propuestas sexuales, en tanto que 27.5 y 15.8 %, respectivamente, recibieron contenido sexual (ver gráfica 2).\n[TEXTO] Respecto a provocaciones para reaccionar de forma negativa, 21.4 % de los hombres y 15.7 % de las mujeres reportaron esta situación, mientras que 24.6 % de los hombres y 21.0 % de las mujeres recibieron llamadas ofensivas y 35.9 y 32.4 %, respectivamente, recibieron mensajes ofensivos.",
+  "elements": [
+   {
+    "type": "Texto",
+    "content": "COMUNICADO DE PRENSA 145/25\nESTADÍSTICAS A PROPÓSITO DEL DÍA\nINTERNACIONAL DE LA ELIMINACIÓN\nDE LA VIOLENCIA CONTRA LA MUJER\n20 de noviembre de 2025\nPágina 2/6",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Gráfica 1\nPoblación de 12 años y más que experimentó ciberacoso,\nsegún sexo\n2020-20241/\n(porcentaje)",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "Gráfica de líneas. Título: Población de 12 años y más que experimentó ciberacoso, según sexo, 2020-2024, porcentaje. Eje horizontal: años 2020, 2021, 2022, 2023, 2024. Eje vertical: porcentaje de 19 a 23 aproximadamente. Tres series: Mujeres (línea morada), Hombres (línea verde), Total (línea gris).. Datos: Mujeres, 2020: 22.5; Mujeres, 2021: 22.8; Mujeres, 2022: 22.4; Mujeres, 2023: 22.0; Mujeres, 2024: 22.2; Hombres, 2020: 19.3; Hombres, 2021: 20.6; Hombres, 2022: 19.1; Hombres, 2023: 19.6; Hombres, 2024: 19.6; Total, 2020: 21.0; Total, 2021: 21.7; Total, 2022: 20.8; Total, 2023: 20.9; Total, 2024: 21.0",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Nota:\nEl porcentaje se calcula respecto al total de mujeres u hombres que utilizaron internet en cada año de referencia.\nLa información correspondiente a cada año se refiere a los siguientes periodos: 2020: de octubre de 2019 a noviembre de 2020; 2021: de agosto de 2020 a septiembre de 2021; 2022: de julio de 2021 a agosto de 2022; 2023: de julio de 2022 a agosto de 2023; 2024: de julio de 2023 a agosto de 2024.\nFuente: INEGI. Módulo sobre Ciberacoso (MOCIBA), 2020, 2021, 2022, 2023 y 2024.\n1/",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "II. SITUACIONES DE CIBERACOSO\n\nEn 2024, la situación de ciberacoso con mayor prevalencia para ambos sexos fue el contacto mediante identidades falsas, con 36.0 por ciento. En actos de índole sexual, 29.0 % de las mujeres y 13.9 % de los hombres fueron víctimas de insinuaciones o propuestas sexuales, en tanto que 27.5 y 15.8 %, respectivamente, recibieron contenido sexual (ver gráfica 2).\n\nRespecto a provocaciones para reaccionar de forma negativa, 21.4 % de los hombres y 15.7 % de las mujeres reportaron esta situación, mientras que 24.6 % de los hombres y 21.0 % de las mujeres recibieron llamadas ofensivas y 35.9 y 32.4 %, respectivamente, recibieron mensajes ofensivos.",
+    "lang": "es"
+   }
+  ],
+  "page_type": {
+   "tabla": false,
+   "grafica": true,
+   "diagrama": false,
+   "imagen": false,
+   "matematicas": false,
+   "columnas": 3
+  },
+  "prompt_version": "faithful-reader-cloud-v1",
+  "model": "gpt-4.1-mini",
+  "provider": "openai",
+  "detector": "ollama",
+  "steps": [
+   {
+    "name": "deteccion",
+    "engine": "ollama",
+    "seconds": 6.98,
+    "detail": "grafica"
+   },
+   {
+    "name": "extraccion",
+    "engine": "openai",
+    "seconds": 6.46
+   }
+  ],
+  "processing_seconds": 6.99,
+  "_spec": "R08:2",
+  "_wall_seconds": 7.02
+ },
+ {
+  "success": true,
+  "description": "[TEXTO] COMUNICADO DE PRENSA 145/25\n[TEXTO] ESTADÍSTICAS A PROPÓSITO DEL DÍA\n[TEXTO] INTERNACIONAL DE LA ELIMINACIÓN\n[TEXTO] DE LA VIOLENCIA CONTRA LA MUJER\n[TEXTO] 20 de noviembre de 2025\n[TEXTO] Página 3/6\n[IMAGEN] Gráfica 2 Situaciones de ciberacoso experimentadas, según sexo de la persona ciberacosada 2024 (porcentaje). Datos: Mujeres, Contacto mediante identidades falsas: 36.0; Hombres, Contacto mediante identidades falsas: 36.0; Mujeres, Mensajes ofensivos: 32.4; Hombres, Mensajes ofensivos: 35.9; Mujeres, Insinuaciones o propuestas sexuales: 29.0; Hombres, Insinuaciones o propuestas sexuales: 13.9; Mujeres, Recibir contenido sexual: 27.5; Hombres, Recibir contenido sexual: 15.8; Mujeres, Llamadas ofensivas: 21.0; Hombres, Llamadas ofensivas: 24.6; Mujeres, Suplantación de identidad: 20.5; Hombres, Suplantación de identidad: 18.9; Mujeres, Rastreo de cuentas o sitios web: 18.1; Hombres, Rastreo de cuentas o sitios web: 17.1; Mujeres, Provocaciones para reaccionar de forma negativa: 15.7; Hombres, Provocaciones para reaccionar de forma negativa: 21.4; Mujeres, Críticas por apariencia o clase social: 14.9; Hombres, Críticas por apariencia o clase social: 11.9; Mujeres, Amenazar con publicar información personal, audios o videos para extorsionar: 9.6; Hombres, Amenazar con publicar información personal, audios o videos para extorsionar: 10.3; Mujeres, Publicar y/o enviar información personal, fotos o videos: 5.9; Hombres, Publicar y/o enviar información personal, fotos o videos: 4.9; Mujeres, Publicar o vender imágenes o videos de contenido sexual: 4.4; Hombres, Publicar o vender imágenes o videos de contenido sexual: 3.3; Mujeres, Otra situación: 2.3; Hombres, Otra situación: 2.2\n[TEXTO] Nota: La suma por tipo de situación de ciberacoso experimentada puede ser mayor a 100, debido a que una persona pudo haber experimentado más de una situación.\n[TEXTO] 1/ La información de 2024 se refiere al periodo de julio de 2023 a agosto de 2024.\n[TEXTO] Fuente: INEGI. Módulo sobre Ciberacoso (MOCIBA), 2024.\n[TEXTO] III. PERSONAS AGRESORAS\n[TEXTO] En 2024, entre las personas de 12 años y más que reportaron haber sido víctimas de ciberacoso, 21.6 % de las mujeres y el mismo porcentaje de los hombres señalaron que las agresiones provinieron únicamente de personas conocidas. Por otro lado, 17.0 % de las mujeres y 13.7 % de los hombres identificaron tanto a personas conocidas como a desconocidas como responsables del ciberacoso. Finalmente, 61.4 % de las mujeres y 64.7 % de los hombres indicaron que los agresores fueron exclusivamente personas desconocidas (ver gráfica 3).\n[TEXTO] Respecto al perfil de las personas agresoras, 52.1 y 57.0 % de las mujeres y los hombres víctimas de ciberacoso, respectivamente, identificaron solo hombres como agresores, mientras que 20.9 % de las mujeres ciberacosadas y 17.2 % de los hombres ciberacosados identificaron",
+  "elements": [
+   {
+    "type": "Texto",
+    "content": "COMUNICADO DE PRENSA 145/25\nESTADÍSTICAS A PROPÓSITO DEL DÍA\nINTERNACIONAL DE LA ELIMINACIÓN\nDE LA VIOLENCIA CONTRA LA MUJER\n20 de noviembre de 2025\nPágina 3/6",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "Gráfica 2 Situaciones de ciberacoso experimentadas, según sexo de la persona ciberacosada 2024 (porcentaje). Datos: Mujeres, Contacto mediante identidades falsas: 36.0; Hombres, Contacto mediante identidades falsas: 36.0; Mujeres, Mensajes ofensivos: 32.4; Hombres, Mensajes ofensivos: 35.9; Mujeres, Insinuaciones o propuestas sexuales: 29.0; Hombres, Insinuaciones o propuestas sexuales: 13.9; Mujeres, Recibir contenido sexual: 27.5; Hombres, Recibir contenido sexual: 15.8; Mujeres, Llamadas ofensivas: 21.0; Hombres, Llamadas ofensivas: 24.6; Mujeres, Suplantación de identidad: 20.5; Hombres, Suplantación de identidad: 18.9; Mujeres, Rastreo de cuentas o sitios web: 18.1; Hombres, Rastreo de cuentas o sitios web: 17.1; Mujeres, Provocaciones para reaccionar de forma negativa: 15.7; Hombres, Provocaciones para reaccionar de forma negativa: 21.4; Mujeres, Críticas por apariencia o clase social: 14.9; Hombres, Críticas por apariencia o clase social: 11.9; Mujeres, Amenazar con publicar información personal, audios o videos para extorsionar: 9.6; Hombres, Amenazar con publicar información personal, audios o videos para extorsionar: 10.3; Mujeres, Publicar y/o enviar información personal, fotos o videos: 5.9; Hombres, Publicar y/o enviar información personal, fotos o videos: 4.9; Mujeres, Publicar o vender imágenes o videos de contenido sexual: 4.4; Hombres, Publicar o vender imágenes o videos de contenido sexual: 3.3; Mujeres, Otra situación: 2.3; Hombres, Otra situación: 2.2",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Nota: La suma por tipo de situación de ciberacoso experimentada puede ser mayor a 100, debido a que una persona pudo haber experimentado más de una situación.\n1/ La información de 2024 se refiere al periodo de julio de 2023 a agosto de 2024.\nFuente: INEGI. Módulo sobre Ciberacoso (MOCIBA), 2024.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "III. PERSONAS AGRESORAS",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "En 2024, entre las personas de 12 años y más que reportaron haber sido víctimas de ciberacoso, 21.6 % de las mujeres y el mismo porcentaje de los hombres señalaron que las agresiones provinieron únicamente de personas conocidas. Por otro lado, 17.0 % de las mujeres y 13.7 % de los hombres identificaron tanto a personas conocidas como a desconocidas como responsables del ciberacoso. Finalmente, 61.4 % de las mujeres y 64.7 % de los hombres indicaron que los agresores fueron exclusivamente personas desconocidas (ver gráfica 3).",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Respecto al perfil de las personas agresoras, 52.1 y 57.0 % de las mujeres y los hombres víctimas de ciberacoso, respectivamente, identificaron solo hombres como agresores, mientras que 20.9 % de las mujeres ciberacosadas y 17.2 % de los hombres ciberacosados identificaron",
+    "lang": "es"
+   }
+  ],
+  "page_type": {
+   "tabla": true,
+   "grafica": true,
+   "diagrama": false,
+   "imagen": false,
+   "matematicas": false,
+   "columnas": 2
+  },
+  "prompt_version": "faithful-reader-cloud-v1",
+  "model": "gpt-4.1-mini",
+  "provider": "openai",
+  "detector": "ollama",
+  "steps": [
+   {
+    "name": "deteccion",
+    "engine": "ollama",
+    "seconds": 7.12,
+    "detail": "tabla, grafica"
+   },
+   {
+    "name": "extraccion",
+    "engine": "openai",
+    "seconds": 7.65
+   }
+  ],
+  "processing_seconds": 7.66,
+  "_spec": "R08:3",
+  "_wall_seconds": 7.67
+ },
+ {
+  "success": true,
+  "description": "[TEXTO] COMUNICADO DE PRENSA NÚM. 528/20\n[TEXTO] 11 DE NOVIEMBRE DE 2020\n[TEXTO] PÁGINA 2/2\n[TEXTO] En el grupo de mujeres de 20 a 29 años, la prevalencia de obesidad es de 26% y aumenta a 46% en el grupo de 30 a 59 años; en los hombres se observa un aumento menos pronunciado al pasar de 24 a 35 por ciento. Los adultos mayores tienen otra dinámica: las mujeres presentan una prevalencia de obesidad más alta (40%) con respecto a los hombres; la diferencia es de 14 puntos porcentuales.\n[IMAGEN] Gráfica de barras. Prevalencia de obesidad en la población de 5 años o más por sexo y grupos de edad, 2018. Eje vertical escala de 0 a 50, en incrementos de 5. Eje horizontal con grupos de edad: 5 a 11 años, 12 a 19 años, 20 a 29 años, 30 a 59 años, 60 años y más. Dos barras por grupo: Hombres (color azul oscuro) y Mujeres (color azul claro).. Datos: Hombres, 5 a 11 años: 20; Mujeres, 5 a 11 años: 15; Hombres, 12 a 19 años: 15; Mujeres, 12 a 19 años: 14; Hombres, 20 a 29 años: 24; Mujeres, 20 a 29 años: 26; Hombres, 30 a 59 años: 35; Mujeres, 30 a 59 años: 46; Hombres, 60 años y más: 26; Mujeres, 60 años y más: 40\n[TEXTO] Nota: La prevalencia se refiere a la población con obesidad entre la población total de cada grupo de edad, multiplicada por cien.\n[TEXTO] Fuente: INEGI/INSP. Encuesta Nacional de Salud y Nutrición (ENSANUT) 2018.\n[TEXTO] Se anexa Nota técnica\n[TEXTO] Para consultas de medios y periodistas, contactar a: comunicacionsocial@inegi.org.mx o llamar al teléfono (55) 52-78-10-00, exts. 1134, 1260 y 1241.\n[TEXTO] Dirección de Atención a Medios / Dirección General Adjunta de Comunicación\n[TEXTO] COMUNICACIÓN SOCIAL",
+  "elements": [
+   {
+    "type": "Texto",
+    "content": "COMUNICADO DE PRENSA NÚM. 528/20\n11 DE NOVIEMBRE DE 2020\nPÁGINA 2/2",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "En el grupo de mujeres de 20 a 29 años, la prevalencia de obesidad es de 26% y aumenta a 46% en el grupo de 30 a 59 años; en los hombres se observa un aumento menos pronunciado al pasar de 24 a 35 por ciento. Los adultos mayores tienen otra dinámica: las mujeres presentan una prevalencia de obesidad más alta (40%) con respecto a los hombres; la diferencia es de 14 puntos porcentuales.",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "Gráfica de barras. Prevalencia de obesidad en la población de 5 años o más por sexo y grupos de edad, 2018. Eje vertical escala de 0 a 50, en incrementos de 5. Eje horizontal con grupos de edad: 5 a 11 años, 12 a 19 años, 20 a 29 años, 30 a 59 años, 60 años y más. Dos barras por grupo: Hombres (color azul oscuro) y Mujeres (color azul claro).. Datos: Hombres, 5 a 11 años: 20; Mujeres, 5 a 11 años: 15; Hombres, 12 a 19 años: 15; Mujeres, 12 a 19 años: 14; Hombres, 20 a 29 años: 24; Mujeres, 20 a 29 años: 26; Hombres, 30 a 59 años: 35; Mujeres, 30 a 59 años: 46; Hombres, 60 años y más: 26; Mujeres, 60 años y más: 40",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Nota: La prevalencia se refiere a la población con obesidad entre la población total de cada grupo de edad, multiplicada por cien.\nFuente: INEGI/INSP. Encuesta Nacional de Salud y Nutrición (ENSANUT) 2018.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Se anexa Nota técnica\nPara consultas de medios y periodistas, contactar a: comunicacionsocial@inegi.org.mx o llamar al teléfono (55) 52-78-10-00, exts. 1134, 1260 y 1241.\nDirección de Atención a Medios / Dirección General Adjunta de Comunicación",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "COMUNICACIÓN SOCIAL",
+    "lang": "es"
+   }
+  ],
+  "page_type": {
+   "tabla": true,
+   "grafica": true,
+   "diagrama": false,
+   "imagen": false,
+   "matematicas": false,
+   "columnas": 2
+  },
+  "prompt_version": "faithful-reader-cloud-v1",
+  "model": "gpt-4.1-mini",
+  "provider": "openai",
+  "detector": "ollama",
+  "steps": [
+   {
+    "name": "deteccion",
+    "engine": "ollama",
+    "seconds": 7.6,
+    "detail": "tabla, grafica"
+   },
+   {
+    "name": "extraccion",
+    "engine": "openai",
+    "seconds": 5.3
+   }
+  ],
+  "processing_seconds": 7.62,
+  "_spec": "R07:2",
+  "_wall_seconds": 7.62
+ },
+ {
+  "success": true,
+  "description": "[TEXTO] INEGI\n[TEXTO] NOTA TÉCNICA\n[TEXTO] ESTADÍSTICAS A PROPÓSITO DEL DÍA MUNDIAL CONTRA LA OBESIDAD\n[TEXTO] El 12 de noviembre de cada año se celebra el “Día Mundial contra la Obesidad”, efeméride instituida por la Organización Mundial de la Salud (OMS), cuyo objetivo es informar y sensibilizar a la población sobre la necesidad de adoptar medidas para prevenir y tratar el sobrepeso y la obesidad.\n[TEXTO] México es uno de los países preocupados por conocer el estado de salud y las condiciones nutricionales de su población, por tal motivo, el Instituto Nacional de Estadística y Geografía (INEGI), presenta indicadores que abordan el problema de sobrepeso y obesidad por grupos de edad y sexo. La fuente utilizada para estimar los indicadores presentados es la Encuesta Nacional de Salud y Nutrición 2018 (ENSANUT) que se levantó durante el año 2018.\n[TEXTO] Riesgo de sobrepeso en la población con menos de 5 años\n[TEXTO] La salud en la primera infancia, periodo de la vida que ocurre antes de los 5 años de edad, es de prioridad para los gobiernos del mundo. Su relevancia queda de manifiesto al incluir el Desarrollo Infantil Temprano dentro de la Agenda 2030 para el Desarrollo Sostenible, la cual establece que los niños deben tener todas las condiciones necesarias para alcanzar su máximo nivel de desarrollo (Instituto Nacional de Estadística y Geografía [INEGI] e Instituto Nacional de Salud Pública [INSP], 2019).\n[TEXTO] El desarrollo físico, cognitivo y socioemocional de los niños en sus primeros años de vida, se asocia en gran medida con la alimentación que reciben, en particular se considera que la lactancia materna es un factor protector de enfermedades y además disminuyen el riesgo del sobrepeso. Se ha comprobado que la duración prolongada de la lactancia materna se asocia con una reducción de 13% de las probabilidades de prevalencia de sobrepeso u obesidad (Organización Panamericana de la Salud [OPS] y Organización Mundial de la Salud [OMS], 2016).\n[TEXTO] También la ingesta de una alimentación complementaria adecuada a partir de los seis meses de edad, evitar en los primeros años de vida el consumo de bebidas azucaradas y alimentos con alto contenido de azúcar y sodio, reduce la prevalencia de riesgo al sobrepeso (Rivera, et. al, 2015.).\n[TEXTO] La ENSANUT 2018 reporta que en el país poco más de una quinta parte (22%) de niñas y niños con menos de 5 años, tiene riesgo de padecer sobrepeso.\n[TEXTO] Sobrepeso y obesidad en población de 5 años o más de edad\n[TEXTO] El sobrepeso y la obesidad son considerados un problema de salud pública relacionado principalmente con aspectos genéticos, pero en especial con el estilo de vida. Se ha documentado que la ingesta de alimentos de alta densidad energética, bebidas azucaradas y la inactividad física tiene una relación directa con el sobrepeso y la obesidad.\n[TEXTO] COMUNICACIÓN SOCIAL",
+  "elements": [
+   {
+    "type": "Texto",
+    "content": "INEGI\nNOTA TÉCNICA\nESTADÍSTICAS A PROPÓSITO DEL DÍA MUNDIAL CONTRA LA OBESIDAD\nEl 12 de noviembre de cada año se celebra el “Día Mundial contra la Obesidad”, efeméride instituida por la Organización Mundial de la Salud (OMS), cuyo objetivo es informar y sensibilizar a la población sobre la necesidad de adoptar medidas para prevenir y tratar el sobrepeso y la obesidad.\nMéxico es uno de los países preocupados por conocer el estado de salud y las condiciones nutricionales de su población, por tal motivo, el Instituto Nacional de Estadística y Geografía (INEGI), presenta indicadores que abordan el problema de sobrepeso y obesidad por grupos de edad y sexo. La fuente utilizada para estimar los indicadores presentados es la Encuesta Nacional de Salud y Nutrición 2018 (ENSANUT) que se levantó durante el año 2018.\nRiesgo de sobrepeso en la población con menos de 5 años\nLa salud en la primera infancia, periodo de la vida que ocurre antes de los 5 años de edad, es de prioridad para los gobiernos del mundo. Su relevancia queda de manifiesto al incluir el Desarrollo Infantil Temprano dentro de la Agenda 2030 para el Desarrollo Sostenible, la cual establece que los niños deben tener todas las condiciones necesarias para alcanzar su máximo nivel de desarrollo (Instituto Nacional de Estadística y Geografía [INEGI] e Instituto Nacional de Salud Pública [INSP], 2019).\nEl desarrollo físico, cognitivo y socioemocional de los niños en sus primeros años de vida, se asocia en gran medida con la alimentación que reciben, en particular se considera que la lactancia materna es un factor protector de enfermedades y además disminuyen el riesgo del sobrepeso. Se ha comprobado que la duración prolongada de la lactancia materna se asocia con una reducción de 13% de las probabilidades de prevalencia de sobrepeso u obesidad (Organización Panamericana de la Salud [OPS] y Organización Mundial de la Salud [OMS], 2016).\nTambién la ingesta de una alimentación complementaria adecuada a partir de los seis meses de edad, evitar en los primeros años de vida el consumo de bebidas azucaradas y alimentos con alto contenido de azúcar y sodio, reduce la prevalencia de riesgo al sobrepeso (Rivera, et. al, 2015.).\nLa ENSANUT 2018 reporta que en el país poco más de una quinta parte (22%) de niñas y niños con menos de 5 años, tiene riesgo de padecer sobrepeso.\nSobrepeso y obesidad en población de 5 años o más de edad\nEl sobrepeso y la obesidad son considerados un problema de salud pública relacionado principalmente con aspectos genéticos, pero en especial con el estilo de vida. Se ha documentado que la ingesta de alimentos de alta densidad energética, bebidas azucaradas y la inactividad física tiene una relación directa con el sobrepeso y la obesidad.\n\nCOMUNICACIÓN SOCIAL",
+    "lang": "es"
+   }
+  ],
+  "page_type": {
+   "tabla": false,
+   "grafica": false,
+   "diagrama": false,
+   "imagen": false,
+   "matematicas": false,
+   "columnas": 1
+  },
+  "prompt_version": "faithful-reader-cloud-v1",
+  "model": "gpt-4.1-mini",
+  "provider": "openai",
+  "detector": "ollama",
+  "steps": [
+   {
+    "name": "deteccion",
+    "engine": "ollama",
+    "seconds": 7.62,
+    "detail": "solo texto"
+   },
+   {
+    "name": "extraccion",
+    "engine": "openai",
+    "seconds": 6.22
+   }
+  ],
+  "processing_seconds": 7.66,
+  "_spec": "R07:3",
+  "_wall_seconds": 7.67
+ },
+ {
+  "success": true,
+  "description": "[IMAGEN] Escudo del Ayuntamiento Constitucional de Guanajuato en colores azul y blanco, con la palabra Guanajuato y el lema \"Pensando en Grande\" debajo del escudo, ubicado en la parte superior izquierda de la página.\n[TEXTO] AYUNTAMIENTO CONSTITUCIONAL DE GUANAJUATO 2021-2024\n[TEXTO] Servicio Suburbano:\n[TABLA] Tarifas de servicio suburbano de Guanajuato a varios destinos, con fecha de tarifa 01-ago-18. 33 filas. Columnas: De Guanajuato a:; General; Preferencial\n[TABLA] Fila 1. De Guanajuato a:: SEG; General: $7.50; Preferencial: $4.00\n[TABLA] Fila 2. De Guanajuato a:: CERESO; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 3. De Guanajuato a:: Puentecillas; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 4. De Guanajuato a:: Campanario; General: $7.50; Preferencial: $4.00\n[TABLA] Fila 5. De Guanajuato a:: ISSEG; General: $7.50; Preferencial: $4.00\n[TABLA] Fila 6. De Guanajuato a:: San Isidro; General: $7.50; Preferencial: $4.00\n[TABLA] Fila 7. De Guanajuato a:: Carbonera; General: $9.00; Preferencial: $4.50\n[TABLA] Fila 8. De Guanajuato a:: Nuevo Solano; General: $9.00; Preferencial: $4.50\n[TABLA] Fila 9. De Guanajuato a:: Entronque a la Trinidad; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 10. De Guanajuato a:: La Trinidad; General: $11.00; Preferencial: $5.50\n[TABLA] Fila 11. De Guanajuato a:: La Poza; General: $13.00; Preferencial: $6.50\n[TABLA] Fila 12. De Guanajuato a:: Entronque al Rodeo; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 13. De Guanajuato a:: Entronque al Tejaban; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 14. De Guanajuato a:: El Chapín; General: $13.00; Preferencial: $6.50\n[TABLA] Fila 15. De Guanajuato a:: El Coyote; General: $17.50; Preferencial: $9.00\n[TABLA] Fila 16. De Guanajuato a:: Sauceda; General: $11.00; Preferencial: $5.50\n[TABLA] Fila 17. De Guanajuato a:: Desv. a Campuzano; General: $14.00; Preferencial: $7.00\n[TABLA] Fila 18. De Guanajuato a:: Nochebuena; General: $7.50; Preferencial: $4.00\n[TABLA] Fila 19. De Guanajuato a:: Crucero Silao-Irapuato; General: $9.00; Preferencial: $4.50\n[TABLA] Fila 20. De Guanajuato a:: Santa Teresa; General: $9.00; Preferencial: $4.50\n[TABLA] Fila 21. De Guanajuato a:: Crucero Irapuato-Cuevas; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 22. De Guanajuato a:: Desviación Cañada de Bustos; General: $10.50; Preferencial: $5.50\n[TABLA] Fila 23. De Guanajuato a:: Ciénega del Pedregal; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 24. De Guanajuato a:: Cajones; General: $11.00; Preferencial: $5.50\n[TABLA] Fila 25. De Guanajuato a:: Maluco; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 26. De Guanajuato a:: Paso de Perules; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 27. De Guanajuato a:: Universidad Sta. Fe; General: $7.50; Preferencial: $4.00\n[TABLA] Fila 28. De Guanajuato a:: San José De Cervera; General: $9.50; Preferencial: $5.00\n[TABLA] Fila 29. De Guanajuato a:: Cuevas; General: $11.00; Preferencial: $5.50\n[TABLA] Fila 30. De Guanajuato a:: Cañada de Bustos; General: $14.00; Preferencial: $7.00\n[TABLA] Fila 31. De Guanajuato a:: Capulín de Bustos; General: $16.00; Preferencial: $8.00\n[TABLA] Fila 32. De Guanajuato a:: Molineros; General: $13.00; Preferencial: $6.50\n[TABLA] Fila 33. De Guanajuato a:: San José de Llanos; General: $19.50; Preferencial: $10.00\n[TEXTO] Página 2 de 33",
+  "elements": [
+   {
+    "type": "Descripción Visual",
+    "content": "Escudo del Ayuntamiento Constitucional de Guanajuato en colores azul y blanco, con la palabra Guanajuato y el lema \"Pensando en Grande\" debajo del escudo, ubicado en la parte superior izquierda de la página.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "AYUNTAMIENTO CONSTITUCIONAL DE GUANAJUATO 2021-2024",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Servicio Suburbano:",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Tarifas de servicio suburbano de Guanajuato a varios destinos, con fecha de tarifa 01-ago-18. 33 filas. Columnas: De Guanajuato a:; General; Preferencial",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 1. De Guanajuato a:: SEG; General: $7.50; Preferencial: $4.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 2. De Guanajuato a:: CERESO; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 3. De Guanajuato a:: Puentecillas; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 4. De Guanajuato a:: Campanario; General: $7.50; Preferencial: $4.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 5. De Guanajuato a:: ISSEG; General: $7.50; Preferencial: $4.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 6. De Guanajuato a:: San Isidro; General: $7.50; Preferencial: $4.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 7. De Guanajuato a:: Carbonera; General: $9.00; Preferencial: $4.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 8. De Guanajuato a:: Nuevo Solano; General: $9.00; Preferencial: $4.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 9. De Guanajuato a:: Entronque a la Trinidad; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 10. De Guanajuato a:: La Trinidad; General: $11.00; Preferencial: $5.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 11. De Guanajuato a:: La Poza; General: $13.00; Preferencial: $6.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 12. De Guanajuato a:: Entronque al Rodeo; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 13. De Guanajuato a:: Entronque al Tejaban; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 14. De Guanajuato a:: El Chapín; General: $13.00; Preferencial: $6.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 15. De Guanajuato a:: El Coyote; General: $17.50; Preferencial: $9.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 16. De Guanajuato a:: Sauceda; General: $11.00; Preferencial: $5.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 17. De Guanajuato a:: Desv. a Campuzano; General: $14.00; Preferencial: $7.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 18. De Guanajuato a:: Nochebuena; General: $7.50; Preferencial: $4.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 19. De Guanajuato a:: Crucero Silao-Irapuato; General: $9.00; Preferencial: $4.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 20. De Guanajuato a:: Santa Teresa; General: $9.00; Preferencial: $4.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 21. De Guanajuato a:: Crucero Irapuato-Cuevas; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 22. De Guanajuato a:: Desviación Cañada de Bustos; General: $10.50; Preferencial: $5.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 23. De Guanajuato a:: Ciénega del Pedregal; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 24. De Guanajuato a:: Cajones; General: $11.00; Preferencial: $5.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 25. De Guanajuato a:: Maluco; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 26. De Guanajuato a:: Paso de Perules; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 27. De Guanajuato a:: Universidad Sta. Fe; General: $7.50; Preferencial: $4.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 28. De Guanajuato a:: San José De Cervera; General: $9.50; Preferencial: $5.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 29. De Guanajuato a:: Cuevas; General: $11.00; Preferencial: $5.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 30. De Guanajuato a:: Cañada de Bustos; General: $14.00; Preferencial: $7.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 31. De Guanajuato a:: Capulín de Bustos; General: $16.00; Preferencial: $8.00",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 32. De Guanajuato a:: Molineros; General: $13.00; Preferencial: $6.50",
+    "lang": "es"
+   },
+   {
+    "type": "Tabla",
+    "content": "Fila 33. De Guanajuato a:: San José de Llanos; General: $19.50; Preferencial: $10.00",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Página 2 de 33",
+    "lang": "es"
+   }
+  ],
+  "page_type": {
+   "tabla": true,
+   "grafica": false,
+   "diagrama": false,
+   "imagen": false,
+   "matematicas": false,
+   "columnas": 2
+  },
+  "prompt_version": "faithful-reader-cloud-v1",
+  "model": "gpt-4.1-mini",
+  "provider": "openai",
+  "detector": "ollama",
+  "steps": [
+   {
+    "name": "deteccion",
+    "engine": "ollama",
+    "seconds": 7.41,
+    "detail": "tabla"
+   },
+   {
+    "name": "extraccion",
+    "engine": "openai",
+    "seconds": 5.09
+   }
+  ],
+  "processing_seconds": 7.42,
+  "_spec": "R03:2",
+  "_wall_seconds": 7.43
+ },
+ {
+  "success": true,
+  "description": "[TEXTO] COMUNICADO DE PRENSA NÚM. 266/2020\n[TEXTO] 3 DE JUNIO DE 2020\n[TEXTO] PÁGINA 2/2\n[TEXTO] 2 030 sitios de disposición final carecían de infraestructura para una correcta contención y control de las emisiones al aire, suelo y agua que resultan de la disposición de esos residuos.\n[TEXTO] Se anexa Nota Técnica\n[TEXTO] Para consultas de medios y periodistas, contactar a: comunicacionsocial@inegi.org.mx\n[TEXTO] o llamar al teléfono (55) 52-78-10-00, ext. 1134, 1260 y 1241.\n[TEXTO] Dirección de Atención a Medios / Dirección General Adjunta de Comunicación\n[TEXTO] COMUNICACIÓN SOCIAL",
+  "elements": [
+   {
+    "type": "Texto",
+    "content": "COMUNICADO DE PRENSA NÚM. 266/2020\n3 DE JUNIO DE 2020\nPÁGINA 2/2",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "2 030 sitios de disposición final carecían de infraestructura para una correcta contención y control de las emisiones al aire, suelo y agua que resultan de la disposición de esos residuos.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Se anexa Nota Técnica",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Para consultas de medios y periodistas, contactar a: comunicacionsocial@inegi.org.mx\no llamar al teléfono (55) 52-78-10-00, ext. 1134, 1260 y 1241.\nDirección de Atención a Medios / Dirección General Adjunta de Comunicación",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "COMUNICACIÓN SOCIAL",
+    "lang": "es"
+   }
+  ],
+  "page_type": {
+   "tabla": false,
+   "grafica": false,
+   "diagrama": false,
+   "imagen": false,
+   "matematicas": false
+  },
+  "prompt_version": "faithful-reader-cloud-v1",
+  "model": "gpt-4.1-mini",
+  "provider": "openai",
+  "detector": "ollama",
+  "steps": [
+   {
+    "name": "deteccion",
+    "engine": "ollama",
+    "seconds": 7.62,
+    "detail": "omitida por tiempo"
+   },
+   {
+    "name": "extraccion",
+    "engine": "openai",
+    "seconds": 2.56
+   }
+  ],
+  "processing_seconds": 7.63,
+  "_spec": "R06:2",
+  "_wall_seconds": 7.64
+ },
+ {
+  "success": true,
+  "description": "[TEXTO] Tu Estado de Cuenta en línea\n[TEXTO] Descarga y consulta tu Estado de Cuenta en segundos desde tu app HSBC México.\n[TEXTO] Revisa\n[TEXTO] Comparte\n[TEXTO] 1\n[TEXTO] • Ingresa a la app HSBC México\n[TEXTO] • En Mis Cuentas da clic en la cuenta o tarjeta que deseas consultar\n[IMAGEN] Pantalla de celular con app HSBC México abierta. Texto en pantalla: Hola, Erandi. Cuentas de débito. Nómina Flexible HSBC *** 4297. Saldo 5,621.26 MXN. Área resaltada en rojo sobre la opción de cuenta para seleccionar.\n[TEXTO] 2\n[TEXTO] • Da clic en Ver Estados de cuenta\n[TEXTO] • Confirma con tu Token Móvil, Touch ID o Face ID\n[IMAGEN] Pantalla de celular con app HSBC México abierta. Texto en pantalla: Nómina Flexible HSBC *** 4297. Saldo 5,621.26 MXN. Opción resaltada en rojo: Ver Estados de cuenta. Otra opción debajo: Usar tarjeta digital.\n[TEXTO] 3\n[TEXTO] Selecciona el mes que deseas consultar, recuerda que puedes consultar los últimos 12 meses.\n[IMAGEN] Pantalla de celular con app HSBC México abierta. Texto en pantalla: Estados de cuenta. Nómina Flexible HSBC *** 4207. Saldo 5,621.26 MXN. Mes seleccionado resaltado en rojo: mayo 31, año 2023.\n[TEXTO] 4\n[TEXTO] ¡Listo! Ya tienes tu Estado de cuenta. Puedes descargarlo en tu celular dando clic en el ícono superior derecho.\n[IMAGEN] Pantalla de celular con app HSBC México abierta mostrando un estado de cuenta digital. En la parte superior derecha hay un ícono de descarga resaltado en rojo. Fecha visible en el documento: 2023-05-31_Estado de cuenta.",
+  "elements": [
+   {
+    "type": "Texto",
+    "content": "Tu Estado de Cuenta en línea\nDescarga y consulta tu Estado de Cuenta en segundos desde tu app HSBC México.\nRevisa\nComparte",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "1\n• Ingresa a la app HSBC México\n• En Mis Cuentas da clic en la cuenta o tarjeta que deseas consultar",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "Pantalla de celular con app HSBC México abierta. Texto en pantalla: Hola, Erandi. Cuentas de débito. Nómina Flexible HSBC *** 4297. Saldo 5,621.26 MXN. Área resaltada en rojo sobre la opción de cuenta para seleccionar.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "2\n• Da clic en Ver Estados de cuenta\n• Confirma con tu Token Móvil, Touch ID o Face ID",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "Pantalla de celular con app HSBC México abierta. Texto en pantalla: Nómina Flexible HSBC *** 4297. Saldo 5,621.26 MXN. Opción resaltada en rojo: Ver Estados de cuenta. Otra opción debajo: Usar tarjeta digital.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "3\nSelecciona el mes que deseas consultar, recuerda que puedes consultar los últimos 12 meses.",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "Pantalla de celular con app HSBC México abierta. Texto en pantalla: Estados de cuenta. Nómina Flexible HSBC *** 4207. Saldo 5,621.26 MXN. Mes seleccionado resaltado en rojo: mayo 31, año 2023.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "4\n¡Listo! Ya tienes tu Estado de cuenta. Puedes descargarlo en tu celular dando clic en el ícono superior derecho.",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "Pantalla de celular con app HSBC México abierta mostrando un estado de cuenta digital. En la parte superior derecha hay un ícono de descarga resaltado en rojo. Fecha visible en el documento: 2023-05-31_Estado de cuenta.",
+    "lang": "es"
+   }
+  ],
+  "page_type": {
+   "tabla": false,
+   "grafica": false,
+   "diagrama": false,
+   "imagen": true,
+   "matematicas": false,
+   "columnas": 5
+  },
+  "prompt_version": "faithful-reader-cloud-v1",
+  "model": "gpt-4.1-mini",
+  "provider": "openai",
+  "detector": "ollama",
+  "steps": [
+   {
+    "name": "deteccion",
+    "engine": "ollama",
+    "seconds": 3.94,
+    "detail": "imagen"
+   },
+   {
+    "name": "extraccion",
+    "engine": "openai",
+    "seconds": 3.72
+   }
+  ],
+  "processing_seconds": 3.95,
+  "_spec": "R04:1",
+  "_wall_seconds": 3.95
+ },
+ {
+  "success": true,
+  "description": "[TEXTO] MITIGACIÓN\n[TEXTO] ¿Qué medidas tomar antes de un sismo?\n[TEXTO] Elabora y actualiza tu Plan Familiar y/o pide a la administración de tu inmueble que genere un Programa Interno de Protección Civil.\n[TEXTO] Verifica tu casa periódicamente, revisa hundimientos, desplomes o grietas y fisuras existentes.\n[TEXTO] Prepara una maleta de vida con los siguientes elementos:\n[TEXTO] Llaves del automóvil y dinero extra.\n[TEXTO] Linterna y pilas.\n[TEXTO] Radio y pilas.\n[TEXTO] Tratamientos especiales en caso de que alguien de la familia lo requiera.\n[TEXTO] Alimentos no perecederos y botellas de agua desechables.\n[TEXTO] Abrelatas manual.\n[TEXTO] Verifica con frecuencia la fecha de caducidad de los alimentos y medicamentos y revisa su estado.\n[TEXTO] Copia o escaneo en una USB de los documentos más importantes (INE, pasaporte, escrituras, factura del auto, cuenta bancaria, Infonavit, crédito bancario, identificación de toda la familia y fotos actualizadas de cada integrante).\n[TEXTO] Equipo de primeros auxilios.\n[TEXTO] Papel higiénico y otros elementos personales.\n[TEXTO] Teléfonos de emergencias y algún celular extra.\n[TEXTO] Bolsa impermeabilizada para objetos personales.\n[IMAGEN] La página contiene varias ilustraciones organizadas en secciones circulares y en fila, con colores predominantes azul, naranja y blanco.\n[IMAGEN] En la parte superior derecha hay un ícono en forma de rombo con fondo amarillo y naranja, que contiene una línea negra ondulada que simula un sismograma.\n[IMAGEN] Debajo del título, hay tres círculos con ilustraciones dentro, alineados verticalmente a la izquierda:\n[IMAGEN] 1. El primer círculo tiene borde naranja y dentro se ve una mano escribiendo en una hoja sujeta a un portapapeles. La mano es de color piel y la hoja es blanca con líneas negras.\n[IMAGEN] 2. El segundo círculo tiene borde azul oscuro y dentro hay una casa beige con techo azul oscuro, un árbol verde a la izquierda y césped verde alrededor.\n[IMAGEN] 3. El tercer círculo tiene borde azul claro y dentro hay una mochila de color rosa con detalles en rojo.\n[IMAGEN] Más abajo, en la parte central, hay una fila de diez íconos lineales de color azul claro, cada uno con un texto debajo:\n[IMAGEN] 1. Una llave de automóvil junto a un billete.\n[IMAGEN] 2. Una linterna con una pila al lado.\n[IMAGEN] 3. Una radio con una pila.\n[IMAGEN] 4. Un botiquín de primeros auxilios con una cruz blanca.\n[IMAGEN] 5. Un teléfono móvil con botones numerados.\n[IMAGEN] 6. Un frasco con una cruz blanca.\n[IMAGEN] 7. Una botella de agua.\n[IMAGEN] 8. Un abrelatas manual.\n[IMAGEN] 9. Un rollo de papel higiénico desenrollado.\n[IMAGEN] 10. Una bolsa impermeabilizada para objetos personales.\n[IMAGEN] Debajo de estos íconos, en la parte inferior, hay dos ilustraciones más:\n[IMAGEN] 1. Una lupa azul.\n[IMAGEN] 2. Una memoria USB con la tapa removida, también en azul.\n[IMAGEN] Todas las ilustraciones son simples, con líneas claras y colores planos, sobre un fondo blanco.",
+  "elements": [
+   {
+    "type": "Texto",
+    "content": "MITIGACIÓN\n¿Qué medidas tomar antes de un sismo?",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Elabora y actualiza tu Plan Familiar y/o pide a la administración de tu inmueble que genere un Programa Interno de Protección Civil.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Verifica tu casa periódicamente, revisa hundimientos, desplomes o grietas y fisuras existentes.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Prepara una maleta de vida con los siguientes elementos:",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Llaves del automóvil y dinero extra.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Linterna y pilas.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Radio y pilas.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Tratamientos especiales en caso de que alguien de la familia lo requiera.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Alimentos no perecederos y botellas de agua desechables.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Abrelatas manual.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Verifica con frecuencia la fecha de caducidad de los alimentos y medicamentos y revisa su estado.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Copia o escaneo en una USB de los documentos más importantes (INE, pasaporte, escrituras, factura del auto, cuenta bancaria, Infonavit, crédito bancario, identificación de toda la familia y fotos actualizadas de cada integrante).",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Equipo de primeros auxilios.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Papel higiénico y otros elementos personales.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Teléfonos de emergencias y algún celular extra.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Bolsa impermeabilizada para objetos personales.",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "La página contiene varias ilustraciones organizadas en secciones circulares y en fila, con colores predominantes azul, naranja y blanco.\n\nEn la parte superior derecha hay un ícono en forma de rombo con fondo amarillo y naranja, que contiene una línea negra ondulada que simula un sismograma.\n\nDebajo del título, hay tres círculos con ilustraciones dentro, alineados verticalmente a la izquierda:\n\n1. El primer círculo tiene borde naranja y dentro se ve una mano escribiendo en una hoja sujeta a un portapapeles. La mano es de color piel y la hoja es blanca con líneas negras.\n2. El segundo círculo tiene borde azul oscuro y dentro hay una casa beige con techo azul oscuro, un árbol verde a la izquierda y césped verde alrededor.\n3. El tercer círculo tiene borde azul claro y dentro hay una mochila de color rosa con detalles en rojo.\n\nMás abajo, en la parte central, hay una fila de diez íconos lineales de color azul claro, cada uno con un texto debajo:\n\n1. Una llave de automóvil junto a un billete.\n2. Una linterna con una pila al lado.\n3. Una radio con una pila.\n4. Un botiquín de primeros auxilios con una cruz blanca.\n5. Un teléfono móvil con botones numerados.\n6. Un frasco con una cruz blanca.\n7. Una botella de agua.\n8. Un abrelatas manual.\n9. Un rollo de papel higiénico desenrollado.\n10. Una bolsa impermeabilizada para objetos personales.\n\nDebajo de estos íconos, en la parte inferior, hay dos ilustraciones más:\n\n1. Una lupa azul.\n2. Una memoria USB con la tapa removida, también en azul.\n\nTodas las ilustraciones son simples, con líneas claras y colores planos, sobre un fondo blanco."
+   }
+  ],
+  "page_type": {
+   "tabla": false,
+   "grafica": false,
+   "diagrama": true,
+   "imagen": true,
+   "matematicas": false,
+   "columnas": 3
+  },
+  "prompt_version": "faithful-reader-cloud-v1",
+  "model": "gpt-4.1-mini",
+  "provider": "openai",
+  "detector": "ollama",
+  "steps": [
+   {
+    "name": "deteccion",
+    "engine": "ollama",
+    "seconds": 7.39,
+    "detail": "diagrama, imagen"
+   },
+   {
+    "name": "extraccion",
+    "engine": "openai",
+    "seconds": 4.77
+   },
+   {
+    "name": "llamada_enfocada",
+    "engine": "openai",
+    "seconds": 2.91,
+    "detail": "imagen"
+   }
+  ],
+  "processing_seconds": 10.33,
+  "_spec": "R12:2",
+  "_wall_seconds": 10.33
+ },
+ {
+  "success": true,
+  "description": "[TEXTO] Alimentación saludable\n[TEXTO] \"Debes cuidar tanto lo que comes, como lo que bebes\".\n[TEXTO] Recomendaciones para una alimentación adecuada:\n[TEXTO] Incluir al menos un alimento de cada grupo en cada una de las tres comidas diarias.\n[TEXTO] Comer de acuerdo a tus necesidades y condiciones. Ni de más ni de menos.\n[TEXTO] Lavar y desinfectar las verduras y frutas antes de consumirlas o cocinarlas.\n[TEXTO] Comer cinco veces al día, tres comidas principales y dos refrigerios, uno a medio día y otro a media tarde.\n[TEXTO] Mantener en lo posible los horarios de comidas.\n[TEXTO] Para mantener la salud y prevenir la aparición de muchas enfermedades hay que seguir un estilo de vida saludable; es decir, hay que elegir una alimentación equilibrada, realizar actividad o ejercicio físico de forma regular (como mínimo caminar al menos 30 minutos al día) y evitar fumar y tomar bebidas alcohólicas de alta graduación.\n[TEXTO] Dirección de Educación y Capacitación en Salud\n[TEXTO] Dra. Claudia Alejandra Sainos Ramírez.\n[TEXTO] Lic. Mari José Márquez Martínez.\n[IMAGEN] Ilustración de una familia con seis personas: un hombre mayor con bigote y suéter marrón, una mujer mayor con cabello canoso y vestido verde, un hombre adulto con chaleco marrón, una mujer adulta con blusa roja, una niña pequeña con vestido azul y un niño pequeño con camiseta verde. Todos sonrientes, sobre fondo azul claro.\n[IMAGEN] Cuatro ilustraciones circulares con niños comiendo diferentes alimentos: 1) niña con plato de pasta y vaso de leche, 2) niño con hamburguesa, papas fritas y bebida, 3) niño con plato de carne, ensalada y vaso de agua, 4) niño con pizza y bebida. Fondo blanco.",
+  "elements": [
+   {
+    "type": "Texto",
+    "content": "Alimentación saludable\n\"Debes cuidar tanto lo que comes, como lo que bebes\".",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Recomendaciones para una alimentación adecuada:\nIncluir al menos un alimento de cada grupo en cada una de las tres comidas diarias.\nComer de acuerdo a tus necesidades y condiciones. Ni de más ni de menos.\nLavar y desinfectar las verduras y frutas antes de consumirlas o cocinarlas.\nComer cinco veces al día, tres comidas principales y dos refrigerios, uno a medio día y otro a media tarde.\nMantener en lo posible los horarios de comidas.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Para mantener la salud y prevenir la aparición de muchas enfermedades hay que seguir un estilo de vida saludable; es decir, hay que elegir una alimentación equilibrada, realizar actividad o ejercicio físico de forma regular (como mínimo caminar al menos 30 minutos al día) y evitar fumar y tomar bebidas alcohólicas de alta graduación.",
+    "lang": "es"
+   },
+   {
+    "type": "Texto",
+    "content": "Dirección de Educación y Capacitación en Salud\nDra. Claudia Alejandra Sainos Ramírez.\nLic. Mari José Márquez Martínez.",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "Ilustración de una familia con seis personas: un hombre mayor con bigote y suéter marrón, una mujer mayor con cabello canoso y vestido verde, un hombre adulto con chaleco marrón, una mujer adulta con blusa roja, una niña pequeña con vestido azul y un niño pequeño con camiseta verde. Todos sonrientes, sobre fondo azul claro.",
+    "lang": "es"
+   },
+   {
+    "type": "Descripción Visual",
+    "content": "Cuatro ilustraciones circulares con niños comiendo diferentes alimentos: 1) niña con plato de pasta y vaso de leche, 2) niño con hamburguesa, papas fritas y bebida, 3) niño con plato de carne, ensalada y vaso de agua, 4) niño con pizza y bebida. Fondo blanco.",
+    "lang": "es"
+   }
+  ],
+  "page_type": {
+   "tabla": false,
+   "grafica": false,
+   "diagrama": false,
+   "imagen": true,
+   "matematicas": false,
+   "columnas": 3
+  },
+  "prompt_version": "faithful-reader-cloud-v1",
+  "model": "gpt-4.1-mini",
+  "provider": "openai",
+  "detector": "ollama",
+  "steps": [
+   {
+    "name": "deteccion",
+    "engine": "ollama",
+    "seconds": 4.5,
+    "detail": "imagen"
+   },
+   {
+    "name": "extraccion",
+    "engine": "openai",
+    "seconds": 3.62
+   }
+  ],
+  "processing_seconds": 4.52,
+  "_spec": "R13:1",
+  "_wall_seconds": 4.62
+ }
+]
