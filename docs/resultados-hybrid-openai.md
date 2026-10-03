@@ -48,8 +48,13 @@ salida 307 (máx. 1 282). Con los precios publicados de `gpt-4.1-mini` ($0.40 y 
 **≈ $0.0031 por página** ($0.33 las 108 llamadas). Es una estimación hecha con precios publicados; la cifra
 definitiva está en el panel de facturación de OpenAI.
 
-Tiempo: ≈ 7 s por página con OpenAI, contra 10 a 20 s con Ollama (v4) en el mismo pod y 87 s en la primera página
-de un pod frío (ya mitigado con el precalentamiento `AURA_WARMUP`).
+Tiempo: las corridas de la tabla de resultados (≈ 7 s por página) se hicieron cuando el backend esperaba hasta 5 s al
+detector de Ollama después de que OpenAI ya había respondido (OpenAI extrae en ≈ 2.5 s; el detector tarda 5 a 8 s y
+solo terminó a tiempo en ≈ 50 % de las páginas). Se redujo esa espera a 1.5 s (`AURA_DETECT_GRACE_S`, commit `949ccc8`):
+**por la URL pública de la app (Vercel → Cloudflare → backend → OpenAI), 6 páginas dieron mediana 3.6 s y máximo 5.3 s.**
+La calidad no se volvió a medir con ese cambio porque no toca lo que lee OpenAI, solo cuánto se espera a la
+clasificación de Ollama. Referencias: Ollama (v4) 10 a 20 s por página en el mismo pod; 87 s en la primera página de un
+pod frío (ya mitigado con el precalentamiento `AURA_WARMUP`).
 
 ## Cambios hechos a partir de las pruebas
 

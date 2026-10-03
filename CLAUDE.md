@@ -58,7 +58,7 @@ curl -s http://127.0.0.1:3000/api/ready; curl -s https://api.aura4blinds.online/
 1. [x] `codex/prompt-v4` ya está fusionada en `main`. Trabajo actual directamente en `main` (tag de retorno: `pre-cloud-api`).
 2. [x] Control de velocidad (Espacio + ↑/↓), voz por idioma, panel de análisis y refactor del lector (hooks + pruebas).
 3. [x] Backend modular con modo `hybrid` (nube + detector Ollama + respaldo) y límite de peticiones por IP.
-4. [x] `hybrid` probado con OpenAI `gpt-4.1-mini` (2-3/10/2026): F+G = 26/27 (96.3 %) con revisión manual de la IA asistente, ~7 s/página, ~$0.0031/página, R07/R08 verificadas con cifras del propio texto. Detalle y limitaciones en `docs/resultados-hybrid-openai.md`. Falta que Rodrigo repita la revisión manual con la rúbrica; F11 sigue como fallo menor.
+4. [x] `hybrid` probado con OpenAI `gpt-4.1-mini` (2-3/10/2026): F+G = 26/27 (96.3 %) con revisión manual de la IA asistente, ~3.6 s/página por la URL pública (7 s antes de reducir `AURA_DETECT_GRACE_S`), ~$0.0031/página, R07/R08 verificadas con cifras del propio texto. Detalle y limitaciones en `docs/resultados-hybrid-openai.md`. Falta que Rodrigo repita la revisión manual con la rúbrica; F11 sigue como fallo menor.
 5. [ ] Comparar v3 vs v4 vs hybrid con el mismo runner y corpus (hybrid ya medido; falta correr `AURA_PIPELINE=v4` y `v3` sobre F + G para la tabla A/B de la tesis).
 6. [ ] Decidir qué modo se presenta en la tesis y declarar la implicación de privacidad de `hybrid` en la ficha y la presentación.
 7. [ ] Seguridad: **rotar `API_KEY`** (la antigua estuvo expuesta en el bundle público y `LOGS_STREAM_KEY` por defecto es la misma). El límite de peticiones por IP ya existe; falta uno global si se abre al público.
