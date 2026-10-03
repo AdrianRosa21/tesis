@@ -173,14 +173,55 @@ export function splitIntoSentences(content: string): string[] {
   return sentences.length > 0 ? sentences : [content];
 }
 
+// Una "oracion" sin puntos (una lista de alimentos, un parrafo pegado) puede medir cientos de caracteres:
+// con las flechas, V (repetir) o subir desde "Fin de la pagina" se repetiria la pagina entera. Se parte
+// en trozos de este tamano maximo.
+const MAX_UNIT_LENGTH = 220;
+const MIN_UNIT_LENGTH = 60;
+// Termina en una cifra o fraccion ("3/4", "70", "15,5", "20%"): la cantidad todavia no tiene su unidad.
+const ENDS_WITH_QUANTITY = /\d[\d/.,%]*$/;
+
+/**
+ * Parte un fragmento largo en trozos de a lo sumo MAX_UNIT_LENGTH caracteres. Corta de preferencia en una coma,
+ * punto y coma o dos puntos; si no hay, en un limite de palabra. Nunca deja una cantidad separada de su unidad
+ * ("Avena cocida 3/4 | taza"): si el corte cae justo despues de un numero, el trozo incluye la palabra que sigue.
+ */
+export function splitByLength(text: string, maxLength = MAX_UNIT_LENGTH): string[] {
+  const pieces: string[] = [];
+  let rest = text.trim();
+
+  while (rest.length > maxLength) {
+    const window = rest.slice(0, maxLength + 1);
+    let cut = Math.max(window.lastIndexOf(', '), window.lastIndexOf('; '), window.lastIndexOf(': ')) + 1;
+
+    if (cut < MIN_UNIT_LENGTH) {
+      cut = window.lastIndexOf(' ');
+      if (cut < MIN_UNIT_LENGTH) {
+        cut = maxLength; // una "palabra" larguisima sin espacios: corte duro
+      } else if (ENDS_WITH_QUANTITY.test(rest.slice(0, cut))) {
+        const afterUnit = rest.indexOf(' ', cut + 1);
+        if (afterUnit !== -1 && afterUnit <= maxLength + 25) cut = afterUnit;
+      }
+    }
+
+    pieces.push(rest.slice(0, cut).trim());
+    rest = rest.slice(cut).trim();
+  }
+
+  if (rest) pieces.push(rest);
+  return pieces;
+}
+
 export function splitLongTextElements(elements: PageElement[]): PageElement[] {
   const result: PageElement[] = [];
   for (const element of elements) {
     if (SPLITTABLE_TYPES.has(element.type) && element.content.length > LONG_TEXT_THRESHOLD) {
-      const sentences = splitIntoSentences(element.content);
-      if (sentences.length > 1) {
-        for (const sentence of sentences) {
-          result.push({ ...element, content: sentence });
+      const units = splitIntoSentences(element.content).flatMap(sentence =>
+        sentence.length > MAX_UNIT_LENGTH ? splitByLength(sentence) : [sentence],
+      );
+      if (units.length > 1) {
+        for (const unit of units) {
+          result.push({ ...element, content: unit });
         }
         continue;
       }
