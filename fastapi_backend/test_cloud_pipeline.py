@@ -217,6 +217,36 @@ class SchemaTests(unittest.TestCase):
         self.assertNotIn("idioma", ollama_props)
 
 
+class CloudPromptTests(unittest.TestCase):
+    def test_cloud_prompt_asks_for_object_state_clock_time_and_approximate_values(self):
+        from fastapi_backend.prompts import build_extraction_prompt
+
+        prompt = build_extraction_prompt(None, None, cloud=True)
+
+        self.assertIn("distintos estados", prompt)
+        self.assertIn("hora que marca", prompt)
+        self.assertIn('DEBE empezar con "aprox. "', prompt)
+
+    def test_the_local_v4_prompt_is_not_changed_by_the_cloud_rules(self):
+        from fastapi_backend.prompts import RULE_CHART, RULE_IMAGE, build_extraction_prompt
+
+        local = build_extraction_prompt({"grafica": True, "imagen": True, "columnas": 1}, None)
+
+        self.assertIn(RULE_CHART, local)
+        self.assertIn(RULE_IMAGE, local)
+        self.assertNotIn("distintos estados", local)
+        self.assertNotIn("hora que marca", local)
+
+    def test_cloud_rules_do_not_leak_benchmark_answers(self):
+        """Los ejemplos del prompt no pueden ser respuestas del corpus: seria darle el examen al modelo."""
+        from fastapi_backend.prompts import RULE_CHART_CLOUD, RULE_IMAGE_CLOUD
+
+        rules = (RULE_IMAGE_CLOUD + RULE_CHART_CLOUD).lower()
+        for leaked in ("semaforo", "perro", "arbol", "banca", "reloj marca", "3:00", "aprox. 40", "aprox. 25",
+                       "aprox. 60", "aprox. 15", "robotica", "python", "aguilas"):
+            self.assertNotIn(leaked, rules, f"'{leaked}' es contenido del corpus de pruebas")
+
+
 class OllamaWarmUpTests(unittest.IsolatedAsyncioTestCase):
     async def test_warm_up_uses_the_same_context_size_as_real_requests(self):
         from fastapi_backend.providers import OllamaProvider

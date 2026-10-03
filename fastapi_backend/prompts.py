@@ -150,7 +150,11 @@ RULE_COLUMNS = """COLUMNAS: la pagina tiene varias columnas. Lee la columna izqu
 
 # Variantes para el modelo en la nube. El prompt de Ollama (v4) no cambia: asi el
 # respaldo local se comporta igual que cuando se midio.
-RULE_CHART_CLOUD = """GRAFICAS: usa tipo "grafica". contenido = tipo de grafica, titulo, que mide cada eje y su escala, leyenda y colores si existen. datos = un par {etiqueta, valor} por cada barra, punto o sector visible. Si hay varias series (por ejemplo Hombres y Mujeres, o varias lineas), escribe un dato por cada serie y cada categoria, con la etiqueta en la forma "serie, categoria" (por ejemplo {"etiqueta": "Mujeres, 30 a 59 años", "valor": "46"}). En graficas de lineas incluye TODOS los años o puntos de cada serie, no solo el primero. Si un valor no esta escrito, estimalo por la altura y escribe "aprox." antes del numero. Nunca le asignes un valor a una serie o categoria que no le corresponde; si no estas seguro, usa un bloque "dudoso"."""
+RULE_CHART_CLOUD = """GRAFICAS: usa tipo "grafica". contenido = tipo de grafica, titulo, que mide cada eje y su escala, leyenda y colores si existen. datos = un par {etiqueta, valor} por cada barra, punto o sector visible. Si hay varias series (por ejemplo Hombres y Mujeres, o varias lineas), escribe un dato por cada serie y cada categoria, con la etiqueta en la forma "serie, categoria" (por ejemplo {"etiqueta": "Mujeres, 30 a 59 años", "valor": "46"}). En graficas de lineas incluye TODOS los años o puntos de cada serie, no solo el primero. Si el valor NO esta escrito junto a la barra, punto o sector (aunque puedas leerlo con la escala del eje), estimalo por la altura y el campo valor DEBE empezar con "aprox. " (por ejemplo "aprox. 8"); un valor sin esa palabra significa que esta escrito en la pagina. Nunca le asignes un valor a una serie o categoria que no le corresponde; si no estas seguro, usa un bloque "dudoso"."""
+
+# Los ejemplos de estas reglas son genericos a proposito: no deben coincidir con el contenido del
+# corpus de pruebas (ver test_cloud_rules_do_not_leak_benchmark_answers).
+RULE_IMAGE_CLOUD = """IMAGENES: por cada fotografia, ilustracion, mapa o figura usa un bloque tipo "imagen". contenido = descripcion concreta de lo que se ve: objetos o personas, su color, posicion (primer plano, fondo, izquierda, derecha) y cualquier texto dentro de la imagen. Cuando un objeto puede estar en distintos estados, di cual es el que se ve (por ejemplo un interruptor encendido o apagado, una puerta abierta o cerrada). Si hay un reloj analogico, di la hora que marca (por ejemplo "las 4:30"). Es OBLIGATORIO describirla aunque un pie de imagen ya la mencione; transcribe tambien el pie como texto. Describe solo lo que se ve; no inventes."""
 
 RULE_LANGUAGE = """IDIOMA: cada bloque lleva "idioma" con el codigo de dos letras del idioma del TEXTO del bloque (es, en, fr...). Transcribe el texto en su idioma original, sin traducirlo. Las descripciones de imagenes, graficas y diagramas y las notas de duda las escribes siempre en espanol (idioma "es")."""
 
@@ -219,7 +223,7 @@ def build_extraction_prompt(
                 ("SI LA PAGINA TIENE TABLAS", RULE_TABLE),
                 ("SI LA PAGINA TIENE GRAFICAS", RULE_CHART_CLOUD),
                 ("SI LA PAGINA TIENE DIAGRAMAS", RULE_DIAGRAM),
-                ("SI LA PAGINA TIENE FOTOGRAFIAS, ILUSTRACIONES O MAPAS", RULE_IMAGE),
+                ("SI LA PAGINA TIENE FOTOGRAFIAS, ILUSTRACIONES O MAPAS", RULE_IMAGE_CLOUD),
                 ("SI LA PAGINA TIENE MATEMATICAS", RULE_MATH),
             )
         ]
@@ -235,7 +239,7 @@ def build_extraction_prompt(
     if page.get("diagrama"):
         sections.append(RULE_DIAGRAM)
     if page.get("imagen"):
-        sections.append(RULE_IMAGE)
+        sections.append(RULE_IMAGE_CLOUD if cloud else RULE_IMAGE)
     if page.get("matematicas"):
         sections.append(RULE_MATH)
     if isinstance(page.get("columnas"), int) and page["columnas"] >= 2:
