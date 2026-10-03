@@ -8,6 +8,12 @@ from fastapi_backend.prompts import EXTRACT_SCHEMA
 EXTRACT_SCHEMA_CLOUD: dict[str, Any] = copy.deepcopy(EXTRACT_SCHEMA)
 EXTRACT_SCHEMA_CLOUD["properties"]["bloques"]["items"]["properties"]["idioma"] = {"type": "string"}
 
+# Cada dato de una grafica dice si su valor esta escrito en la pagina o fue estimado de la escala.
+# Un campo obligatorio lo respeta mucho mas que una instruccion de texto ("escribe aprox.").
+_dato = EXTRACT_SCHEMA_CLOUD["properties"]["bloques"]["items"]["properties"]["datos"]["items"]
+_dato["properties"]["aproximado"] = {"type": "boolean"}
+_dato["required"] = [*_dato["required"], "aproximado"]
+
 # Subconjunto de JSON Schema que acepta responseSchema de Gemini.
 _GEMINI_KEYS = {
     "type", "format", "description", "nullable", "enum", "items",

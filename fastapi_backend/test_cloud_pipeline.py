@@ -223,9 +223,9 @@ class CloudPromptTests(unittest.TestCase):
 
         prompt = build_extraction_prompt(None, None, cloud=True)
 
-        self.assertIn("distintos estados", prompt)
+        self.assertIn("estado de CADA parte", prompt)
         self.assertIn("hora que marca", prompt)
-        self.assertIn('DEBE empezar con "aprox. "', prompt)
+        self.assertIn('"aproximado": false', prompt)
 
     def test_the_local_v4_prompt_is_not_changed_by_the_cloud_rules(self):
         from fastapi_backend.prompts import RULE_CHART, RULE_IMAGE, build_extraction_prompt
@@ -234,17 +234,51 @@ class CloudPromptTests(unittest.TestCase):
 
         self.assertIn(RULE_CHART, local)
         self.assertIn(RULE_IMAGE, local)
-        self.assertNotIn("distintos estados", local)
+        self.assertNotIn("estado de CADA parte", local)
         self.assertNotIn("hora que marca", local)
+        self.assertNotIn("aproximado", local)
 
     def test_cloud_rules_do_not_leak_benchmark_answers(self):
         """Los ejemplos del prompt no pueden ser respuestas del corpus: seria darle el examen al modelo."""
         from fastapi_backend.prompts import RULE_CHART_CLOUD, RULE_IMAGE_CLOUD
 
         rules = (RULE_IMAGE_CLOUD + RULE_CHART_CLOUD).lower()
-        for leaked in ("semaforo", "perro", "arbol", "banca", "reloj marca", "3:00", "aprox. 40", "aprox. 25",
-                       "aprox. 60", "aprox. 15", "robotica", "python", "aguilas"):
+        for leaked in ("semaforo", "perro", "arbol", "banca", "reloj marca", "3:00", "luz roja", "luces", "rojo",
+                       "40", "25", "60", "15", "robotica", "python", "aguilas"):
             self.assertNotIn(leaked, rules, f"'{leaked}' es contenido del corpus de pruebas")
+
+
+class ApproximateChartValueTests(unittest.TestCase):
+    def test_estimated_values_are_spoken_as_approximate(self):
+        elements = blocks_to_elements([{"tipo": "grafica", "contenido": "Barras", "datos": [
+            {"etiqueta": "A", "valor": "30", "aproximado": False},
+            {"etiqueta": "B", "valor": "45", "aproximado": True},
+            {"etiqueta": "C", "valor": "aprox. 12", "aproximado": True},
+        ]}])
+
+        content = elements[0]["content"]
+        self.assertIn("A: 30;", content)
+        self.assertIn("B: aprox. 45", content)
+        self.assertIn("C: aprox. 12", content)
+        self.assertNotIn("aprox. aprox.", content)
+
+    def test_charts_from_ollama_without_the_field_are_unchanged(self):
+        elements = blocks_to_elements([{"tipo": "grafica", "contenido": "Barras", "datos": [
+            {"etiqueta": "A", "valor": "30"},
+        ]}])
+
+        self.assertIn("A: 30", elements[0]["content"])
+        self.assertNotIn("aprox", elements[0]["content"])
+
+    def test_only_the_cloud_schema_has_the_field_and_it_is_mandatory(self):
+        from fastapi_backend.prompts import EXTRACT_SCHEMA
+
+        def dato(schema):
+            return schema["properties"]["bloques"]["items"]["properties"]["datos"]["items"]
+
+        self.assertIn("aproximado", dato(EXTRACT_SCHEMA_CLOUD)["properties"])
+        self.assertIn("aproximado", dato(EXTRACT_SCHEMA_CLOUD)["required"])
+        self.assertNotIn("aproximado", dato(EXTRACT_SCHEMA)["properties"])  # Ollama: sin cambios
 
 
 class OllamaWarmUpTests(unittest.IsolatedAsyncioTestCase):

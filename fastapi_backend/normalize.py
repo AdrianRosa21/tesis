@@ -215,6 +215,15 @@ def _element(kind: str, content: str, lang: str | None) -> dict[str, str]:
     return element
 
 
+def _chart_value(dato: dict[str, Any]) -> str:
+    """Valor de un dato de grafica. Si el modelo marco que lo estimo de la escala (campo
+    "aproximado"), se dice en voz alta: no se presenta una estimacion como si fuera exacta."""
+    value = _clean(dato.get("valor"))
+    if dato.get("aproximado") is True and value and not value.lower().startswith("aprox"):
+        return f"aprox. {value}"
+    return value
+
+
 def blocks_to_elements(blocks: list[dict[str, Any]]) -> list[dict[str, str]]:
     """Convierte bloques JSON en elementos que el frontend lee uno por uno.
 
@@ -252,7 +261,7 @@ def blocks_to_elements(blocks: list[dict[str, Any]]) -> list[dict[str, str]]:
 
         if kind == "grafica":
             pairs = [
-                f"{_clean(d.get('etiqueta'))}: {_clean(d.get('valor'))}"
+                f"{_clean(d.get('etiqueta'))}: {_chart_value(d)}"
                 for d in block.get("datos") or []
                 if isinstance(d, dict) and _clean(d.get("etiqueta"))
             ]

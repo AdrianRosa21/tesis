@@ -1,0 +1,149 @@
+{
+  "started_at": "2026-10-03T03:28:47.080313+00:00",
+  "api_url": "http://127.0.0.1:3000",
+  "corpus": "/tesis/corpus_real",
+  "runs_per_case": 1,
+  "results": [
+    {
+      "case": "R01",
+      "file": "R01_CIMAT_admision_maestrias_2026.pdf",
+      "run": 1,
+      "duration_seconds": 8.91,
+      "description": "[TEXTO] CONVOCATORIA DE ADMISIÓN 2026\n[TEXTO] MAESTRÍAS EN CIENCIAS\n[TEXTO] Matemáticas Básicas, Matemáticas Aplicadas, Ciencias de la Computación, Probabilidad y Estadística\n[TEXTO] Modalidad Presencial, Tiempo Completo\n[TEXTO] Unidad Guanajuato\n[TEXTO] ANTECEDENTES\n[TEXTO] El Centro de Investigación en Matemáticas (CIMAT) busca apoyar en el fortalecimiento del capital intelectual y humano del país, mediante la impartición de programas de posgrado de alta calidad, formando profesionales capaces de asumir el reto de hacer la diferencia en el ámbito profesional y académico de México, basados en el quehacer constante y la continua evaluación.\n[TEXTO] El CIMAT busca permanentemente generar un entorno académico integro, fomentando el respeto al interior de su comunidad en todas sus actividades, a través de la equidad, honestidad y la libertad intelectual.\n[TEXTO] Los criterios de admisión al presente posgrado promueven los principios de equidad y no discriminación, así como la igualdad sustantiva, considerando las diferencias biológicas, sociales y culturales de mujeres y hombres.\n[TEXTO] Consulta nuestra oferta educativa en:\n[TEXTO] https://www.cimat.mx/oferta-educativa/\n[TEXTO] REQUISITOS\n[TEXTO] • Estar titulado a más tardar en julio del año en que se desea ingresar o, en su defecto, proveer cartas del asesor o autoridad académica oficial que indiquen que la tesis está en revisión y que el examen de grado se presentará antes de finalizar el mes de octubre de 2026 como límite. Los alumnos que no cumplan con titularse antes de dicha fecha, serán dados de baja temporal hasta que regularicen su situación.\n[TEXTO] ▪ En su caso, presentar Documento Oficial que haga constar que la titulación será por promedio o por créditos de maestría (no mayor al 50% de créditos).\n[TEXTO] • Haber obtenido un promedio general en la licenciatura mayor o igual a 8.0 o equivalente.\n[TEXTO] • Aprobar el proceso de selección en las fechas indicadas en el calendario, y en caso necesario, cursar y aprobar un Curso Propedéutico (sólo para los programas que lo ofrezcan).\n[TEXTO] • Disponibilidad de tiempo completo.\n[TEXTO] • No haber sido dado de baja definitiva del programa con anterioridad.\n[TEXTO] • No haber sido rechazado del mismo programa en los diez meses anteriores.\n[IMAGEN] En la parte superior izquierda de la página hay un logotipo circular en color dorado que representa el escudo nacional de México. A la derecha de este escudo está el texto \"Ciencia y Tecnología\" en color vino tinto, con un subtítulo en negro debajo. Más a la derecha, en la parte superior central, aparece el logotipo del CIMAT, que es un diseño geométrico en tonos grises y vino tinto, acompañado del texto \"Centro de Investigación en Matemáticas, A.C.\" en color vino tinto.\n[IMAGEN] En la parte superior derecha, hay una ilustración en blanco y negro de una mujer que sostiene una bandera de México. La mujer está de perfil, mirando hacia la izquierda, y la bandera ondea detrás de ella hacia la derecha. La ilustración tiene un estilo clásico, con detalles en el rostro y la ropa de la mujer.\n[IMAGEN] No hay otras fotografías, ilustraciones, mapas o figuras en la página. El resto del contenido es texto.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R02",
+      "file": "R02_CIMAT_convocatoria_investigador.pdf",
+      "run": 1,
+      "duration_seconds": 9.57,
+      "description": "[TEXTO] Plaza con Vías a Definitividad en Matemáticas\n[TEXTO] El Centro de Investigación en Matemáticas (CIMAT, http://www.cimat.mx/) es parte de la Secretaría de Ciencias Humanidades, Tecnología e Innovación de México, Secihti.\n[TEXTO] Actualmente el CIMAT está buscando personas talentosas con doctorado en Matemáticas o en una disciplina relacionada, para ocupar una posición de investigador Titular B, con vías a definitividad. Las personas interesadas deben haber realizado de manera consistente investigación original reconocida y con aportaciones que demuestren independencia, así como diversificación en las líneas de investigación. Además deberá haber contribuido de manera consistente en la formación de recursos humanos de licenciatura y posgrado, en el área de Matemáticas Puras.\n[TEXTO] La plaza deberá ser ocupada a partir del 15 de junio de 2026.\n[TEXTO] Buscamos perfiles dispuestos a desempeñar un papel activo en el fortalecimiento de nuestras líneas de investigación o su expansión mediante la incorporación de nuevos temas de investigación, así como en el mantenimiento de la reputación internacional de nuestros programas de posgrado. La convocatoria está abierta a todas las áreas de matemáticas puras.\n[TEXTO] Las personas seleccionadas deben tener un fuerte compromiso con la investigación, la formación de recursos humanos y el involucramiento con las actividades académico-administrativas del centro. La carga de trabajo docente habitual es de un curso por semestre.\n[TEXTO] Pretendemos aumentar la diversidad en nuestro departamento, y en particular, alentamos a mujeres investigadoras a presentar su solicitud. La igualdad de oportunidades laborales y la diversidad son valores apreciados en el CIMAT y estamos comprometidos en garantizar condiciones equitativas para grupos subrepresentados.\n[TEXTO] Las personas intneresadas deben envíar la solicitud mediante mathjobs (https://www.mathjobs.org/jobs/list/28443) con los siguientes documentos:\n[TEXTO] 6 Carta de presentaci\u0000f3n (Cover Letter)\n[TEXTO] 6 Curr\u0000edculum vitae (en caso de que aplique, incluir identificadores en bases de datos cient\u0000edficas como MR number, Scopus Author ID and ORCID)\n[TEXTO] 6 Plan de investigaci\u0000f3n (Research Statement)\n[TEXTO] 6 Declaraci\u0000f3n de principios pedag\u0000f3gicos (Teaching Statement)\n[TEXTO] 6 Al menos dos cartas de recomendaci\u0000f3n relacionadas con investigaci\u0000f3n\n[TEXTO] 6 Una carta de recomendaci\u0000f3n relacionada con la ense\u0000f1anza\n[TEXTO] La fecha l\u0000edmite para enviar las solicitudes es el 30 de mayo de 2026. Para cualquier pregunta relacionada con esta posici\u0000f3n, favor de enviar un correo a plazas.basicas.2026@cimat.mx\n[TEXTO] Jalisco S/N, Col. Valenciana, CP. 36023, Guanajuato, Guanajuato, M\u0000e9xico. Apartado Postal 402, CP 36000.\n[TEXTO] Tel: +52 473 732 7155 www.cimat.mx\n[IMAGEN] En la parte superior izquierda de la página hay un logotipo que incluye el escudo nacional de México en color dorado, que muestra un águila posada sobre un nopal con una serpiente en el pico y las garras. A la derecha del escudo está el texto \"Ciencia y Tecnología\" en color vino tinto, con una línea vertical dorada que lo separa de otro logotipo a la derecha, que pertenece al Centro de Investigación en Matemáticas (CIMAT). Este último logotipo es un símbolo geométrico en tonos grises y vino tinto, acompañado del texto \"Centro de Investigación en Matemáticas, A.C.\" en color vino tinto.\n[IMAGEN] En la parte superior derecha, hay una ilustración en blanco y negro de una mujer joven que sostiene una bandera mexicana ondeando. Ella está de perfil, mirando hacia la derecha, y viste una blusa con detalles tradicionales.\n[IMAGEN] En la parte inferior izquierda, hay otra ilustración en blanco y negro de una mujer con peinado recogido y vestido antiguo, que parece ser un retrato histórico. A su derecha, en letras doradas y vino tinto, está el texto \"2026 año de Margarita Maza\".\n[IMAGEN] En la parte inferior central, hay una línea horizontal en color vino tinto que separa la ilustración y el texto de la información de contacto, que está en color vino tinto y negro, con dirección, teléfono y sitio web del CIMAT.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R03",
+      "file": "R03_Guanajuato_tarifa_transporte_2024.pdf",
+      "run": 1,
+      "duration_seconds": 7.1,
+      "description": "[IMAGEN] Escudo del Ayuntamiento Constitucional de Guanajuato en la parte superior izquierda, con fondo azul degradado. Texto a la derecha: AYUNTAMIENTO CONSTITUCIONAL DE GUANAJUATO 2021-2024. Debajo, centrado, título en mayúsculas: PUNTO DE ACUERDO. Texto en párrafo explicativo que inicia con: Propuesta que con fundamento en el artículo 77, fracciones V y VIII, de la Ley Orgánica Municipal para el Estado de Guanajuato, formula el Presidente Municipal Mario Alejandro Navarro Saldaña, a fin de actualizar la tarifa del servicio público de transporte urbano y suburbano en ruta fija, en el Municipio de Guanajuato, al tenor siguiente:\n[TEXTO] Antecedentes:\n[TEXTO] Primero: La tarifa en vigor para el servicio público de transporte urbano y suburbano en el Municipio de Guanajuato, con efectos a partir del 1º de agosto de 2018, fue aprobada por el Ayuntamiento 2015-2018, en la sesión extraordinaria número 22, celebrada el 27 de julio de 2018, específicamente en el punto número 5 del orden del día; acuerdo municipal que se publicó en el Periódico Oficial del Gobierno del Estado número 158, Segunda Parte, del 8 de agosto de 2018, por lo que, desde entonces a esta fecha, la tarifa es del tenor siguiente:\n[TEXTO] Servicio Urbano:\n[TABLA] Tarifas autorizadas 01 agosto ´18 para diferentes tipos de unidades en servicio urbano. 3 filas. Columnas: Tipo de unidad; Tarifa General; Tarifa Preferencial\n[TABLA] Fila 1. Tipo de unidad: Con unidad tipo Convencional; Tarifa General: $7.00; Tarifa Preferencial: $3.50\n[TABLA] Fila 2. Tipo de unidad: Con unidad tipo Colectivo; Tarifa General: $7.50; Tarifa Preferencial: $4.00\n[TABLA] Fila 3. Tipo de unidad: Con unidad tipo Clásica y/o Equipo Especial; Tarifa General: $8.00; Tarifa Preferencial: $4.00",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R04",
+      "file": "R04_HSBC_guia_estados_cuenta_app.pdf",
+      "run": 1,
+      "duration_seconds": 3.64,
+      "description": "[TEXTO] Tu Estado de Cuenta en línea\n[TEXTO] Descarga y consulta tu Estado de Cuenta en segundos desde tu app HSBC México.\n[TEXTO] Revisa\n[TEXTO] Comparte\n[TEXTO] 1\n[TEXTO] • Ingresa a la app HSBC México\n[TEXTO] • En Mis Cuentas da clic en la cuenta o tarjeta que deseas consultar\n[IMAGEN] Pantalla de celular con app HSBC México abierta. Texto en pantalla: \"Hola, Erandi\". Se muestra sección Cuentas de débito con una cuenta llamada Nómina Flexible HSBC con número oculto y saldo 5,621.26 MXN. La opción \"Nómina Flexible HSBC\" está resaltada con un recuadro rojo.\n[TEXTO] 2\n[TEXTO] • Da clic en Ver Estados de cuenta\n[TEXTO] • Confirma con tu Token Móvil, Touch ID o Face ID\n[IMAGEN] Pantalla de celular con app HSBC México abierta. Se muestra saldo 5,621.26 MXN y opción resaltada con recuadro rojo que dice \"Ver Estados de cuenta\". Debajo opción \"Usar tarjeta digital\".\n[TEXTO] 3\n[TEXTO] Selecciona el mes que deseas consultar, recuerda que puedes consultar los últimos 12 meses.\n[IMAGEN] Pantalla de celular con app HSBC México abierta. Se muestra sección \"Estados de cuenta\" con año 2023 y mes \"mayo 31\" resaltado con recuadro rojo.\n[TEXTO] 4\n[TEXTO] ¡Listo! Ya tienes tu Estado de cuenta. Puedes descargarlo en tu celular dando clic en el ícono superior derecho.\n[IMAGEN] Pantalla de celular con app HSBC México abierta mostrando un estado de cuenta digital. En la parte superior derecha está resaltado con recuadro rojo el ícono para compartir o descargar.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R05",
+      "file": "R05_prospecto_paracetamol.pdf",
+      "run": 1,
+      "duration_seconds": 7.64,
+      "description": "[TEXTO] Prospecto: Información para el paciente\n[TEXTO] Paracetamol Mylan Pharmaceuticals 500 mg comprimidos EFG\n[TEXTO] Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted.\n[TEXTO] Siga exactamente las instrucciones de administración del medicamento contenidas en este prospecto o las indicadas por su médico o farmacéutico.\n[TEXTO] – Conserve este prospecto, ya que puede tener que volver a leerlo.\n[TEXTO] – Si necesita consejo o más información, consulte a su farmacéutico.\n[TEXTO] – Si experimenta efectos adversos, consulte a su médico o farmacéutico, incluso si se trata de efectos adversos que no aparecen en este prospecto. Ver sección 4.\n[TEXTO] – Debe consultar a un médico si empeora o si no mejora después de 5 días en adultos (3 días para niños a partir de 12 años o peso corporal superior a 40 kg), o si la fiebre persiste durante más de 3 días.\n[TEXTO] Contenido del prospecto\n[TEXTO] 1. Qué es Paracetamol Mylan Pharmaceuticals y para qué se utiliza\n[TEXTO] 2. Qué necesita saber antes de empezar a tomar Paracetamol Mylan Pharmaceuticals\n[TEXTO] 3. Cómo tomar Paracetamol Mylan Pharmaceuticals\n[TEXTO] 4. Posibles efectos adversos\n[TEXTO] 5. Conservación de Paracetamol Mylan Pharmaceuticals\n[TEXTO] 6. Contenido del envase e información adicional\n[TEXTO] 1. Qué es Paracetamol Mylan Pharmaceuticals y para qué se utiliza\n[TEXTO] Paracetamol Mylan Pharmaceuticals es un medicamento empleado para aliviar el dolor y reducir la fiebre (medicamento analgésico y antipirético).\n[TEXTO] Paracetamol Mylan Pharmaceuticals se utiliza para el tratamiento del dolor de intensidad leve a moderada y estados febriles en adultos y niños a partir de 12 años (o peso corporal superior a 40 kg).\n[TEXTO] 2. Qué necesita saber antes de empezar a tomar Paracetamol Mylan Pharmaceuticals\n[TEXTO] No tome Paracetamol Mylan Pharmaceuticals\n[TEXTO] – Si es alérgico al paracetamol o a alguno de los demás componentes de este medicamento (incluidos en la sección 6).\n[TEXTO] Advertencias y precauciones\n[TEXTO] Consulte a su médico o farmacéutico antes de empezar a tomar Paracetamol Mylan Pharmaceuticals:\n[TEXTO] – Si padece problemas de riñones.\n[TEXTO] – Si padece problemas de hígado, por ejemplo, un trastorno llamado síndrome de Gilbert, insuficiencia hepática grave (Child-Pugh > 9), inflamación de hígado o si usa medicamentos que afectan a la función hepática.\n[TEXTO] – Si padece anemia hemolítica (una disminución de los glóbulos rojos que puede hacer que la piel adquiera una coloración amarilla y causar debilidad o dificultad para respirar).\n[TEXTO] – Si padece deficiencia enzimática (deficiencia de glucosa-6-fosfato deshidrogenasa).\n[TEXTO] – Si consume habitualmente cantidades excesivas de alcohol.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R06",
+      "file": "R06_INEGI_ambiente_2020.pdf",
+      "run": 1,
+      "duration_seconds": 7.24,
+      "description": "[TEXTO] COMUNICADO DE PRENSA NÚM. 266/2020 3 DE JUNIO DE 2020 PÁGINA 1/2 \"ESTADÍSTICAS A PROPÓSITO DEL DÍA MUNDIAL DEL MEDIO AMBIENTE (5 DE JUNIO)\" • En 2018, en 2 429 municipios o demarcaciones territoriales de la Ciudad de México se proporcionó servicio de agua potable; en 1 939 municipios se contó con drenaje y alcantarillado, y únicamente 787 contaron con tratamiento de aguas residuales. • Durante 2018, se registraron 17 554 asentamientos humanos irregulares o en zonas de riesgo. • En ese mismo año se recolectaron diariamente en el territorio nacional, un promedio de 107 055 547 kilogramos de residuos sólidos urbanos. La Organización de las Naciones Unidas (ONU) eligió el 5 de junio como \"Día Mundial del Medio Ambiente\" para destacar la importancia de la protección y el mejoramiento del medio ambiente como una necesidad fundamental para el bienestar de los pueblos y el desarrollo económico del mundo entero. El Instituto Nacional de Estadística y Geografía (INEGI) pone a disposición de los usuarios un gran cúmulo de datos de interés a propósito de esta conmemoración, incluyendo la información y los especímenes que conforman la colección del Herbario INEGI, el cual contiene una muestra representativa de la diversidad de la flora de México. De acuerdo con los datos del Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México 2019 (https://www.inegi.org.mx/programas/cngmd/2019/), 2 429 municipios o demarcaciones cuentan con servicio de agua potable; 1 939 municipios tienen servicio de drenaje y alcantarillado y únicamente 787 cuentan con servicio de tratamiento de aguas residuales. El suministro de agua es proporcionado a través de 21 728 obras de toma, cuya fuente de abastecimiento para 16 624 de ellas son pozos, 587 ríos, 168 presas, 458 galerías filtrantes y 3 541 se abastecen de manantiales, entre otras. Durante 2018, los municipios registraron 12 170 asentamientos humanos irregulares y 5 385 asentamientos en zonas de riesgo. Como resultado de las actividades económicas, sociales y culturales de la vida cotidiana, durante 2018 se recolectaron diariamente en promedio 107 055 547 kilogramos de residuos sólidos urbanos en el territorio nacional. Entre 2010 y 2018 el incremento fue de 20 713 127 kilogramos diarios en promedio. Lo anterior equivale a recoger diariamente 854 gramos de residuos sólidos por persona (considerando 125 327 797 personas, con base en la proyección de CONAPO para 2018). De los 2 203 sitios de disposición final reportados para el año 2016, sólo 173 contaban con infraestructura para una disposición adecuada de los residuos sólidos urbanos recolectados y",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R07",
+      "file": "R07_INEGI_obesidad_2020.pdf",
+      "run": 1,
+      "duration_seconds": 7.54,
+      "description": "[TEXTO] COMUNICADO DE PRENSA NÚM. 528/20\n[TEXTO] 11 DE NOVIEMBRE DE 2020\n[TEXTO] PÁGINA 1/2\n[TEXTO] ESTADÍSTICAS A PROPÓSITO DEL DÍA MUNDIAL CONTRA LA OBESIDAD\n[TEXTO] (12 DE NOVIEMBRE)\n[TEXTO] • En 2018 poco más de una quinta parte (22%) de niñas y niños con menos de 5 años, tiene riesgo de padecer sobrepeso.\n[TEXTO] • El grupo de edad que reporta la prevalencia más alta de obesidad es el grupo de 30 a 59 años: 35% de los hombres y 46% de las mujeres la padecen.\n[TEXTO] • En las zonas urbanas el sobrepeso en niñas y niños de 5 a 11 años representa 18%, mientras que en las rurales es de 17 por ciento.\n[TEXTO] La Encuesta Nacional de Salud y Nutrición (ENSANUT) 2018 revela que en el país poco más de una quinta parte (22%) de niñas y niños con menos de 5 años, tienen riesgo de padecer sobrepeso.\n[TEXTO] En 2018, de la población de 5 a 11 años, 18% tiene sobrepeso y va en incremento conforme aumenta la edad; 21% de los hombres de 12 a 19 años y 27% de las mujeres de la misma edad, presentan sobrepeso. En la población de 20 años o más, los hombres (42%) reportan una prevalencia más alta que las mujeres (37 por ciento).\n[IMAGEN] Gráfica de barras. Prevalencia de sobrepeso en la población de 5 años o más por grupos de edad y sexo, 2018. Eje vertical porcentaje de 0 a 45. Eje horizontal grupos de edad: 5 a 11 años, 12 a 19 años, 20 años y más. Dos barras por grupo: Hombres (color oscuro) y Mujeres (color claro).. Datos: Hombres, 5 a 11 años: 18; Mujeres, 5 a 11 años: 18; Hombres, 12 a 19 años: 21; Mujeres, 12 a 19 años: 27; Hombres, 20 años y más: 42; Mujeres, 20 años y más: 37\n[TEXTO] Nota: La prevalencia se refiere a la población con sobrepeso entre la población total de cada grupo de edad multiplicada por cien.\n[TEXTO] Fuente: INEGI/INSP. Encuesta Nacional de Salud y Nutrición (ENSANUT) 2018.\n[TEXTO] La prevalencia de obesidad en niños de 5 a 11 años (20%) es mayor a la del grupo de hombres de 12 a 19 años (15%); en las mujeres de ambas edades se observa la misma tendencia, aunque con una menor brecha (un punto porcentual).\n[TEXTO] COMUNICACIÓN SOCIAL",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R08",
+      "file": "R08_INEGI_violencia_mujeres_2025.pdf",
+      "run": 1,
+      "duration_seconds": 7.36,
+      "description": "[TEXTO] COMUNICADO DE PRENSA 145/25\n[TEXTO] ESTADÍSTICAS A PROPÓSITO DEL DÍA\n[TEXTO] INTERNACIONAL DE LA ELIMINACIÓN\n[TEXTO] DE LA VIOLENCIA CONTRA LA MUJER\n[TEXTO] 20 de noviembre de 2025\n[TEXTO] Página 1/6\n[TEXTO] Estadísticas a propósito del Día Internacional de la Eliminación\n[TEXTO] de la Violencia contra la Mujer\n[TEXTO] (25 de noviembre)\n[TEXTO] •\n[TEXTO] •\n[TEXTO] •\n[TEXTO] En 2024, 10.6 millones de mujeres y 8.3 millones de hombres fueron víctimas de ciberacoso.\n[TEXTO] Respecto a las agresiones sexuales en línea, 29.0 % de las mujeres y 13.9 % de los hombres experimentaron insinuaciones o propuestas sexuales y 27.5 % de las mujeres y 15.8 % de los hombres recibieron contenido sexual.\n[TEXTO] Entre los principales efectos emocionales del ciberacoso, diferenciados según el sexo, destacaron el enojo (61.1 % de las mujeres y 55.4 % hombres), la desconfianza (39.7 y 33.0 %, respectivamente) y el miedo (34.5 y 16.0 %, respectivamente).\n[TEXTO] En 1993, la Organización de las Naciones Unidas (ONU) definió la violencia contra las mujeres como «todo acto de violencia basado en la pertenencia al sexo femenino que tenga o pueda tener como resultado un daño o sufrimiento físico, sexual o sicológico para la mujer, así como las amenazas de tales actos, la coacción o la privación arbitraria de la libertad, tanto si se producen en la vida pública como en la vida privada». Para concientizar a la sociedad sobre este problema, en 1999 la Asamblea General de las Naciones Unidas estableció el 25 de noviembre como el Día Internacional de la Eliminación de la Violencia contra la Mujer.\n[TEXTO] La violencia contra las mujeres no se limita a los espacios físicos, sino que ha trascendido y encontrado nuevas formas de manifestarse, como es el entorno de medios digitales. Una de estas manifestaciones de violencia es el ciberacoso, que vulnera derechos como la privacidad, la integridad emocional, la libertad de expresión y la seguridad de las mujeres.\n[TEXTO] En este contexto, el Instituto Nacional de Estadística y Geografía (INEGI) ofrece la siguiente información estadística con base en el Módulo sobre Ciberacoso (MOCIBA) de 2020 a 2024.1\n[TEXTO] I. EL CIBERACOSO EN MÉXICO\n[TEXTO] En 2020, 22.5 % de las mujeres y 19.3 % de los hombres fueron víctimas de ciberacoso. Para 2024, estas cifras representaron 22.2 y 19.6 %, respectivamente (ver gráfica 1).\n[TEXTO] 1 La información correspondiente a 2020 abarca el periodo de octubre de 2019 a noviembre de 2020; la correspondiente a 2024, al de julio de 2023 a agosto de 2024.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R11",
+      "file": "R11_Gob_alimentacion_PETCDF.pdf",
+      "run": 1,
+      "duration_seconds": 7.62,
+      "description": "[TEXTO] RECOMENDACIONES PARA UNA ALIMENTACIÓN SALUDABLE\n[TEXTO] PROGRAMA ESCUELAS DE TIEMPO COMPLETO EN EL DF\n[IMAGEN] Fotografía de tres niños en primer plano. Un niño de cabello corto y oscuro, vestido con camiseta blanca, está sirviendo leche de una jarra en un vaso que sostiene otro niño pequeño con camiseta roja y blanca. A la derecha, un tercer niño con gafas y camiseta blanca está sentado, aparentemente comiendo o bebiendo. En la mesa hay platos con comida, un trozo de fruta y tazas con líquido. Al fondo, varios niños con uniforme escolar, algunos con pantalones rojos y otros con faldas grises, están de pie o caminando. La escena parece ser un comedor escolar.\n[TEXTO] ADMINISTRACIÓN FEDERAL DE SERVICIOS EDUCATIVOS EN EL DISTRITO FEDERAL\n[TEXTO] SEP\n[IMAGEN] Escudo de los Estados Unidos Mexicanos, con un águila posada sobre un nopal devorando una serpiente, rodeado de ramas de encino y laurel.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R12",
+      "file": "R12_FOVISSSTE_guia_sismo.pdf",
+      "run": 1,
+      "duration_seconds": 6.91,
+      "description": "[TEXTO] GUÍA para saber qué hacer en caso de sismo\n[IMAGEN] Fotografía en tonos sepia de un edificio derrumbado con escombros y personas con casco y chaleco de protección civil en primer plano. A la derecha, una grúa está levantando escombros. En la parte inferior, logos de Gobierno de la Ciudad de México, Secretaría de Gestión Integral de Riesgos y Protección Civil, Nuevo ISSSTE, y FOVISSSTE.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    },
+    {
+      "case": "R13",
+      "file": "R13_ANMM_alimentacion_saludable.pdf",
+      "run": 1,
+      "duration_seconds": 5.7,
+      "description": "[TEXTO] Recomendaciones para una alimentación adecuada: - Incluir al menos un alimento de cada grupo en cada una de las tres comidas diarias. - Comer de acuerdo a tus necesidades y condiciones. Ni de más ni de menos. - Lavar y desinfectar las verduras y frutas antes de consumirlas o cocinarlas. - Comer cinco veces al día, tres comidas principales y dos refrigerios, uno a medio día y otro a media tarde. - Mantener en lo posible los horarios de comidas.\n[TEXTO] Para mantener la salud y prevenir la aparición de muchas enfermedades hay que seguir un estilo de vida saludable; es decir, hay que elegir una alimentación equilibrada, realizar actividad o ejercicio físico de forma regular (como mínimo caminar al menos 30 minutos al día) y evitar fumar y tomar bebidas alcohólicas de alta graduación.\n[IMAGEN] Ilustración de una familia sonriente con seis personas: un hombre mayor con bigote y suéter marrón, una mujer mayor con cabello canoso y vestido verde, un hombre adulto con chaleco marrón, una mujer adulta con cabello rubio y vestido rojo, una niña pequeña con vestido azul y un niño pequeño con camiseta verde. Fondo azul claro.\n[TEXTO] Dirección de Educación y Capacitación en Salud Dra. Claudia Alejandra Sainos Ramírez. Lic. Mari José Márquez Martínez.\n[IMAGEN] Logos en la parte superior: Secretaría de Salud, 2019 Emiliano Zapata, Hospital General de México Dr. Eduardo Liceaga. Título grande: Alimentación saludable. Cuatro ilustraciones circulares con niños comiendo diferentes alimentos: niña con plato de pasta y vaso de leche, niño con hamburguesa, papas fritas y refresco, niño con carne y bebida azul, niño con pizza y refresco. Texto al pie: “Debes cuidar tanto lo que comes, como lo que bebes”.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
+    }
+  ],
+  "finished_at": "2026-10-03T03:30:08.803536+00:00",
+  "summary": {
+    "total": 11,
+    "candidate_pass": 11,
+    "errors": 0,
+    "pass_rate": 100.0,
+    "avg_seconds": 7.2,
+    "max_seconds": 9.57
+  }
+}
