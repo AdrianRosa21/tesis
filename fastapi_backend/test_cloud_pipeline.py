@@ -231,7 +231,6 @@ class CloudPromptTests(unittest.TestCase):
         self.assertIn("estado de CADA parte", prompt)
         self.assertIn("hora que marca", prompt)
         self.assertIn('"valor_impreso": true', prompt)
-        self.assertIn("aunque no tenga lineas de cuadricula", prompt)  # listas con encabezados sin bordes = tabla
 
     def test_the_local_v4_prompt_is_not_changed_by_the_cloud_rules(self):
         from fastapi_backend.prompts import RULE_CHART, RULE_IMAGE, build_extraction_prompt
@@ -244,22 +243,13 @@ class CloudPromptTests(unittest.TestCase):
         self.assertNotIn("hora que marca", local)
         self.assertNotIn("valor_impreso", local)
 
-    def test_the_local_v4_table_rule_is_unchanged(self):
-        from fastapi_backend.prompts import RULE_TABLE, build_extraction_prompt
-
-        local = build_extraction_prompt({"tabla": True, "columnas": 1}, None)
-
-        self.assertIn(RULE_TABLE, local)
-        self.assertNotIn("cuadricula", local)
-
     def test_cloud_rules_do_not_leak_benchmark_answers(self):
         """Los ejemplos del prompt no pueden ser respuestas del corpus: seria darle el examen al modelo."""
-        from fastapi_backend.prompts import RULE_CHART_CLOUD, RULE_IMAGE_CLOUD, RULE_TABLE_CLOUD
+        from fastapi_backend.prompts import RULE_CHART_CLOUD, RULE_IMAGE_CLOUD
 
-        rules = (RULE_IMAGE_CLOUD + RULE_CHART_CLOUD + RULE_TABLE_CLOUD).lower()
+        rules = (RULE_IMAGE_CLOUD + RULE_CHART_CLOUD).lower()
         for leaked in ("semaforo", "perro", "arbol", "banca", "reloj marca", "3:00", "luz roja", "luces", "rojo",
-                       "40", "25", "60", "15", "robotica", "python", "aguilas",
-                       "alimento", "porcion", "cereal", "producto", "precio", "horario", "papeleria"):
+                       "40", "25", "60", "15", "robotica", "python", "aguilas"):
             self.assertNotIn(leaked, rules, f"'{leaked}' es contenido del corpus de pruebas")
 
 
