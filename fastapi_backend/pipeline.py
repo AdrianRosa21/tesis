@@ -45,9 +45,6 @@ BLOCK_KIND_TO_FLAG = {"tabla": "tabla", "grafica": "grafica", "diagrama": "diagr
 # de los 100 s) para repetir toda la pagina con el modelo local.
 FALLBACK_MAX_ELAPSED_FRACTION = 0.3
 
-# Tiempo extra que se le da al detector local despues de que la nube ya respondio.
-DETECT_GRACE_S = 5.0
-
 
 @dataclass
 class PipelineResult:
@@ -370,7 +367,7 @@ async def run_hybrid(
     if detect_task:
         try:
             # Si Ollama esta ocupado con otra pagina, no se retrasa una respuesta que ya esta lista.
-            page, detect_step = await asyncio.wait_for(detect_task, timeout=DETECT_GRACE_S)
+            page, detect_step = await asyncio.wait_for(detect_task, timeout=settings.detect_grace_s)
         except asyncio.TimeoutError:  # en Python < 3.11 no es el mismo que TimeoutError
             logger.info("El detector local tardo demasiado y se omite para esta pagina.")
             detect_step = {

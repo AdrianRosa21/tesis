@@ -52,6 +52,9 @@ class Settings:
     pipeline: str = "hybrid"
     provider: str = "gemini"
     detector: str = "ollama"  # ollama | off
+    # Segundos extra que se espera al detector local DESPUES de que la nube ya respondio. Ollama tarda
+    # 5-8 s en clasificar y la nube ~2.5 s: con 5 s de espera cada pagina tardaba ~7.5 s en vez de ~3-4.
+    detect_grace_s: float = 1.5
     fallback: str = "ollama"  # ollama | off
 
     # Proveedores en la nube
@@ -172,6 +175,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         pipeline=_choice(env, "AURA_PIPELINE", "hybrid", PIPELINES),
         provider=_pick_provider(env),
         detector=_choice(env, "AURA_DETECTOR", "ollama", ("ollama", "off")),
+        detect_grace_s=_number(env, "AURA_DETECT_GRACE_S", 1.5),
         fallback=_choice(env, "AURA_FALLBACK", "ollama", ("ollama", "off")),
         gemini_api_key=_optional(env, "GEMINI_API_KEY"),
         gemini_model=_text(env, "GEMINI_MODEL", "gemini-2.5-flash"),

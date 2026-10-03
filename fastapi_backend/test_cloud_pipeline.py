@@ -125,6 +125,11 @@ class SettingsTests(unittest.TestCase):
         # hybrid sin clave cae a v4, que si usa Ollama aunque detector y respaldo esten apagados
         self.assertTrue(load_settings({"AURA_DETECTOR": "off", "AURA_FALLBACK": "off"}).uses_ollama)
 
+    def test_detector_grace_defaults_to_a_short_wait_and_is_configurable(self):
+        self.assertEqual(load_settings({}).detect_grace_s, 1.5)
+        self.assertEqual(load_settings({"AURA_DETECT_GRACE_S": "4"}).detect_grace_s, 4.0)
+        self.assertEqual(load_settings({"AURA_DETECT_GRACE_S": "mucho"}).detect_grace_s, 1.5)
+
     def test_engine_tag_changes_with_detector_model(self):
         with_detector = load_settings({"GEMINI_API_KEY": "k"})
         without_detector = load_settings({"GEMINI_API_KEY": "k", "AURA_DETECTOR": "off"})
@@ -916,8 +921,9 @@ class HybridPipelineTests(unittest.IsolatedAsyncioTestCase):
         cloud = FakeProvider("gemini", "m", [_json_result([{"tipo": "texto", "contenido": "Listo."}])])
         local = FakeProvider("ollama", "qwen2.5vl", [_classification(imagen=True)], delay=5.0)
 
-        with mock.patch.object(pipeline, "DETECT_GRACE_S", 0.05):
-            result = await asyncio.wait_for(self._run(cloud, local), timeout=2.0)
+        result = await asyncio.wait_for(
+            self._run(cloud, local, Settings(gemini_api_key="k", detect_grace_s=0.05)), timeout=2.0
+        )
 
         self.assertEqual(result.elements[0]["content"], "Listo.")
         detection = next(step for step in result.steps if step["name"] == "deteccion")
