@@ -1,3 +1,6 @@
 *.pdf binary
 *.png binary
 *.jpg binary
+
+# Los scripts de shell se ejecutan en Linux (RunPod): siempre con finales de linea LF.
+*.sh text eol=lf
