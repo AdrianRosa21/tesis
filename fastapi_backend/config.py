@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 PIPELINES = ("hybrid", "v4", "v3")
-PROVIDERS = ("gemini", "openai")
+PROVIDERS = ("gemini", "openai", "anthropic")
+ANTHROPIC_EFFORTS = ("auto", "default", "low", "medium", "high", "xhigh", "max")
 
 
 def _text(env: Mapping[str, str], name: str, default: str) -> str:
@@ -61,6 +62,11 @@ class Settings:
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"
     openai_base_url: str = "https://api.openai.com/v1"
+    anthropic_api_key: str | None = None
+    anthropic_model: str = "claude-sonnet-5-5"
+    anthropic_base_url: str = "https://api.anthropic.com"
+    # auto = el valor mas rapido que cada modelo admite; default = no mandar nada (razona como siempre)
+    anthropic_effort: str = "auto"
     cloud_timeout_s: float = 60.0
 
     # Limites y tiempos
@@ -73,11 +79,19 @@ class Settings:
 
     @property
     def cloud_api_key(self) -> str | None:
-        return self.gemini_api_key if self.provider == "gemini" else self.openai_api_key
+        return {
+            "gemini": self.gemini_api_key,
+            "openai": self.openai_api_key,
+            "anthropic": self.anthropic_api_key,
+        }[self.provider]
 
     @property
     def cloud_model(self) -> str:
-        return self.gemini_model if self.provider == "gemini" else self.openai_model
+        return {
+            "gemini": self.gemini_model,
+            "openai": self.openai_model,
+            "anthropic": self.anthropic_model,
+        }[self.provider]
 
     @property
     def cloud_ready(self) -> bool:
@@ -145,6 +159,10 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         openai_api_key=_optional(env, "OPENAI_API_KEY"),
         openai_model=_text(env, "OPENAI_MODEL", "gpt-4.1-mini"),
         openai_base_url=_text(env, "OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/"),
+        anthropic_api_key=_optional(env, "ANTHROPIC_API_KEY"),
+        anthropic_model=_text(env, "ANTHROPIC_MODEL", "claude-sonnet-5-5"),
+        anthropic_base_url=_text(env, "ANTHROPIC_BASE_URL", "https://api.anthropic.com").rstrip("/"),
+        anthropic_effort=_choice(env, "ANTHROPIC_EFFORT", "auto", ANTHROPIC_EFFORTS),
         cloud_timeout_s=_number(env, "AURA_CLOUD_TIMEOUT_S", 60.0),
         max_followups=_number(env, "AURA_MAX_FOLLOWUPS", 1, int),
         time_budget_s=_number(env, "AURA_TIME_BUDGET_S", 80.0),

@@ -76,11 +76,11 @@ Al utilizar modelos de Inteligencia Artificial que requieren alto poder computac
 
 | Modo | Quién lee la página | ¿Sale la página del servidor propio? | Cuándo usarlo |
 |---|---|---|---|
-| `hybrid` | Gemini u OpenAI; Ollama solo detecta qué contiene (en paralelo) y es el respaldo si la nube falla | **Sí**, se envía al proveedor | Máxima calidad |
+| `hybrid` | Gemini, OpenAI o Claude; Ollama solo detecta qué contiene (en paralelo) y es el respaldo si la nube falla | **Sí**, se envía al proveedor | Máxima calidad |
 | `v4` | Ollama: clasifica, extrae con reglas por tipo y completa lo visual | No | Privacidad total |
 | `v3` | Ollama con un solo prompt | No | Comparación A/B en la tesis |
 
-Si eliges `hybrid` pero no configuras la clave (`GEMINI_API_KEY` u `OPENAI_API_KEY`), el backend usa `v4` automáticamente: desplegar no cambia nada hasta que pongas la clave. Para volver atrás basta con `AURA_PIPELINE=v4` y reiniciar el backend. Todas las variables están explicadas en `.env.example`.
+Si eliges `hybrid` pero no configuras la clave (`GEMINI_API_KEY`, `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`, junto con `AURA_PROVIDER=gemini|openai|anthropic`), el backend usa `v4` automáticamente: desplegar no cambia nada hasta que pongas la clave. Para volver atrás basta con `AURA_PIPELINE=v4` y reiniciar el backend. Todas las variables están explicadas en `.env.example`.
 
 ---
 

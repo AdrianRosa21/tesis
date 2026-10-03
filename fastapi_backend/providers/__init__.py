@@ -1,11 +1,13 @@
 """Fabrica de proveedores segun la configuracion."""
 from fastapi_backend.config import Settings
 from fastapi_backend.providers.base import ModelResult, ProviderError, VisionProvider
+from fastapi_backend.providers.claude import AnthropicProvider
 from fastapi_backend.providers.gemini import GeminiProvider
 from fastapi_backend.providers.ollama import OllamaProvider
 from fastapi_backend.providers.openai_chat import OpenAIProvider
 
 __all__ = [
+    "AnthropicProvider",
     "GeminiProvider",
     "ModelResult",
     "OllamaProvider",
@@ -27,4 +29,6 @@ def build_cloud_provider(settings: Settings) -> VisionProvider | None:
         return None
     if settings.provider == "gemini":
         return GeminiProvider(settings)
+    if settings.provider == "anthropic":
+        return AnthropicProvider(settings)
     return OpenAIProvider(settings)

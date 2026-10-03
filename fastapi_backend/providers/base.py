@@ -55,6 +55,8 @@ def error_from_response(provider: str, response: httpx.Response) -> ProviderErro
         return ProviderError(
             502, "El servicio de IA rechazó las credenciales configuradas en el servidor.", log_detail=log
         )
+    if status == 402:
+        return ProviderError(503, "El servicio de IA no tiene saldo o crédito disponible.", log_detail=log)
     if status == 404:
         return ProviderError(502, "El modelo de IA configurado no existe o no está disponible.", log_detail=log)
     if status == 429:

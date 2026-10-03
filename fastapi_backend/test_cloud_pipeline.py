@@ -14,11 +14,11 @@ from fastapi_backend import pipeline
 from fastapi_backend.cache import ResponseCache, build_cache_key
 from fastapi_backend.config import Settings, load_settings
 from fastapi_backend.normalize import blocks_to_elements
-from fastapi_backend.providers import GeminiProvider, ModelResult, OpenAIProvider, ProviderError
+from fastapi_backend.providers import AnthropicProvider, GeminiProvider, ModelResult, OpenAIProvider, ProviderError
 from fastapi_backend.providers.base import error_from_response
 from fastapi_backend.providers.http import post_json
 from fastapi_backend.ratelimit import RateLimiter
-from fastapi_backend.schemas import EXTRACT_SCHEMA_CLOUD, to_gemini_schema
+from fastapi_backend.schemas import EXTRACT_SCHEMA_CLOUD, to_anthropic_schema, to_gemini_schema
 
 
 # ---------------------------------------------------------------------------
@@ -48,6 +48,23 @@ class SettingsTests(unittest.TestCase):
 
         self.assertEqual(settings.cloud_api_key, "k")
         self.assertEqual(settings.cloud_model, settings.openai_model)
+
+    def test_anthropic_is_selected_with_its_own_key_and_model(self):
+        settings = load_settings({"AURA_PROVIDER": "anthropic", "ANTHROPIC_API_KEY": "k"})
+
+        self.assertTrue(settings.cloud_ready)
+        self.assertEqual(settings.effective_pipeline, "hybrid")
+        self.assertEqual(settings.cloud_model, "claude-sonnet-5-5")
+        self.assertIn("anthropic:claude-sonnet-5-5", settings.engine_tag)
+
+        custom = load_settings({
+            "AURA_PROVIDER": "anthropic", "ANTHROPIC_API_KEY": "k", "ANTHROPIC_MODEL": "claude-haiku-4-5-20251001",
+        })
+        self.assertEqual(custom.cloud_model, "claude-haiku-4-5-20251001")
+
+    def test_anthropic_effort_rejects_unknown_values(self):
+        self.assertEqual(load_settings({"ANTHROPIC_EFFORT": "ultra"}).anthropic_effort, "auto")
+        self.assertEqual(load_settings({"ANTHROPIC_EFFORT": "HIGH"}).anthropic_effort, "high")
 
     def test_key_of_the_other_provider_does_not_activate_cloud(self):
         settings = load_settings({"AURA_PROVIDER": "openai", "GEMINI_API_KEY": "k"})
@@ -268,6 +285,171 @@ class OpenAIProviderTests(unittest.TestCase):
             OpenAIProvider.parse_response({"choices": [{"message": {"content": "", "refusal": "no"}}]})
 
 
+class AnthropicProviderTests(unittest.IsolatedAsyncioTestCase):
+    def _provider(self, model: str, **overrides) -> AnthropicProvider:
+        return AnthropicProvider(Settings(anthropic_api_key="k", anthropic_model=model, **overrides))
+
+    def _body(self, model: str, schema=None, **overrides) -> dict:
+        return self._provider(model, **overrides).build_body("lee", "IMG", schema, 4096, 0.0)
+
+    def test_image_goes_before_the_text_and_schema_uses_output_config(self):
+        body = self._body("claude-sonnet-5-5", schema={"type": "object", "properties": {"a": {"type": "string"}}})
+
+        content = body["messages"][0]["content"]
+        self.assertEqual([part["type"] for part in content], ["image", "text"])
+        self.assertEqual(content[0]["source"], {"type": "base64", "media_type": "image/jpeg", "data": "IMG"})
+        fmt = body["output_config"]["format"]
+        self.assertEqual(fmt["type"], "json_schema")
+        self.assertFalse(fmt["schema"]["additionalProperties"])
+        self.assertNotIn("tool_choice", body)  # forzar herramientas da 400 en Sonnet/Opus 5.5
+        self.assertNotIn("tools", body)
+
+    def test_sonnet_55_turns_off_upfront_thinking_and_never_sends_temperature(self):
+        body = self._body("claude-sonnet-5-5")
+
+        self.assertEqual(body["thinking"], {"type": "between_tools"})
+        self.assertEqual(body["output_config"]["effort"], "low")
+        self.assertNotIn("temperature", body)  # un valor no predeterminado da 400
+
+    def test_opus_55_cannot_disable_thinking_so_it_only_lowers_effort(self):
+        body = self._body("claude-opus-5-5")
+
+        self.assertNotIn("thinking", body)  # thinking: disabled/between_tools dan 400 en Opus 5.5
+        self.assertEqual(body["output_config"]["effort"], "low")
+        self.assertNotIn("temperature", body)
+
+    def test_haiku_has_no_effort_or_thinking_but_accepts_temperature(self):
+        body = self._body("claude-haiku-4-5-20251001", schema={"type": "object"})
+
+        self.assertNotIn("thinking", body)
+        self.assertNotIn("effort", body["output_config"])
+        self.assertEqual(body["temperature"], 0.0)
+
+    def test_unknown_models_get_no_reasoning_fields_in_auto_mode(self):
+        body = self._body("claude-futuro-9")
+
+        self.assertNotIn("thinking", body)
+        self.assertNotIn("output_config", body)  # sin esquema ni effort: nada que mandar
+
+    def test_explicit_effort_is_respected_and_between_tools_needs_effort_up_to_high(self):
+        high = self._body("claude-sonnet-5-5", anthropic_effort="high")
+        xhigh = self._body("claude-sonnet-5-5", anthropic_effort="xhigh")
+        default = self._body("claude-sonnet-5-5", anthropic_effort="default")
+
+        self.assertEqual((high["thinking"], high["output_config"]["effort"]), ({"type": "between_tools"}, "high"))
+        self.assertNotIn("thinking", xhigh)  # between_tools con xhigh/max da 400
+        self.assertEqual(xhigh["output_config"]["effort"], "xhigh")
+        self.assertNotIn("thinking", default)
+        self.assertNotIn("output_config", default)
+
+    def test_parse_reads_only_text_blocks_even_if_a_thinking_block_comes_first(self):
+        result = AnthropicProvider.parse_response({
+            "content": [
+                {"type": "thinking", "thinking": "", "signature": "x"},
+                {"type": "text", "text": '{"bloques": []}'},
+            ],
+            "stop_reason": "end_turn",
+            "usage": {"input_tokens": 100, "output_tokens": 20, "output_tokens_details": {"thinking_tokens": 5}},
+        })
+
+        self.assertEqual(result.text, '{"bloques": []}')
+        self.assertEqual(result.finish_reason, "end_turn")
+        self.assertEqual(result.usage, {"input": 100, "output": 20, "thinking": 5})
+
+    def test_max_tokens_is_reported_as_length_so_the_pipeline_rescues_blocks(self):
+        result = AnthropicProvider.parse_response({
+            "content": [{"type": "text", "text": '{"bloques": [{"tipo"'}],
+            "stop_reason": "max_tokens",
+        })
+
+        self.assertEqual(result.finish_reason, "length")
+
+    def test_refusal_and_empty_answers_raise_so_the_pipeline_can_fall_back(self):
+        with self.assertRaises(ProviderError) as refusal:
+            AnthropicProvider.parse_response({
+                "content": [], "stop_reason": "refusal", "stop_details": {"category": "general_harms"},
+            })
+        self.assertIn("general_harms", refusal.exception.log_detail)
+        self.assertNotIn("general_harms", refusal.exception.message)
+
+        with self.assertRaises(ProviderError):
+            AnthropicProvider.parse_response({"content": [{"type": "text", "text": "  "}], "stop_reason": "end_turn"})
+
+    async def test_generate_sends_the_required_headers_to_the_messages_endpoint(self):
+        seen = {}
+
+        def handler(request):
+            seen["url"] = str(request.url)
+            seen["headers"] = request.headers
+            return httpx.Response(200, json={
+                "content": [{"type": "text", "text": "hola"}], "stop_reason": "end_turn", "usage": {},
+            })
+
+        provider = self._provider("claude-sonnet-5-5")
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            result = await provider.generate(client, "p", "IMG")
+
+        self.assertEqual(result.text, "hola")
+        self.assertEqual(seen["url"], "https://api.anthropic.com/v1/messages")
+        self.assertEqual(seen["headers"]["x-api-key"], "k")
+        self.assertEqual(seen["headers"]["anthropic-version"], "2023-06-01")
+
+    async def test_http_errors_become_provider_errors_without_leaking_the_key(self):
+        def handler(request):
+            return httpx.Response(401, json={
+                "type": "error", "error": {"type": "authentication_error", "message": "invalid x-api-key sk-ant-123"},
+            })
+
+        provider = self._provider("claude-sonnet-5-5")
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            with self.assertRaises(ProviderError) as ctx:
+                await provider.generate(client, "p", "IMG")
+
+        self.assertEqual(ctx.exception.status_code, 502)
+        self.assertNotIn("sk-ant-123", ctx.exception.message)
+
+
+class AnthropicSchemaTests(unittest.TestCase):
+    def test_every_object_forbids_extra_properties_and_unsupported_keywords_are_dropped(self):
+        converted = to_anthropic_schema({
+            "type": "object",
+            "properties": {
+                "n": {"type": "integer", "minimum": 0, "maximum": 5},
+                "s": {"type": "string", "minLength": 1, "maxLength": 9},
+                "lista": {"type": "array", "maxItems": 3, "minItems": 5, "items": {
+                    "type": "object", "properties": {"x": {"type": "string"}},
+                }},
+            },
+            "required": ["n"],
+        })
+
+        self.assertFalse(converted["additionalProperties"])
+        self.assertFalse(converted["properties"]["lista"]["items"]["additionalProperties"])
+        self.assertEqual(converted["properties"]["n"], {"type": "integer"})
+        self.assertEqual(converted["properties"]["s"], {"type": "string"})
+        self.assertEqual(converted["properties"]["lista"].keys(), {"type", "items"})  # sin maxItems ni minItems=5
+        self.assertEqual(converted["required"], ["n"])
+
+    def test_the_real_extraction_schema_converts_and_stays_within_documented_limits(self):
+        converted = to_anthropic_schema(EXTRACT_SCHEMA_CLOUD)
+
+        def objects(node):
+            if isinstance(node, dict):
+                if node.get("type") == "object":
+                    yield node
+                for value in node.values():
+                    yield from objects(value)
+            elif isinstance(node, list):
+                for item in node:
+                    yield from objects(item)
+
+        found = list(objects(converted))
+        self.assertEqual(len(found), 4)  # raiz, bloque, dato de grafica, conexion de diagrama
+        self.assertTrue(all(obj["additionalProperties"] is False for obj in found))
+        optional = sum(len(set(obj.get("properties", {})) - set(obj.get("required", []))) for obj in found)
+        self.assertLessEqual(optional, 24)  # limite documentado de parametros opcionales
+
+
 class ErrorMappingTests(unittest.TestCase):
     def _error(self, status: int, body=None) -> ProviderError:
         return error_from_response("gemini", httpx.Response(status, json=body or {"error": {"message": "detalle"}}))
@@ -276,6 +458,7 @@ class ErrorMappingTests(unittest.TestCase):
         self.assertEqual(self._error(401).status_code, 502)
         self.assertEqual(self._error(404).status_code, 502)
         self.assertEqual(self._error(429).status_code, 503)
+        self.assertEqual(self._error(402).status_code, 503)  # sin saldo (Anthropic)
         self.assertEqual(self._error(500).status_code, 502)
 
     def test_secrets_stay_in_the_log_not_in_the_client_message(self):
