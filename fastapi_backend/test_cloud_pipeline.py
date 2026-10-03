@@ -225,7 +225,7 @@ class CloudPromptTests(unittest.TestCase):
 
         self.assertIn("estado de CADA parte", prompt)
         self.assertIn("hora que marca", prompt)
-        self.assertIn('"aproximado": false', prompt)
+        self.assertIn('"valor_impreso": true', prompt)
 
     def test_the_local_v4_prompt_is_not_changed_by_the_cloud_rules(self):
         from fastapi_backend.prompts import RULE_CHART, RULE_IMAGE, build_extraction_prompt
@@ -236,7 +236,7 @@ class CloudPromptTests(unittest.TestCase):
         self.assertIn(RULE_IMAGE, local)
         self.assertNotIn("estado de CADA parte", local)
         self.assertNotIn("hora que marca", local)
-        self.assertNotIn("aproximado", local)
+        self.assertNotIn("valor_impreso", local)
 
     def test_cloud_rules_do_not_leak_benchmark_answers(self):
         """Los ejemplos del prompt no pueden ser respuestas del corpus: seria darle el examen al modelo."""
@@ -249,11 +249,11 @@ class CloudPromptTests(unittest.TestCase):
 
 
 class ApproximateChartValueTests(unittest.TestCase):
-    def test_estimated_values_are_spoken_as_approximate(self):
+    def test_values_that_are_not_printed_are_spoken_as_approximate(self):
         elements = blocks_to_elements([{"tipo": "grafica", "contenido": "Barras", "datos": [
-            {"etiqueta": "A", "valor": "30", "aproximado": False},
-            {"etiqueta": "B", "valor": "45", "aproximado": True},
-            {"etiqueta": "C", "valor": "aprox. 12", "aproximado": True},
+            {"etiqueta": "A", "valor": "30", "valor_impreso": True},
+            {"etiqueta": "B", "valor": "45", "valor_impreso": False},
+            {"etiqueta": "C", "valor": "aprox. 12", "valor_impreso": False},
         ]}])
 
         content = elements[0]["content"]
@@ -276,9 +276,9 @@ class ApproximateChartValueTests(unittest.TestCase):
         def dato(schema):
             return schema["properties"]["bloques"]["items"]["properties"]["datos"]["items"]
 
-        self.assertIn("aproximado", dato(EXTRACT_SCHEMA_CLOUD)["properties"])
-        self.assertIn("aproximado", dato(EXTRACT_SCHEMA_CLOUD)["required"])
-        self.assertNotIn("aproximado", dato(EXTRACT_SCHEMA)["properties"])  # Ollama: sin cambios
+        self.assertIn("valor_impreso", dato(EXTRACT_SCHEMA_CLOUD)["properties"])
+        self.assertIn("valor_impreso", dato(EXTRACT_SCHEMA_CLOUD)["required"])
+        self.assertNotIn("valor_impreso", dato(EXTRACT_SCHEMA)["properties"])  # Ollama: sin cambios
 
 
 class OllamaWarmUpTests(unittest.IsolatedAsyncioTestCase):

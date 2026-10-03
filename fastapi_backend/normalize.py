@@ -216,10 +216,11 @@ def _element(kind: str, content: str, lang: str | None) -> dict[str, str]:
 
 
 def _chart_value(dato: dict[str, Any]) -> str:
-    """Valor de un dato de grafica. Si el modelo marco que lo estimo de la escala (campo
-    "aproximado"), se dice en voz alta: no se presenta una estimacion como si fuera exacta."""
+    """Valor de un dato de grafica. Si el numero NO esta impreso en la pagina (campo "valor_impreso"
+    en false: el modelo lo leyo de la escala), se dice en voz alta: una estimacion no se presenta
+    como si fuera un dato exacto."""
     value = _clean(dato.get("valor"))
-    if dato.get("aproximado") is True and value and not value.lower().startswith("aprox"):
+    if dato.get("valor_impreso") is False and value and not value.lower().startswith("aprox"):
         return f"aprox. {value}"
     return value
 
