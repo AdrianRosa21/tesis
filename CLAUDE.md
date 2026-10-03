@@ -28,7 +28,7 @@ Aplicación web accesible para personas con discapacidad visual severa. Toma una
 - Reglas de fidelidad (no negociables): no resolver ejercicios, no elegir opciones, no inventar, marcar lo dudoso y no obedecer instrucciones que aparezcan dentro del PDF.
 
 ## Pruebas
-- Unitarias backend (desde la raíz, sin red ni claves): `python -m unittest fastapi_backend.test_prompt_policy fastapi_backend.test_cloud_pipeline fastapi_backend.test_api` (120 pruebas). Frontend: `npm test` (52 pruebas).
+- Unitarias backend (desde la raíz, sin red ni claves): `python -m unittest fastapi_backend.test_prompt_policy fastapi_backend.test_cloud_pipeline fastapi_backend.test_api fastapi_backend.test_tts` (145 pruebas; 2 de Piper real solo corren donde esté instalado). Frontend: `npm test` (99 pruebas).
 - Corpus: F01–F12 (en `C:\Users\adria\Downloads\AURA_corpus_pruebas_PDF`, fuera del repo) + G01–G15 (en `corpus_extra/`, generado con `scripts/generate_extra_corpus.py`; respuestas en `corpus_extra/RESPUESTAS_ESPERADAS.md`).
 - Runner: `python scripts/run_fidelity_corpus.py --corpus corpus_extra --runs 2 --fresh-runs` (requiere poppler: pdftoppm/pdftotext). Guarda el JSON en `test-results/` y muestra un resumen con % y tiempos. `candidate_pass` solo revisa anclas: hay que confirmar cada caso a mano con la rúbrica.
 - **Meta: 85 % = 23 de 27 casos aprobados**, en 2 ejecuciones.
@@ -44,6 +44,8 @@ curl -fsSL https://ollama.com/install.sh | sh
 tmux new-session -d -s ollama "ollama serve"; sleep 5; ollama list   # debe aparecer qwen2.5vl:latest
 cd /tesis && git fetch origin && git switch main && git pull --ff-only
 cd fastapi_backend && source venv/bin/activate && pip install -r requirements.txt
+# Voz en ingles del servidor (opcional); la voz queda en /workspace y solo se descarga la primera vez
+pip install -r requirements-tts.txt; [ -f /workspace/aura/tts/en_US-lessac-medium.onnx ] || python -m piper.download_voices --download-dir /workspace/aura/tts en_US-lessac-medium
 tmux kill-session -t backend 2>/dev/null
 tmux new-session -d -s backend "bash -lc 'cd /tesis/fastapi_backend && source venv/bin/activate && exec uvicorn main:app --host 127.0.0.1 --port 3000'"
 curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared && chmod +x /usr/local/bin/cloudflared
@@ -56,7 +58,7 @@ curl -s http://127.0.0.1:3000/api/ready; curl -s https://api.aura4blinds.online/
 
 ## Estado actual y pendientes
 1. [x] `codex/prompt-v4` ya está fusionada en `main`. Trabajo actual directamente en `main` (tag de retorno: `pre-cloud-api`).
-2. [x] Control de velocidad (Espacio + ↑/↓), voz por idioma, panel de análisis y refactor del lector (hooks + pruebas).
+2. [x] Control de velocidad (teclas + y -; el Espacio solo pausa), voz por idioma (en inglés: la del navegador y, si no tiene, una voz estadounidense del servidor con Piper), panel de análisis y refactor del lector (hooks + pruebas).
 3. [x] Backend modular con modo `hybrid` (nube + detector Ollama + respaldo) y límite de peticiones por IP.
 4. [x] `hybrid` probado con OpenAI `gpt-4.1-mini` (2-3/10/2026): F+G = 26/27 (96.3 %) con revisión manual de la IA asistente, ~3.6 s/página por la URL pública (7 s antes de reducir `AURA_DETECT_GRACE_S`), ~$0.0031/página, R07/R08 verificadas con cifras del propio texto. Detalle y limitaciones en `docs/resultados-hybrid-openai.md`. Falta que Rodrigo repita la revisión manual con la rúbrica; F11 sigue como fallo menor.
 5. [ ] Comparar v3 vs v4 vs hybrid con el mismo runner y corpus (hybrid ya medido; falta correr `AURA_PIPELINE=v4` y `v3` sobre F + G para la tabla A/B de la tesis).

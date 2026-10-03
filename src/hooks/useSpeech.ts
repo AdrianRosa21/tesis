@@ -6,6 +6,13 @@ import {
   pickVoice,
 } from '../utils/language';
 import { RATE_STEP, clampRate, loadRate, saveRate } from '../utils/speechRate';
+import { cleanForServerVoice, serverVoice } from '../utils/serverVoice';
+import {
+  type EnglishVoiceSource,
+  chooseEnglishSource,
+  describeEnglishSource,
+  loadVoicePreference,
+} from '../utils/voiceSource';
 
 export interface HighlightState {
   start: number;
@@ -31,6 +38,8 @@ export interface SpeechApi {
   isSpeaking: boolean;
   isPaused: boolean;
   highlight: HighlightState | null;
+  /** De dónde sale la voz que lee en inglés (para mostrarlo en pantalla). */
+  englishVoice: string;
 }
 
 const MAX_RETRIES = 2;
@@ -38,17 +47,42 @@ const MAX_RETRIES = 2;
 // cancelar y reiniciar la voz en cada pulsacion cuando se cambia rapido.
 const RESTART_DELAY_MS = 150;
 
+function currentEnglishSource(synth: SpeechSynthesis | undefined): EnglishVoiceSource {
+  if (!synth) return { kind: 'none' };
+  return chooseEnglishSource(synth.getVoices(), serverVoice.available, loadVoicePreference(), navigator.language);
+}
+
 export function useSpeech(): SpeechApi {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [highlight, setHighlight] = useState<HighlightState | null>(null);
   const [rate, setRateState] = useState<number>(() => loadRate());
   const synth = window.speechSynthesis;
+  const [englishSource, setEnglishSource] = useState<EnglishVoiceSource>(() => currentEnglishSource(synth));
   const onEndCallbackRef = useRef<(() => void) | null>(null);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const rateRef = useRef<number>(rate);
   const restartCurrentRef = useRef<(() => void) | null>(null);
   const restartTimerRef = useRef<number | null>(null);
+
+  // Voz del servidor (audio): una sola pieza de audio que se reutiliza frase por frase.
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const speakIdRef = useRef(0);
+  const serverActiveRef = useRef(false);
+  const serverPausedRef = useRef(false);
+  const pendingStartRef = useRef<(() => void) | null>(null);
+
+  const refreshEnglishSource = useCallback(() => {
+    setEnglishSource(currentEnglishSource(synth));
+  }, [synth]);
+
+  useEffect(() => {
+    if (!synth) return;
+    // El navegador carga sus voces despues de abrir la pagina; el servidor se consulta una vez.
+    void serverVoice.check().then(refreshEnglishSource);
+    synth.addEventListener?.('voiceschanged', refreshEnglishSource);
+    return () => synth.removeEventListener?.('voiceschanged', refreshEnglishSource);
+  }, [synth, refreshEnglishSource]);
 
   const clearRestartTimer = useCallback(() => {
     if (restartTimerRef.current !== null) {
@@ -57,7 +91,21 @@ export function useSpeech(): SpeechApi {
     }
   }, []);
 
+  const stopServerAudio = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.onended = null;
+      audio.onerror = null;
+      audio.pause();
+    }
+    serverActiveRef.current = false;
+    serverPausedRef.current = false;
+    pendingStartRef.current = null;
+  }, []);
+
   const stop = useCallback(() => {
+    speakIdRef.current += 1; // lo que siga en vuelo (descargas, eventos) queda cancelado
+    stopServerAudio();
     if (synth) {
       clearRestartTimer();
       restartCurrentRef.current = null;
@@ -67,7 +115,7 @@ export function useSpeech(): SpeechApi {
       setIsPaused(false);
       setHighlight(null);
     }
-  }, [synth, clearRestartTimer]);
+  }, [synth, clearRestartTimer, stopServerAudio]);
 
   useEffect(() => {
     // Cleanup on unmount
@@ -90,9 +138,14 @@ export function useSpeech(): SpeechApi {
     if (!synth) return;
 
     stop();
+    const speakId = speakIdRef.current;
 
     onEndCallbackRef.current = options.onEnd ?? null;
     const lang: SpeechLang = options.lang ?? detectLanguage(text) ?? 'es';
+
+    // El ingles se lee con la voz del servidor cuando el navegador no tiene ninguna voz en ingles.
+    let useServer = lang === 'en' && currentEnglishSource(synth).kind === 'server';
+    if (lang === 'en' && !serverVoice.available) void serverVoice.check().then(refreshEnglishSource);
 
     // Identify chunks and their global start index
     const chunks: { text: string; startIndex: number }[] = [];
@@ -108,9 +161,55 @@ export function useSpeech(): SpeechApi {
 
     let currentChunkIndex = 0;
 
+    // Lee una frase con el audio del servidor. Si algo falla, esa misma frase (y las siguientes)
+    // se leen con la voz del navegador: nunca se queda en silencio.
+    const playChunkWithServer = (chunkObj: { text: string; startIndex: number }) => {
+      serverActiveRef.current = true;
+      setIsSpeaking(true);
+      setIsPaused(serverPausedRef.current);
+      // El audio no avisa palabra por palabra: se resalta la frase completa.
+      setHighlight({ start: chunkObj.startIndex, length: chunkObj.text.length });
+
+      let settled = false;
+      const fallBack = () => {
+        if (settled || speakIdRef.current !== speakId) return;
+        settled = true;
+        serverVoice.markFailed();
+        useServer = false;
+        stopServerAudio();
+        refreshEnglishSource();
+        speakChunk();
+      };
+
+      const next = chunks[currentChunkIndex + 1];
+      if (next) serverVoice.prefetch(cleanForServerVoice(next.text));
+
+      serverVoice
+        .getAudioUrl(cleanForServerVoice(chunkObj.text))
+        .then((url) => {
+          if (settled || speakIdRef.current !== speakId) return;
+          const audio = (audioRef.current ??= new Audio());
+          audio.onended = () => {
+            if (settled || speakIdRef.current !== speakId) return;
+            settled = true;
+            currentChunkIndex++;
+            speakChunk();
+          };
+          audio.onerror = fallBack;
+          audio.src = url;
+          audio.preservesPitch = true;
+          audio.playbackRate = rateRef.current;
+          const start = () => { audio.play().catch(fallBack); };
+          if (serverPausedRef.current) pendingStartRef.current = start;
+          else start();
+        })
+        .catch(fallBack);
+    };
+
     const speakChunk = (retryCount = 0) => {
       if (currentChunkIndex >= chunks.length) {
         restartCurrentRef.current = null;
+        serverActiveRef.current = false;
         setIsSpeaking(false);
         setIsPaused(false);
         setHighlight(null);
@@ -126,6 +225,11 @@ export function useSpeech(): SpeechApi {
       if (!chunkText.trim()) {
         currentChunkIndex++;
         speakChunk();
+        return;
+      }
+
+      if (useServer) {
+        playChunkWithServer(chunkObj);
         return;
       }
 
@@ -198,7 +302,7 @@ export function useSpeech(): SpeechApi {
     };
 
     speakChunk();
-  }, [synth, stop, applyVoice]);
+  }, [synth, stop, applyVoice, stopServerAudio, refreshEnglishSource]);
 
   const announce = useCallback((text: string, lang: SpeechLang = 'es') => {
     if (!synth) return;
@@ -215,7 +319,10 @@ export function useSpeech(): SpeechApi {
     setRateState(next);
     saveRate(next);
 
-    if (synth && restartCurrentRef.current && currentUtteranceRef.current && !synth.paused) {
+    if (serverActiveRef.current && audioRef.current) {
+      // El audio cambia de velocidad al instante, sin reiniciar la frase.
+      audioRef.current.playbackRate = next;
+    } else if (synth && restartCurrentRef.current && currentUtteranceRef.current && !synth.paused) {
       clearRestartTimer();
       restartTimerRef.current = window.setTimeout(() => {
         restartTimerRef.current = null;
@@ -230,6 +337,12 @@ export function useSpeech(): SpeechApi {
   }, [setRate]);
 
   const pause = useCallback(() => {
+    if (serverActiveRef.current) {
+      serverPausedRef.current = true;
+      audioRef.current?.pause();
+      setIsPaused(true);
+      return;
+    }
     if (synth) {
       synth.pause();
       setIsPaused(true);
@@ -237,6 +350,15 @@ export function useSpeech(): SpeechApi {
   }, [synth]);
 
   const resume = useCallback(() => {
+    if (serverActiveRef.current && serverPausedRef.current) {
+      serverPausedRef.current = false;
+      setIsPaused(false);
+      const start = pendingStartRef.current;
+      pendingStartRef.current = null;
+      if (start) start();
+      else void audioRef.current?.play().catch(() => undefined);
+      return;
+    }
     if (synth) {
       synth.resume();
       setIsPaused(false);
@@ -255,5 +377,6 @@ export function useSpeech(): SpeechApi {
     isSpeaking,
     isPaused,
     highlight,
+    englishVoice: describeEnglishSource(englishSource),
   };
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SpeechApi } from '../hooks/useSpeech';
-import { useSpaceRate } from '../hooks/useSpaceRate';
+import { usePauseKey } from '../hooks/usePauseKey';
+import { useRateKeys } from '../hooks/useRateKeys';
 import { isTypingTarget, useWindowKeydown } from '../hooks/useWindowKeydown';
 import { formatRate } from '../utils/speechRate';
 
@@ -17,7 +18,7 @@ interface TutorialStep {
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
     title: 'Cómo se usa este tutorial',
-    text: 'Te voy a explicar, paso a paso y a tu propio ritmo, cómo usar AURA. Usa la flecha derecha o la flecha hacia abajo para escuchar el siguiente paso, y la flecha izquierda o la flecha hacia arriba para volver al paso anterior. Presiona la tecla V en cualquier momento para repetir el paso actual desde el inicio. Un toque a la barra espaciadora pausa o continúa. Cuando quieras salir, presiona Escape.',
+    text: 'Te voy a explicar, paso a paso y a tu propio ritmo, cómo usar AURA. Usa la flecha derecha o la flecha hacia abajo para escuchar el siguiente paso, y la flecha izquierda o la flecha hacia arriba para volver al paso anterior. Presiona la tecla V en cualquier momento para repetir el paso actual desde el inicio. La barra espaciadora pausa o continúa. Con la tecla más y la tecla menos cambias la velocidad de la voz. Cuando quieras salir, presiona Escape.',
   },
   {
     title: 'Seleccionar un documento',
@@ -37,15 +38,15 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     title: 'Pausar y continuar',
-    text: 'Da un toque a la barra espaciadora para pausar la lectura en cualquier momento, y otro toque para continuar exactamente donde te quedaste.',
+    text: 'Presiona la barra espaciadora para pausar la lectura en cualquier momento, y vuelve a presionarla para continuar exactamente donde te quedaste. La pausa es inmediata.',
   },
   {
     title: 'Velocidad de la voz',
-    text: 'Mantén presionada la barra espaciadora y, sin soltarla, presiona la flecha hacia arriba para leer más rápido, o la flecha hacia abajo para leer más lento. Cada pulsación cambia la velocidad en cero punto cero cinco, y la voz se adapta al instante. Al soltar la barra, AURA te dice la velocidad en que quedó, y la recuerda la próxima vez. Prueba ahora mismo con este paso.',
+    text: 'Presiona la tecla más, la del signo de suma, para leer más rápido, y la tecla menos, la del guion, para leer más lento. También sirven las teclas más y menos del teclado numérico. Cada pulsación cambia la velocidad en cero punto cero cinco, y la voz se adapta al instante. Si dejas la tecla presionada, la velocidad sigue cambiando poco a poco. Cuando dejas de pulsar, AURA te dice la velocidad en que quedó, y la recuerda la próxima vez. Prueba ahora mismo con este paso.',
   },
   {
     title: 'Idiomas',
-    text: 'Si una página está en inglés, AURA cambia sola a una voz en inglés, siempre que tu navegador la tenga instalada. Las descripciones de imágenes, gráficas y tablas se leen en español.',
+    text: 'Si una página está en inglés, AURA cambia sola a una voz en inglés. Usa la voz en inglés de tu navegador si la tiene, y si no, usa una voz estadounidense que genera el servidor, para que nunca lea el inglés con acento español. En la pantalla del lector puedes ver cuál voz está usando. Las descripciones de imágenes, gráficas y tablas se leen en español.',
   },
   {
     title: 'Detener la lectura',
@@ -86,18 +87,18 @@ export function TutorialPage({ onExit, speech }: TutorialPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIndex]);
 
-  const spaceRate = useSpaceRate({
-    onTap: () => {
-      if (isPaused) resume();
-      else if (isSpeaking) pause();
-    },
+  const pauseKey = usePauseKey(() => {
+    if (isPaused) resume();
+    else if (isSpeaking) pause();
+  });
+  const rateKeys = useRateKeys({
     onAdjust: adjustRate,
-    onRelease: () => announce(`Velocidad ${formatRate(rate)}`),
+    onSettle: () => announce(`Velocidad ${formatRate(rate)}`),
   });
 
   useWindowKeydown((event) => {
     if (isTypingTarget(document.activeElement)) return;
-    if (spaceRate.handleKeyDown(event)) return;
+    if (pauseKey.handleKeyDown(event) || rateKeys.handleKeyDown(event)) return;
 
     const key = event.key;
 

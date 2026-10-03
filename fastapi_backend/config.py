@@ -78,6 +78,14 @@ class Settings:
     max_cache_entries: int = 128
     max_image_mb: int = 5
     rate_limit_per_min: int = 30
+    # Voz en ingles generada en el servidor con Piper (gratis, codigo abierto, no envia el texto a nadie).
+    tts_enabled: bool = True
+    tts_voice_dir: str = "/workspace/aura/tts"
+    tts_en_voice: str = "en_US-lessac-medium"
+    # ONNX abre un hilo por CPU visible; en el pod son 256 con cuota de ~7 y la voz iba mas lenta que el tiempo real.
+    tts_threads: int = 4
+    tts_max_chars: int = 600
+    tts_rate_limit_per_min: int = 300
     # Tope global de paginas leidas por la nube al dia (0 = sin tope). Protege el saldo: al llegar,
     # AURA sigue funcionando con el respaldo local en vez de seguir gastando.
     cloud_max_pages_per_day: int = 0
@@ -194,6 +202,12 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         max_cache_entries=_number(env, "MAX_CACHE_ENTRIES", 128, int),
         max_image_mb=_number(env, "MAX_IMAGE_SIZE_MB", 5, int),
         rate_limit_per_min=_number(env, "AURA_RATE_LIMIT_PER_MIN", 30, int),
+        tts_enabled=_choice(env, "AURA_TTS", "on", ("on", "off")) == "on",
+        tts_voice_dir=_text(env, "AURA_TTS_VOICE_DIR", "/workspace/aura/tts"),
+        tts_en_voice=_text(env, "AURA_TTS_EN_VOICE", "en_US-lessac-medium"),
+        tts_threads=max(1, _number(env, "AURA_TTS_THREADS", 4, int)),
+        tts_max_chars=max(50, _number(env, "AURA_TTS_MAX_CHARS", 600, int)),
+        tts_rate_limit_per_min=_number(env, "AURA_TTS_RATE_LIMIT_PER_MIN", 300, int),
         cloud_max_pages_per_day=_number(env, "AURA_CLOUD_MAX_PAGES_PER_DAY", 0, int),
         log_file_path=_text(env, "LOG_FILE_PATH", "/workspace/aura/logs/backend.log"),
     )

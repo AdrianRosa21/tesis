@@ -1,0 +1,4 @@
+# Voz en ingles del servidor (opcional). Si no se instala, AURA usa la voz del navegador.
+# La voz (63 MB) se descarga una vez a /workspace/aura/tts:
+#   python -m piper.download_voices --download-dir /workspace/aura/tts en_US-lessac-medium
+piper-tts==1.8.0

@@ -4,7 +4,8 @@ import type { SpeechApi } from '../hooks/useSpeech';
 import { usePdfDocument } from '../hooks/usePdfDocument';
 import { usePageAnalysis } from '../hooks/usePageAnalysis';
 import { useReadingNavigation } from '../hooks/useReadingNavigation';
-import { useSpaceRate } from '../hooks/useSpaceRate';
+import { usePauseKey } from '../hooks/usePauseKey';
+import { useRateKeys } from '../hooks/useRateKeys';
 import { isTypingTarget, useWindowKeydown } from '../hooks/useWindowKeydown';
 import { formatRate } from '../utils/speechRate';
 import { AnalysisDetail } from '../components/AnalysisDetail';
@@ -23,7 +24,9 @@ const INITIAL_STATUS =
   'Página de lectura de PDF abierta. Presiona la letra R para seleccionar un archivo, o usa el botón Seleccionar PDF.';
 
 export function PdfReaderPage({ onBack, onOpenTutorial, speech }: PdfReaderPageProps) {
-  const { speak, stop: stopSpeech, pause, resume, isSpeaking, isPaused, highlight, rate, adjustRate, announce } = speech;
+  const {
+    speak, stop: stopSpeech, pause, resume, isSpeaking, isPaused, highlight, rate, adjustRate, announce, englishVoice,
+  } = speech;
 
   const [status, setStatus] = useState(INITIAL_STATUS);
   const [pageInputValue, setPageInputValue] = useState('1');
@@ -136,15 +139,15 @@ export function PdfReaderPage({ onBack, onOpenTutorial, speech }: PdfReaderPageP
     }
   };
 
-  const spaceRate = useSpaceRate({
-    onTap: handlePauseResume,
+  const pauseKey = usePauseKey(handlePauseResume);
+  const rateKeys = useRateKeys({
     onAdjust: adjustRate,
-    onRelease: () => announce(`Velocidad ${formatRate(rate)}`),
+    onSettle: () => announce(`Velocidad ${formatRate(rate)}`),
   });
 
   useWindowKeydown((event) => {
     if (isTypingTarget(document.activeElement)) return;
-    if (spaceRate.handleKeyDown(event)) return;
+    if (pauseKey.handleKeyDown(event) || rateKeys.handleKeyDown(event)) return;
 
     const key = event.key;
     const lower = key.toLowerCase();
@@ -200,6 +203,7 @@ export function PdfReaderPage({ onBack, onOpenTutorial, speech }: PdfReaderPageP
         currentPage={currentPage}
         totalPages={totalPages}
         rate={rate}
+        englishVoice={englishVoice}
       />
 
       <AnalysisDetail meta={pageAnalysis?.meta ?? null} />

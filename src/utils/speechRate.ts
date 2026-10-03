@@ -33,3 +33,15 @@ export function saveRate(rate: number): void {
 export function formatRate(rate: number): string {
   return rate.toFixed(2);
 }
+
+/**
+ * Qué hace una tecla con la velocidad: +1 (más rápido) con + o =, -1 (más lento) con - o _,
+ * 0 si no es de velocidad. Con Ctrl, Alt o Cmd no cuenta: son los atajos de zoom del navegador.
+ * Las teclas + y - del teclado numérico llegan con el mismo valor de `key`.
+ */
+export function rateStepForKey(event: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'altKey'>): number {
+  if (event.ctrlKey || event.metaKey || event.altKey) return 0;
+  if (event.key === '+' || event.key === '=') return 1;
+  if (event.key === '-' || event.key === '_') return -1;
+  return 0;
+}

@@ -19,7 +19,7 @@ import time  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 
 import httpx  # noqa: E402
-from fastapi import Depends, FastAPI, Header, HTTPException, Request, status  # noqa: E402
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response, status  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import StreamingResponse  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
@@ -46,6 +46,7 @@ from fastapi_backend.providers import (  # noqa: E402
     build_local_provider,
 )
 from fastapi_backend.ratelimit import RateLimiter  # noqa: E402
+from fastapi_backend.tts import PiperSynth  # noqa: E402
 
 # Nombres que las pruebas (test_prompt_policy.py) importan desde este modulo.
 __all__ = [
@@ -91,6 +92,17 @@ async def _warm_up_ollama() -> None:
     logger.info(f"Modelo local listo en {time.monotonic() - started:.1f} s.")
 
 
+async def _warm_up_tts() -> None:
+    """Carga la voz en ingles del servidor. Corre en segundo plano: nunca debe tumbar el arranque."""
+    started = time.monotonic()
+    try:
+        await asyncio.to_thread(tts.load)
+    except Exception as exc:  # noqa: BLE001 - la voz del servidor es opcional
+        logger.info(f"No se pudo cargar la voz en ingles del servidor: {type(exc).__name__}: {exc}")
+        return
+    logger.info(f"Voz en ingles del servidor lista ({tts.voice_name}) en {time.monotonic() - started:.1f} s.")
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     # Solo cuando el servidor arranca de verdad. Importar este modulo (por ejemplo desde las
@@ -104,11 +116,15 @@ async def lifespan(_app: FastAPI):
     warm_up_task = (
         asyncio.create_task(_warm_up_ollama()) if settings.warmup and settings.uses_ollama else None
     )
+    tts_task = asyncio.create_task(_warm_up_tts()) if tts.available else None
+    if not tts.available:
+        logger.info("Voz en ingles del servidor desactivada o sin instalar (Piper); se usara la del navegador.")
     yield
-    if warm_up_task is not None:
-        warm_up_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
-            await warm_up_task
+    for task in (warm_up_task, tts_task):
+        if task is not None:
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await task
 
 
 app = FastAPI(title="AURA - PDF Reader AI API", lifespan=lifespan)
@@ -134,6 +150,8 @@ LOGS_STREAM_KEY = settings.logs_stream_key
 image_cache = ResponseCache(settings.max_cache_entries)
 rate_limiter = RateLimiter(settings.rate_limit_per_min)
 cloud_budget = CloudBudget(settings.cloud_max_pages_per_day)
+tts = PiperSynth(settings)  # el modelo se carga al arrancar el servidor, no al importar este modulo
+tts_limiter = RateLimiter(settings.tts_rate_limit_per_min)
 
 # Candado para que Ollama procese una sola pagina a la vez (VRAM limitada).
 # La nube no lo necesita: varias paginas pueden analizarse al mismo tiempo.
@@ -297,6 +315,58 @@ async def describe_image(
         response_body["fallback_reason"] = result.fallback_reason
     image_cache.put(cache_key, response_body)
     return response_body
+
+
+class TtsRequest(BaseModel):
+    text: str
+    lang: str = "en"
+
+
+@app.get("/api/tts/status", dependencies=[Depends(verify_api_key)])
+async def tts_status():
+    """Le dice al navegador si puede pedir la voz en ingles del servidor."""
+    return {
+        "available": tts.available,
+        "languages": ["en"] if tts.available else [],
+        "voice": tts.voice_name if tts.available else None,
+        "max_chars": settings.tts_max_chars,
+    }
+
+
+@app.post("/api/tts", dependencies=[Depends(verify_api_key)])
+async def tts_speak(
+    req: TtsRequest,
+    request: Request,
+    x_aura_client_ip: str | None = Header(None),
+):
+    """Audio WAV de una frase en ingles, con voz estadounidense (Piper)."""
+    if req.lang != "en":
+        raise HTTPException(status_code=400, detail="Solo hay voz del servidor para inglés.")
+    text = req.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="No hay texto para leer.")
+    if len(text) > settings.tts_max_chars:
+        raise HTTPException(status_code=413, detail="El texto es muy largo para una sola frase.")
+    if not tts.available:
+        raise HTTPException(status_code=503, detail="La voz del servidor no está disponible.")
+
+    client_id = x_aura_client_ip or (request.client.host if request.client else "desconocido")
+    wait = tts_limiter.check(client_id)
+    if wait is not None:
+        raise HTTPException(
+            status_code=429,
+            detail="Demasiadas solicitudes de voz seguidas. Espera un momento.",
+            headers={"Retry-After": str(int(wait) + 1)},
+        )
+
+    try:
+        audio = await tts.synthesize(text)
+    except Exception as exc:  # noqa: BLE001
+        logger.error(f"Error al generar la voz del servidor: {type(exc).__name__}: {exc}")
+        raise HTTPException(status_code=500, detail="No se pudo generar el audio.") from exc
+
+    # El texto de una frase siempre produce el mismo audio: el navegador puede guardarlo un rato.
+    return Response(content=audio, media_type="audio/wav", headers={"Cache-Control": "private, max-age=3600"})
 
 
 @app.get("/api/logs/stream")
