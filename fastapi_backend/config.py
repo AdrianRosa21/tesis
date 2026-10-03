@@ -75,6 +75,9 @@ class Settings:
     max_cache_entries: int = 128
     max_image_mb: int = 5
     rate_limit_per_min: int = 30
+    # Tope global de paginas leidas por la nube al dia (0 = sin tope). Protege el saldo: al llegar,
+    # AURA sigue funcionando con el respaldo local en vez de seguir gastando.
+    cloud_max_pages_per_day: int = 0
     log_file_path: str = "/workspace/aura/logs/backend.log"
 
     @property
@@ -134,6 +137,24 @@ class Settings:
         return self.max_image_mb * 1024 * 1024
 
 
+def _pick_provider(env: Mapping[str, str]) -> str:
+    """AURA_PROVIDER si es valido; si falta, el primer proveedor que tenga clave.
+
+    Asi, poner solo OPENAI_API_KEY basta: no se queda en silencio usando Ollama por olvidar
+    una segunda variable."""
+    explicit = _text(env, "AURA_PROVIDER", "").lower()
+    if explicit in PROVIDERS:
+        return explicit
+    for provider, key_name in (
+        ("openai", "OPENAI_API_KEY"),
+        ("anthropic", "ANTHROPIC_API_KEY"),
+        ("gemini", "GEMINI_API_KEY"),
+    ):
+        if _optional(env, key_name):
+            return provider
+    return "gemini"
+
+
 def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     if env is None:
         load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
@@ -149,7 +170,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         ollama_keep_alive=_text(env, "OLLAMA_KEEP_ALIVE", "30m"),
         warmup=_choice(env, "AURA_WARMUP", "on", ("on", "off")) == "on",
         pipeline=_choice(env, "AURA_PIPELINE", "hybrid", PIPELINES),
-        provider=_choice(env, "AURA_PROVIDER", "gemini", PROVIDERS),
+        provider=_pick_provider(env),
         detector=_choice(env, "AURA_DETECTOR", "ollama", ("ollama", "off")),
         fallback=_choice(env, "AURA_FALLBACK", "ollama", ("ollama", "off")),
         gemini_api_key=_optional(env, "GEMINI_API_KEY"),
@@ -169,5 +190,6 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         max_cache_entries=_number(env, "MAX_CACHE_ENTRIES", 128, int),
         max_image_mb=_number(env, "MAX_IMAGE_SIZE_MB", 5, int),
         rate_limit_per_min=_number(env, "AURA_RATE_LIMIT_PER_MIN", 30, int),
+        cloud_max_pages_per_day=_number(env, "AURA_CLOUD_MAX_PAGES_PER_DAY", 0, int),
         log_file_path=_text(env, "LOG_FILE_PATH", "/workspace/aura/logs/backend.log"),
     )

@@ -39,17 +39,27 @@ class VisionProvider(Protocol):
     ) -> ModelResult: ...
 
 
+_OUT_OF_CREDIT_CODES = {"credit_balance_exhausted", "insufficient_quota", "organization_spend_limit_exceeded"}
+
+
 def error_from_response(provider: str, response: httpx.Response) -> ProviderError:
     """Traduce un error HTTP del proveedor a un mensaje para el cliente y un detalle para el log."""
+    code = ""
     try:
         body = response.json()
         error = body.get("error", body) if isinstance(body, dict) else body
         detail = error.get("message") if isinstance(error, dict) else str(error)
+        if isinstance(error, dict):
+            code = str(error.get("code") or "")
     except ValueError:
         detail = response.text
     detail = (detail or "")[:300]
     status = response.status_code
     log = f"{provider} respondio HTTP {status}: {detail}"
+
+    # Saldo agotado o tope de gasto: es un 429, pero esperar no lo arregla (OpenAI).
+    if code in _OUT_OF_CREDIT_CODES:
+        return ProviderError(503, "El servicio de IA no tiene saldo o crédito disponible.", log_detail=log)
 
     if status in (401, 403):
         return ProviderError(

@@ -252,6 +252,8 @@ class HealthTests(unittest.TestCase):
         self.assertEqual(body["pipeline"], "hybrid")
         self.assertEqual(body["provider"], "gemini")
         self.assertEqual(body["detector"], "ollama no disponible")
+        self.assertEqual(body["cloud_daily_limit"], "sin tope")
+        self.assertIsInstance(body["cloud_pages_today"], int)
 
     def test_ready_without_ollama_never_queries_it_and_reports_off(self):
         cloud = mock.Mock(model="gpt-4.1-mini")

@@ -15,6 +15,35 @@ _GEMINI_KEYS = {
 }
 
 
+def to_openai_strict_schema(schema: Any) -> Any:
+    """Modo estricto de OpenAI: todos los campos son obligatorios y los opcionales aceptan null.
+
+    Con strict=true el modelo SIEMPRE devuelve la estructura pedida. El resto de AURA ya trata
+    null como vacio (`block.get("filas") or []`)."""
+    if isinstance(schema, list):
+        return [to_openai_strict_schema(item) for item in schema]
+    if not isinstance(schema, dict):
+        return schema
+
+    converted = {key: to_openai_strict_schema(value) for key, value in schema.items() if key != "properties"}
+    if isinstance(schema.get("properties"), dict):
+        required = set(schema.get("required", []))
+        properties: dict[str, Any] = {}
+        for name, sub in schema["properties"].items():
+            sub = to_openai_strict_schema(sub)
+            if name not in required and isinstance(sub, dict):
+                kind = sub.get("type")
+                if isinstance(kind, str):
+                    sub = {**sub, "type": [kind, "null"]}
+                elif isinstance(kind, list) and "null" not in kind:
+                    sub = {**sub, "type": [*kind, "null"]}
+            properties[name] = sub
+        converted["properties"] = properties
+        converted["required"] = list(properties)
+        converted["additionalProperties"] = False
+    return converted
+
+
 # Subconjunto que acepta output_config.format de Claude. Rechaza minimum/maximum, minLength/maxLength,
 # maxItems y exige additionalProperties=false en cada objeto.
 _ANTHROPIC_KEYS = {

@@ -11,6 +11,7 @@ from unittest import mock
 import httpx
 
 from fastapi_backend import pipeline
+from fastapi_backend.budget import CloudBudget
 from fastapi_backend.cache import ResponseCache, build_cache_key
 from fastapi_backend.config import Settings, load_settings
 from fastapi_backend.normalize import blocks_to_elements
@@ -18,7 +19,12 @@ from fastapi_backend.providers import AnthropicProvider, GeminiProvider, ModelRe
 from fastapi_backend.providers.base import error_from_response
 from fastapi_backend.providers.http import post_json
 from fastapi_backend.ratelimit import RateLimiter
-from fastapi_backend.schemas import EXTRACT_SCHEMA_CLOUD, to_anthropic_schema, to_gemini_schema
+from fastapi_backend.schemas import (
+    EXTRACT_SCHEMA_CLOUD,
+    to_anthropic_schema,
+    to_gemini_schema,
+    to_openai_strict_schema,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -48,6 +54,26 @@ class SettingsTests(unittest.TestCase):
 
         self.assertEqual(settings.cloud_api_key, "k")
         self.assertEqual(settings.cloud_model, settings.openai_model)
+
+    def test_provider_is_detected_from_the_key_when_aura_provider_is_missing(self):
+        # Caso real: solo se puso OPENAI_API_KEY. No debe quedarse en silencio usando Ollama.
+        only_openai = load_settings({"OPENAI_API_KEY": "k"})
+        self.assertEqual((only_openai.provider, only_openai.effective_pipeline), ("openai", "hybrid"))
+        self.assertEqual(load_settings({"ANTHROPIC_API_KEY": "k"}).provider, "anthropic")
+        self.assertEqual(load_settings({"GEMINI_API_KEY": "k"}).provider, "gemini")
+        self.assertEqual(load_settings({}).provider, "gemini")  # sin ninguna clave: v4, da igual
+
+    def test_explicit_provider_wins_over_detection(self):
+        settings = load_settings({"AURA_PROVIDER": "anthropic", "OPENAI_API_KEY": "k", "ANTHROPIC_API_KEY": "k2"})
+
+        self.assertEqual(settings.provider, "anthropic")
+
+    def test_when_several_keys_exist_openai_is_preferred(self):
+        self.assertEqual(load_settings({"OPENAI_API_KEY": "a", "GEMINI_API_KEY": "b"}).provider, "openai")
+
+    def test_daily_cloud_limit_is_read_from_the_environment(self):
+        self.assertEqual(load_settings({}).cloud_max_pages_per_day, 0)
+        self.assertEqual(load_settings({"AURA_CLOUD_MAX_PAGES_PER_DAY": "400"}).cloud_max_pages_per_day, 400)
 
     def test_anthropic_is_selected_with_its_own_key_and_model(self):
         settings = load_settings({"AURA_PROVIDER": "anthropic", "ANTHROPIC_API_KEY": "k"})
@@ -450,6 +476,144 @@ class AnthropicSchemaTests(unittest.TestCase):
         self.assertLessEqual(optional, 24)  # limite documentado de parametros opcionales
 
 
+class OpenAIStrictModeTests(unittest.IsolatedAsyncioTestCase):
+    def test_strict_schema_requires_every_field_and_makes_optional_ones_nullable(self):
+        converted = to_openai_strict_schema(EXTRACT_SCHEMA_CLOUD)
+        block = converted["properties"]["bloques"]["items"]
+
+        self.assertFalse(converted["additionalProperties"])
+        self.assertFalse(block["additionalProperties"])
+        self.assertEqual(set(block["required"]), set(block["properties"]))  # todos obligatorios
+        self.assertEqual(block["properties"]["filas"]["type"], ["array", "null"])
+        self.assertEqual(block["properties"]["idioma"]["type"], ["string", "null"])
+        self.assertEqual(block["properties"]["tipo"]["type"], "string")  # ya era obligatorio
+        self.assertIn("tabla", block["properties"]["tipo"]["enum"])
+
+        def objects(node):
+            if isinstance(node, dict):
+                if node.get("type") == "object":
+                    yield node
+                for value in node.values():
+                    yield from objects(value)
+            elif isinstance(node, list):
+                for item in node:
+                    yield from objects(item)
+
+        for obj in objects(converted):
+            self.assertIs(obj["additionalProperties"], False)
+            self.assertEqual(set(obj["required"]), set(obj["properties"]))
+
+    def test_original_schema_is_not_modified(self):
+        before = json.dumps(EXTRACT_SCHEMA_CLOUD, sort_keys=True)
+
+        to_openai_strict_schema(EXTRACT_SCHEMA_CLOUD)
+
+        self.assertEqual(json.dumps(EXTRACT_SCHEMA_CLOUD, sort_keys=True), before)
+
+    def test_null_optional_fields_from_strict_mode_do_not_break_the_reader(self):
+        elements = blocks_to_elements([
+            {"tipo": "texto", "contenido": "Hola.", "encabezados": None, "filas": None,
+             "datos": None, "conexiones": None, "idioma": None},
+            {"tipo": "tabla", "contenido": "", "encabezados": ["A"], "filas": [["1"]],
+             "datos": None, "conexiones": None, "idioma": "es"},
+        ])
+
+        self.assertEqual(elements[0], {"type": "Texto", "content": "Hola."})
+        self.assertEqual(elements[1]["lang"], "es")
+
+    def test_body_uses_strict_json_schema_and_temperature_only_for_gpt4_family(self):
+        mini = OpenAIProvider(Settings(openai_api_key="k", openai_model="gpt-4.1-mini"))
+        newer = OpenAIProvider(Settings(openai_api_key="k", openai_model="gpt-6-algo"))
+
+        body = mini.build_body("p", "IMG", EXTRACT_SCHEMA_CLOUD, 2000, 0.0)
+
+        self.assertTrue(body["response_format"]["json_schema"]["strict"])
+        self.assertEqual(body["response_format"]["json_schema"]["name"], "aura_page")
+        self.assertEqual(body["temperature"], 0.0)
+        self.assertNotIn("temperature", newer.build_body("p", "IMG", None, 100, 0.0))  # modelo desconocido: omitir
+
+    async def test_if_openai_rejects_the_strict_schema_it_retries_once_without_strict(self):
+        bodies = []
+
+        def handler(request):
+            body = json.loads(request.content)
+            bodies.append(body)
+            if body["response_format"]["json_schema"]["strict"]:
+                return httpx.Response(400, json={"error": {"message": "Invalid schema", "code": "invalid_json_schema"}})
+            return httpx.Response(200, json={"choices": [{"message": {"content": "{}"}, "finish_reason": "stop"}]})
+
+        provider = OpenAIProvider(Settings(openai_api_key="k"))
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            await provider.generate(client, "p", "IMG", schema=EXTRACT_SCHEMA_CLOUD)
+            await provider.generate(client, "p", "IMG", schema=EXTRACT_SCHEMA_CLOUD)
+
+        self.assertEqual([b["response_format"]["json_schema"]["strict"] for b in bodies], [True, False, False])
+
+    async def test_a_400_that_is_not_about_the_schema_still_fails_after_the_single_retry(self):
+        def handler(request):
+            return httpx.Response(400, json={"error": {"message": "bad request"}})
+
+        provider = OpenAIProvider(Settings(openai_api_key="k"))
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            with self.assertRaises(ProviderError) as ctx:
+                await provider.generate(client, "p", "IMG", schema=EXTRACT_SCHEMA_CLOUD)
+
+        self.assertEqual(ctx.exception.status_code, 502)
+
+
+class CloudBudgetTests(unittest.IsolatedAsyncioTestCase):
+    def test_stops_at_the_daily_limit_and_resets_the_next_utc_day(self):
+        now = [1_700_000_000.0]
+        budget = CloudBudget(2, clock=lambda: now[0])
+
+        self.assertEqual([budget.try_acquire() for _ in range(3)], [True, True, False])
+        self.assertEqual(budget.used_today, 2)
+
+        now[0] += 24 * 3600
+        self.assertTrue(budget.try_acquire())
+        self.assertEqual(budget.used_today, 1)
+
+    def test_zero_means_no_limit_but_still_counts(self):
+        budget = CloudBudget(0)
+
+        self.assertTrue(all(budget.try_acquire() for _ in range(50)))
+        self.assertEqual(budget.used_today, 50)
+
+    async def test_when_the_limit_is_reached_the_page_is_read_locally_without_calling_the_cloud(self):
+        settings = Settings(openai_api_key="k", provider="openai", cloud_max_pages_per_day=1)
+        budget = CloudBudget(1)
+        cloud = FakeProvider("openai", "gpt-4.1-mini", [_json_result([{"tipo": "texto", "contenido": "Nube."}])])
+
+        def local():
+            return FakeProvider("ollama", "qwen2.5vl", [
+                _classification(), _classification(), _json_result([{"tipo": "texto", "contenido": "Local."}]),
+            ])
+
+        first = await pipeline.run_pipeline(mock.Mock(), "IMG", None, settings, cloud, local(), asyncio.Lock(), budget)
+        second = await pipeline.run_pipeline(mock.Mock(), "IMG", None, settings, cloud, local(), asyncio.Lock(), budget)
+
+        self.assertEqual((first.provider, first.elements[0]["content"]), ("openai", "Nube."))
+        self.assertEqual((second.provider, second.elements[0]["content"]), ("ollama", "Local."))
+        self.assertIn("limite diario", second.fallback_reason)
+        self.assertEqual(len(cloud.calls), 1)  # la segunda pagina no llego a la nube
+
+    async def test_without_fallback_the_limit_returns_a_clear_error(self):
+        settings = Settings(openai_api_key="k", provider="openai", fallback="off")
+        budget = CloudBudget(1)
+        budget.try_acquire()
+        cloud = FakeProvider("openai", "gpt-4.1-mini", [_json_result([])])
+
+        with self.assertRaises(ProviderError) as ctx:
+            await pipeline.run_pipeline(
+                mock.Mock(), "IMG", None, settings, cloud,
+                FakeProvider("ollama", "qwen2.5vl", [_classification()]), asyncio.Lock(), budget,
+            )
+
+        self.assertEqual(ctx.exception.status_code, 503)
+        self.assertIn("límite diario", ctx.exception.message)
+        self.assertEqual(cloud.calls, [])
+
+
 class ErrorMappingTests(unittest.TestCase):
     def _error(self, status: int, body=None) -> ProviderError:
         return error_from_response("gemini", httpx.Response(status, json=body or {"error": {"message": "detalle"}}))
@@ -460,6 +624,15 @@ class ErrorMappingTests(unittest.TestCase):
         self.assertEqual(self._error(429).status_code, 503)
         self.assertEqual(self._error(402).status_code, 503)  # sin saldo (Anthropic)
         self.assertEqual(self._error(500).status_code, 502)
+
+    def test_running_out_of_credit_is_not_reported_as_a_temporary_rate_limit(self):
+        for code in ("credit_balance_exhausted", "insufficient_quota", "organization_spend_limit_exceeded"):
+            error = self._error(429, {"error": {"message": "sin saldo", "code": code}})
+            self.assertEqual(error.status_code, 503)
+            self.assertIn("saldo", error.message)
+
+        rate_limit = self._error(429, {"error": {"message": "muy rapido", "code": "slow_down"}})
+        self.assertIn("límite de uso", rate_limit.message)
 
     def test_secrets_stay_in_the_log_not_in_the_client_message(self):
         error = self._error(401, {"error": {"message": "API key not valid: AIza-secreta"}})

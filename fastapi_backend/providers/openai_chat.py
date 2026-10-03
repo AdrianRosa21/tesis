@@ -1,14 +1,24 @@
-"""OpenAI (Chat Completions) con imagen y salida JSON estructurada."""
+"""OpenAI (Chat Completions) con imagen y salida JSON estructurada.
+
+- Salida estructurada con `response_format: json_schema` en modo estricto (la estructura queda
+  garantizada). Si OpenAI rechazara el esquema (400) se reintenta una vez sin modo estricto y se
+  recuerda para las siguientes paginas.
+- `temperature` solo se manda a la familia gpt-4 (gpt-4.1, gpt-4o...): los modelos de razonamiento
+  y los nuevos no la admiten, y omitirla siempre es seguro.
+- Imagen con detail=high. En gpt-4.1-mini la imagen cuesta como maximo ~4.050 tokens y se conserva
+  mas nitida que en gpt-4o / gpt-4.1, que la reducen a 768 px de lado corto.
+"""
 from typing import Any
 
 import httpx
 
 from fastapi_backend.config import Settings
+from fastapi_backend.logbus import logger
 from fastapi_backend.providers.base import ModelResult, ProviderError, error_from_response
 from fastapi_backend.providers.http import post_json
+from fastapi_backend.schemas import to_openai_strict_schema
 
-# Los modelos de razonamiento (gpt-5, o1, o3...) solo aceptan la temperatura por defecto.
-_FIXED_TEMPERATURE_PREFIXES = ("gpt-5", "o1", "o3", "o4")
+_TEMPERATURE_PREFIXES = ("gpt-4",)
 
 
 class OpenAIProvider:
@@ -18,6 +28,7 @@ class OpenAIProvider:
         self._settings = settings
         self.model = settings.openai_model
         self._api_key = settings.openai_api_key or ""
+        self._strict = True
 
     def build_body(
         self,
@@ -41,15 +52,28 @@ class OpenAIProvider:
             }],
             "max_completion_tokens": max_tokens,
         }
-        if not self.model.lower().startswith(_FIXED_TEMPERATURE_PREFIXES):
+        if self.model.lower().startswith(_TEMPERATURE_PREFIXES):
             body["temperature"] = temperature
         if schema is not None:
-            # strict=False: el esquema tiene campos opcionales (encabezados, filas...).
             body["response_format"] = {
                 "type": "json_schema",
-                "json_schema": {"name": "aura_page", "schema": schema, "strict": False},
+                "json_schema": {
+                    "name": "aura_page",
+                    "schema": to_openai_strict_schema(schema) if self._strict else schema,
+                    "strict": self._strict,
+                },
             }
         return body
+
+    async def _post(self, client: httpx.AsyncClient, body: dict[str, Any]) -> httpx.Response:
+        return await post_json(
+            client,
+            self.name,
+            f"{self._settings.openai_base_url}/chat/completions",
+            json=body,
+            headers={"Authorization": f"Bearer {self._api_key}", "Content-Type": "application/json"},
+            timeout=self._settings.cloud_timeout_s,
+        )
 
     async def generate(
         self,
@@ -62,14 +86,14 @@ class OpenAIProvider:
         temperature: float = 0.0,
         repeat_penalty: float | None = None,
     ) -> ModelResult:
-        response = await post_json(
-            client,
-            self.name,
-            f"{self._settings.openai_base_url}/chat/completions",
-            json=self.build_body(prompt, image_b64, schema, max_tokens, temperature),
-            headers={"Authorization": f"Bearer {self._api_key}", "Content-Type": "application/json"},
-            timeout=self._settings.cloud_timeout_s,
-        )
+        response = await self._post(client, self.build_body(prompt, image_b64, schema, max_tokens, temperature))
+
+        if response.status_code == 400 and schema is not None and self._strict:
+            problem = error_from_response(self.name, response).log_detail
+            logger.info(f"OpenAI rechazo el esquema estricto; se reintenta sin modo estricto. {problem}")
+            self._strict = False
+            response = await self._post(client, self.build_body(prompt, image_b64, schema, max_tokens, temperature))
+
         if response.status_code >= 400:
             raise error_from_response(self.name, response)
         return self.parse_response(response.json())

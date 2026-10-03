@@ -25,6 +25,7 @@ from fastapi.responses import StreamingResponse  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
 from fastapi_backend import logbus  # noqa: E402
+from fastapi_backend.budget import CloudBudget  # noqa: E402
 from fastapi_backend.cache import ResponseCache, build_cache_key  # noqa: E402
 from fastapi_backend.config import load_settings  # noqa: E402
 from fastapi_backend.logbus import log_buffer, log_subscribers, logger  # noqa: E402
@@ -132,6 +133,7 @@ LOGS_STREAM_KEY = settings.logs_stream_key
 
 image_cache = ResponseCache(settings.max_cache_entries)
 rate_limiter = RateLimiter(settings.rate_limit_per_min)
+cloud_budget = CloudBudget(settings.cloud_max_pages_per_day)
 
 # Candado para que Ollama procese una sola pagina a la vez (VRAM limitada).
 # La nube no lo necesita: varias paginas pueden analizarse al mismo tiempo.
@@ -200,6 +202,9 @@ async def ready():
             "provider": cloud_provider.name,
             "detector": local_role(settings.detector),
             "fallback": local_role(settings.fallback),
+            # Uso de hoy (UTC): sirve para vigilar el saldo con un simple curl.
+            "cloud_pages_today": cloud_budget.used_today,
+            "cloud_daily_limit": settings.cloud_max_pages_per_day or "sin tope",
         }
 
     if not ollama_ok:
@@ -252,7 +257,8 @@ async def describe_image(
     try:
         async with httpx.AsyncClient(timeout=300.0) as client:
             result = await run_pipeline(
-                client, base64_data, req.context, settings, cloud_provider, local_provider, ollama_lock
+                client, base64_data, req.context, settings, cloud_provider, local_provider, ollama_lock,
+                cloud_budget,
             )
     except ProviderError as exc:
         logger.error(exc.log_detail or exc.message)

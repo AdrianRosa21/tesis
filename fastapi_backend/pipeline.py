@@ -14,6 +14,7 @@ from typing import Any
 
 import httpx
 
+from fastapi_backend.budget import CloudBudget
 from fastapi_backend.config import Settings
 from fastapi_backend.logbus import logger
 from fastapi_backend.normalize import (
@@ -329,8 +330,19 @@ async def run_hybrid(
     cloud: VisionProvider,
     local: VisionProvider,
     lock: asyncio.Lock,
+    budget: CloudBudget | None = None,
 ) -> PipelineResult:
     started = time.monotonic()
+
+    if budget is not None and not budget.try_acquire():
+        # Tope diario alcanzado: no se llama a la nube; se lee la pagina con el respaldo local.
+        limit_error = ProviderError(
+            503,
+            "Se alcanzó el límite diario de lecturas con IA en la nube.",
+            log_detail=f"limite diario de la nube alcanzado ({budget.max_per_day} paginas)",
+        )
+        return await _fallback_or_raise(client, image_b64, context, settings, local, lock, started, cloud, limit_error)
+
     use_detector = settings.detector == "ollama"
     detect_task = asyncio.create_task(_detect(client, image_b64, local, lock)) if use_detector else None
 
@@ -455,10 +467,11 @@ async def run_pipeline(
     cloud: VisionProvider | None,
     local: VisionProvider,
     lock: asyncio.Lock,
+    budget: CloudBudget | None = None,
 ) -> PipelineResult:
     pipeline = settings.effective_pipeline
     if pipeline == "hybrid" and cloud is not None:
-        return await run_hybrid(client, image_b64, context, settings, cloud, local, lock)
+        return await run_hybrid(client, image_b64, context, settings, cloud, local, lock, budget)
     if pipeline == "v3":
         return await run_v3(client, image_b64, context, local, lock)
     return await run_v4(client, image_b64, context, settings, local, lock)
