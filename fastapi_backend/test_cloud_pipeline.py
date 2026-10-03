@@ -71,6 +71,17 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(load_settings({"API_KEY": "abc"}).logs_stream_key, "abc")
         self.assertEqual(load_settings({"API_KEY": "abc", "LOGS_STREAM_KEY": "log"}).logs_stream_key, "log")
 
+    def test_uses_ollama_only_when_detector_or_fallback_need_it(self):
+        self.assertTrue(load_settings({"GEMINI_API_KEY": "k"}).uses_ollama)
+        self.assertTrue(load_settings({"GEMINI_API_KEY": "k", "AURA_DETECTOR": "off"}).uses_ollama)  # respaldo
+        self.assertTrue(load_settings({"GEMINI_API_KEY": "k", "AURA_FALLBACK": "off"}).uses_ollama)  # detector
+        self.assertFalse(
+            load_settings({"GEMINI_API_KEY": "k", "AURA_DETECTOR": "off", "AURA_FALLBACK": "off"}).uses_ollama
+        )
+        self.assertTrue(load_settings({"AURA_PIPELINE": "v4"}).uses_ollama)
+        # hybrid sin clave cae a v4, que si usa Ollama aunque detector y respaldo esten apagados
+        self.assertTrue(load_settings({"AURA_DETECTOR": "off", "AURA_FALLBACK": "off"}).uses_ollama)
+
     def test_engine_tag_changes_with_detector_model(self):
         with_detector = load_settings({"GEMINI_API_KEY": "k"})
         without_detector = load_settings({"GEMINI_API_KEY": "k", "AURA_DETECTOR": "off"})
@@ -453,6 +464,19 @@ class HybridPipelineTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(result.detector)
         self.assertEqual(local.calls, [])
         self.assertTrue(result.page["tabla"])
+
+    async def test_without_detector_the_log_still_shows_what_the_page_contains(self):
+        settings = Settings(gemini_api_key="k", detector="off", fallback="off")
+        cloud = FakeProvider("gemini", "m", [_json_result([
+            {"tipo": "imagen", "contenido": "Un gato negro."},
+        ])])
+        local = FakeProvider("ollama", "qwen2.5vl", [_classification()])
+
+        with self.assertLogs("aura", level="INFO") as logs:
+            await self._run(cloud, local, settings)
+
+        self.assertTrue(any("Clasificacion" in line and "'imagen': True" in line for line in logs.output))
+        self.assertEqual(local.calls, [])  # Ollama no participa para nada
 
     async def test_followup_goes_to_the_cloud_when_detector_sees_an_undescribed_image(self):
         cloud = FakeProvider("gemini", "m", [

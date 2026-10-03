@@ -178,9 +178,9 @@ class StartupTests(unittest.TestCase):
 class WarmUpTests(unittest.TestCase):
     """El modelo local se carga al arrancar para que la primera pagina no pague la carga en frio."""
 
-    def _start(self, *, warmup: bool, warm_up: mock.AsyncMock) -> None:
+    def _start(self, *, warmup: bool, warm_up: mock.AsyncMock, **overrides) -> None:
         with tempfile.TemporaryDirectory() as folder:
-            settings = Settings(log_file_path=str(Path(folder) / "backend.log"), warmup=warmup)
+            settings = Settings(log_file_path=str(Path(folder) / "backend.log"), warmup=warmup, **overrides)
             before = set(StartupTests._file_handlers())
             with (
                 mock.patch.object(main, "settings", settings),
@@ -205,6 +205,13 @@ class WarmUpTests(unittest.TestCase):
         warm_up = mock.AsyncMock()
 
         self._start(warmup=False, warm_up=warm_up)
+
+        warm_up.assert_not_called()
+
+    def test_is_skipped_when_nothing_uses_ollama(self):
+        warm_up = mock.AsyncMock()
+
+        self._start(warmup=True, warm_up=warm_up, openai_api_key="k", provider="openai", detector="off", fallback="off")
 
         warm_up.assert_not_called()
 
@@ -245,6 +252,25 @@ class HealthTests(unittest.TestCase):
         self.assertEqual(body["pipeline"], "hybrid")
         self.assertEqual(body["provider"], "gemini")
         self.assertEqual(body["detector"], "ollama no disponible")
+
+    def test_ready_without_ollama_never_queries_it_and_reports_off(self):
+        cloud = mock.Mock(model="gpt-4.1-mini")
+        cloud.name = "openai"
+        settings = main.settings.__class__(
+            openai_api_key="k", provider="openai", pipeline="hybrid", detector="off", fallback="off"
+        )
+        ollama_check = mock.AsyncMock(return_value=False)
+        with (
+            mock.patch.object(main, "settings", settings),
+            mock.patch.object(main, "cloud_provider", cloud),
+            mock.patch.object(main, "_ollama_has_model", ollama_check),
+        ):
+            response = TestClient(main.app).get("/api/ready")
+
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual((body["provider"], body["detector"], body["fallback"]), ("openai", "off", "off"))
+        ollama_check.assert_not_awaited()
 
     def test_ready_fails_with_v4_when_ollama_is_down(self):
         settings = main.settings.__class__(pipeline="v4")

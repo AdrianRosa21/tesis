@@ -100,7 +100,9 @@ async def lifespan(_app: FastAPI):
         logger.info(
             f"AURA_PIPELINE=hybrid pero falta la clave de {settings.provider}: se usa el pipeline v4 con Ollama."
         )
-    warm_up_task = asyncio.create_task(_warm_up_ollama()) if settings.warmup else None
+    warm_up_task = (
+        asyncio.create_task(_warm_up_ollama()) if settings.warmup and settings.uses_ollama else None
+    )
     yield
     if warm_up_task is not None:
         warm_up_task.cancel()
@@ -181,17 +183,23 @@ async def ready():
     """Listo para atender paginas.
 
     Con el pipeline hybrid solo hace falta la nube (Ollama es detector y respaldo y se
-    informa aparte). Con v3/v4 Ollama es obligatorio."""
-    ollama_ok = await _ollama_has_model()
+    informa aparte; si ambos estan apagados ni siquiera se consulta). Con v3/v4 Ollama
+    es obligatorio."""
+    ollama_ok = await _ollama_has_model() if settings.uses_ollama else False
 
     if settings.effective_pipeline == "hybrid" and cloud_provider is not None:
+        def local_role(option: str) -> str:
+            if option == "off":
+                return "off"
+            return option if ollama_ok else "ollama no disponible"
+
         return {
             "status": "ready",
             "model": cloud_provider.model,
             "pipeline": "hybrid",
             "provider": cloud_provider.name,
-            "detector": settings.detector if ollama_ok or settings.detector == "off" else "ollama no disponible",
-            "fallback": settings.fallback if ollama_ok else "ollama no disponible",
+            "detector": local_role(settings.detector),
+            "fallback": local_role(settings.fallback),
         }
 
     if not ollama_ok:

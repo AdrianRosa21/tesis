@@ -392,11 +392,16 @@ async def run_hybrid(
         client, image_b64, page, blocks, settings, cloud, started, steps, max_tokens=1500
     )
 
+    if not page:
+        # Sin detector (o si fallo): el contenido de la pagina se deduce de lo que la nube devolvio.
+        page = page_from_blocks(blocks)
+        logger.info(f"Clasificacion (segun la lectura de la nube): {page}")
+
     elements = blocks_to_elements(blocks)
     return PipelineResult(
         description=elements_to_description(elements),
         elements=elements,
-        page=page or page_from_blocks(blocks),
+        page=page,
         provider=cloud.name,
         model=cloud.model,
         detector=local.name if use_detector else None,

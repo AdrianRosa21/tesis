@@ -91,6 +91,14 @@ class Settings:
         return self.pipeline
 
     @property
+    def uses_ollama(self) -> bool:
+        """False cuando todo el trabajo va a la nube (sin detector ni respaldo local):
+        entonces no hace falta que Ollama exista ni que haya GPU."""
+        if self.effective_pipeline != "hybrid":
+            return True
+        return self.detector == "ollama" or self.fallback == "ollama"
+
+    @property
     def prompt_version(self) -> str:
         return {
             "hybrid": "faithful-reader-cloud-v1",
