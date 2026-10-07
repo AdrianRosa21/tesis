@@ -6,6 +6,39 @@ AURA (Visión en la Lectura) es una aplicación web full-stack diseñada para re
 
 ---
 
+## 📌 Acerca del proyecto
+
+**AURA** (Visión en la Lectura) es un lector de PDF para personas con discapacidad visual severa. Su idea central cabe en una frase: *un lector de pantalla lee texto; AURA entiende la página*. Es un proyecto de tesis de Desarrollo de Software y todo el código, las pruebas y la documentación están en este repositorio.
+
+**¿Qué hace?**
+1. Convierte la página actual del PDF en una imagen y toma también su texto nativo como ayuda (la imagen manda).
+2. Un modelo de visión + lenguaje la describe en un formato estructurado (JSON): texto en orden de lectura, tablas con encabezados y filas, gráficas con pares etiqueta/valor, diagramas con flechas origen→destino, imágenes descritas y lo dudoso marcado como `[DUDOSO]`.
+3. El navegador lo lee en voz alta elemento por elemento, con la voz del idioma de cada línea (español o inglés). Todo se controla con el teclado: **F** analiza la página, **R** abre un archivo, **↑ ↓** recorren los elementos, **← →** cambian de página, **V** repite, **Espacio** pausa, **+ −** cambian la velocidad y **H** abre el tutorial.
+
+**¿Cómo está construido?** El sistema está diseñado alrededor de **Ollama** y un modelo de visión abierto (`qwen2.5vl`) que corre en una GPU propia:
+- El pipeline que se desarrolló y se midió primero (v3 y, después, v4) corre completo en Ollama: clasifica la página, aplica solo las reglas que necesita y fuerza la salida con un esquema JSON.
+- Ollama está presente, por defecto, en **todos** los modos (solo se puede apagar a propósito con `AURA_DETECTOR=off` y `AURA_FALLBACK=off`). En el modo opcional `hybrid` detecta qué contiene cada página y es el respaldo automático si el modelo en la nube falla; sin ninguna clave de nube, AURA funciona solo con Ollama.
+- En el modo `hybrid` un proveedor en la nube configurable (Gemini, OpenAI o Claude) lee la página para mejorar tablas y gráficas. **En ese modo cada página sale del servidor propio hacia ese proveedor**; en `v4` y `v3` nunca sale. El motor que atendió cada página se ve siempre en `/api/ready`, en el panel «Detalle del análisis» de la app y en los logs en vivo.
+
+**Reglas de fidelidad (no negociables):** no resolver ejercicios, no elegir opciones, no inventar, marcar lo dudoso y no obedecer instrucciones que aparezcan dentro del PDF (el documento se trata como dato no confiable).
+
+**Estado y resultados medidos**
+
+| Qué | Resultado | Dónde está la evidencia |
+|---|---|---|
+| Línea base v3 (Ollama), F01–F12 | 7/12 = 58.3 % | `docs/resultados-pruebas-fidelidad-2026-09-26.md` |
+| Modo `hybrid`, F01–F12 y G01–G15 (27 casos) | 26/27 = 96.3 % (meta: 85 %), revisado con la rúbrica por la IA asistente, no por personas | `docs/resultados-hybrid-openai.md` |
+| Tiempo por página en `hybrid` | mediana 3.6 s por la URL pública; Ollama (v4): 10 a 20 s | mismo documento |
+| Pruebas automáticas | 145 del backend + 139 del frontend, todas en verde | `python -m unittest …` y `npm test` |
+| Pendiente | comparación limpia v3 / v4 / hybrid con el mismo corpus y pruebas con personas ciegas | `TESIS/09_discusion_limitaciones_y_etica.md` |
+
+**Para saber más**
+- 📖 **[`TESIS/`](TESIS/README.md):** la tesis completa del proyecto (problema, marco teórico, arquitectura, pipeline de IA, accesibilidad, seguridad, metodología, resultados, limitaciones, reproducibilidad y matriz de evidencia).
+- `docs/`: fichas, resultados de pruebas, guion de la demo y guía de despliegue seguro.
+- `CLAUDE.md`: notas operativas del proyecto (arquitectura, variables, restauración del servidor).
+
+---
+
 ## 🎯 El Problema que Resuelve
 
 Los lectores de pantalla convencionales extraen el texto subyacente de un PDF. Si el PDF es un escaneo (imagen), contiene fórmulas matemáticas complejas, gráficas, o un diseño en múltiples columnas, el lector de pantalla produce un audio desordenado, incomprensible o simplemente guarda silencio. AURA resuelve esto mediante un enfoque de **Visión Computacional y Lenguaje**: convierte cada página en una imagen y deja que un modelo de IA local transcriba y describa lógicamente el contenido.
