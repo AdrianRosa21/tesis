@@ -39,6 +39,93 @@ AURA (Visión en la Lectura) es una aplicación web full-stack diseñada para re
 
 ---
 
+## 🧭 Guía rápida: cómo usar AURA
+
+Esta guía es para quien nunca ha tocado el proyecto. Tiene dos partes: **usar la app** (cualquier persona) y **encender el servidor** (quien lo opera).
+
+### Parte 1. Usar la app (no hay que instalar nada)
+
+1. Abre **https://aurapdf-one.vercel.app** en un navegador moderno de escritorio, de preferencia en una **pestaña nueva** (si no carga lo último, recarga con `Ctrl + Shift + R`). Sube el volumen y prueba que se oiga el audio.
+2. La app habla sola. Todo se hace con el teclado:
+
+| Tecla | Qué hace |
+|---|---|
+| **R** | Elegir el archivo PDF |
+| **F** | Analizar la página actual y empezar a leerla |
+| **↓ / ↑** | Siguiente / anterior parte de la página (oraciones, tablas, descripciones) |
+| **V** | Repetir lo que se está leyendo |
+| **Espacio** | Pausar y continuar |
+| **+ / −** | Leer más rápido / más lento |
+| **G** | Callar la voz |
+| **→ / ←** | Página siguiente / anterior (también **Inicio** y **Fin**) |
+| **J** | Cerrar el documento y volver al inicio |
+| **H** | Escuchar el tutorial (con **Escape** se sale) |
+
+3. Flujo normal: **R** → elegir el PDF → **F** → **↓** para recorrer la página → **→** para pasar a la siguiente.
+4. Pruebas listas para mostrar: la carpeta [`docs/demo/`](docs/demo) trae 9 PDF numerados (tabla, gráfica, imágenes, examen de inglés, instrucción engañosa…) y [`docs/guion-demo-cimat.md`](docs/guion-demo-cimat.md) tiene el recorrido sugerido de 5 a 6 minutos.
+5. En pantalla, el panel **«Detalle del análisis»** dice qué detectó, qué motor leyó la página y cuánto tardó.
+
+> Si la app dice que el servicio **no está disponible** o falla al analizar, el servidor está apagado: pasa a la Parte 2.
+
+### Parte 2. Encender y comprobar el servidor (quien lo opera)
+
+El servidor vive en un *pod* de **RunPod** con GPU. Cada vez que se enciende es un contenedor limpio, pero todo lo importante se restaura con **un solo comando**. Cuesta unos **US$0.49 por hora encendido**, así que enciéndelo para usarlo y apágalo al terminar.
+
+**Lo que ya debe existir** en el volumen `/workspace` del pod (lo deja listo Rodrigo; no se escribe en el README ni en el chat):
+`/workspace/aura/tesis.tar.gz`, `/workspace/aura/ollama-models.tar`, `/workspace/aura/secrets/cloudflare-token` y `/workspace/tesis/.env` (con las claves). Si falta alguno, el comando se detiene y dice cuál es.
+
+1. En **RunPod**, enciende el pod (*Start*). Espera a que diga que está corriendo.
+2. Abre **Connect → Web Terminal** (la terminal que trae la página de RunPod; no hace falta SSH ni llaves).
+3. Pega este comando y presiona Enter (es seguro repetirlo):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AdrianRosa21/tesis/main/scripts/restaurar_pod.sh -o /tmp/restaurar_pod.sh && bash /tmp/restaurar_pod.sh
+```
+
+4. Espera de 1 a 3 minutos. Va mostrando **PASO 1/9 … 9/9**. Al final debe decir **`LISTO`**. Si dice `FALLO` o `NO LISTO`, lee la línea que explica qué pasó, corrígelo y vuelve a pegar el mismo comando.
+5. Comprueba que responde (puedes abrir el segundo enlace en cualquier navegador):
+
+```bash
+curl -s http://127.0.0.1:3000/api/ready
+```
+
+`https://api.aura4blinds.online/api/ready` debe mostrar `"status":"ready"`. Ahí también ves **qué modo está activo**: con clave de la nube sale `"pipeline":"hybrid"` y el `provider`; sin clave sale `"pipeline":"v4"` (solo Ollama, sin enviar páginas a terceros).
+6. **Prueba rápida de punta a punta** (opcional, desde tu computadora, con el repositorio clonado y Python):
+
+```bash
+pip install pymupdf
+python scripts/smoke_demo.py
+```
+
+Debe terminar con **`LISTO PARA LA DEMO`**. Si no, te dice qué falla.
+7. **Antes de una demostración:** analiza una vez en tu equipo cada página que vas a mostrar (así quedan en la caché y responden al instante); silencia las notificaciones, conecta el equipo a la corriente y ten tu celular listo como punto de acceso por si falla el internet.
+8. **Al terminar:** apaga el pod en RunPod (*Stop*). Encendido sigue cobrando.
+
+### Ver los logs en vivo
+
+Abre **https://aurapdf-one.vercel.app/debug.html**. El primer campo ya trae `https://api.aura4blinds.online`; en el segundo escribe la **clave de logs** (se la pides a Rodrigo; no se comparte por chat ni se sube a git). Ahí se ve, página por página, qué motor atendió, qué detectó la IA y cuánto tardó.
+
+### Si algo falla
+
+| Síntoma | Qué hacer |
+|---|---|
+| La app dice error de análisis o «no disponible» | Espera 10 segundos y repite **F**. Si sigue, el servidor está apagado: Parte 2 |
+| `restaurar_pod.sh` termina en `FALLO` | Lee la línea que lo explica (casi siempre falta un archivo de `/workspace` o el `.env`) y vuelve a pegar el comando |
+| El inglés suena con acento español | Mira la línea «Última lectura» de la app: dice qué voz se usó. Si el navegador no tiene voz en inglés, usa la del servidor |
+| Una página tarda mucho | Es normal la primera vez si no se calentó la caché; el panel dice cuánto tardó |
+| Se cayó el internet del lugar | Conéctate al punto de acceso del celular |
+| Quieres volver a la versión probada para la demo | En el pod: `cd /tesis && git fetch --tags && git checkout demo-cimat` |
+
+**Reglas de oro:** nunca pegues una clave en un chat, en un archivo del repositorio ni en una captura; no hagas cambios de código el día de una demostración; y si tocas el `.env`, reinicia el backend con un solo comando y comprueba `/api/ready`:
+
+```bash
+tmux kill-session -t backend; tmux new-session -d -s backend "bash /tesis/scripts/correr_backend.sh"; sleep 8; curl -s http://127.0.0.1:3000/api/ready
+```
+
+Para entender cómo está construido y por qué, lee [`TESIS/`](TESIS/README.md); el capítulo [`TESIS/11_reproducibilidad.md`](TESIS/11_reproducibilidad.md) tiene el detalle técnico de cada comando.
+
+---
+
 ## 🎯 El Problema que Resuelve
 
 Los lectores de pantalla convencionales extraen el texto subyacente de un PDF. Si el PDF es un escaneo (imagen), contiene fórmulas matemáticas complejas, gráficas, o un diseño en múltiples columnas, el lector de pantalla produce un audio desordenado, incomprensible o simplemente guarda silencio. AURA resuelve esto mediante un enfoque de **Visión Computacional y Lenguaje**: convierte cada página en una imagen y deja que un modelo de IA local transcriba y describa lógicamente el contenido.
