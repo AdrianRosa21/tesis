@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { buildSpokenElement } from './elementSpeech';
-import { parseModelDescription, splitByLength, splitIntoLines, splitIntoSentences, splitLongTextElements } from './ai';
+import {
+  parseModelDescription,
+  splitByLength,
+  splitInlineOptions,
+  splitIntoLines,
+  splitIntoSentences,
+  splitLongTextElements,
+} from './ai';
 
 const LONG_PARAGRAPH =
   'Además de la germanía propia de la gente de espada, en la lengua franca utilizada por los militares españoles se mezclaban palabras flamencas. ' +
@@ -219,6 +226,109 @@ describe('splitLongTextElements con idiomas mezclados en un bloque', () => {
     const result = splitLongTextElements([{ type: 'Texto', content: FOOD_LIST_WITH_NEWLINES, lang: 'es' }]);
 
     expect(result.every(element => element.lang === 'es')).toBe(true);
+  });
+});
+
+describe('splitInlineOptions (opciones a), b), c) pegadas en una linea)', () => {
+  it('separa "a) told b) said c) spoke" en una opcion por unidad', () => {
+    expect(splitInlineOptions('a) told b) said c) spoke')).toEqual(['a) told', 'b) said', 'c) spoke']);
+  });
+
+  it('separa opciones con muchos espacios en medio, como las manda el modelo', () => {
+    expect(splitInlineOptions('a) so          b) too          c) such')).toEqual(['a) so', 'b) too', 'c) such']);
+  });
+
+  it('funciona con A) B) C) D) en mayuscula y con respuestas de varias palabras', () => {
+    expect(splitInlineOptions('A) Do you come B) Are you coming C) Did you come D) Will you come')).toEqual([
+      'A) Do you come',
+      'B) Are you coming',
+      'C) Did you come',
+      'D) Will you come',
+    ]);
+  });
+
+  it('funciona con el formato (a) (b) (c)', () => {
+    expect(splitInlineOptions('(a) rojo (b) verde (c) azul')).toEqual(['(a) rojo', '(b) verde', '(c) azul']);
+  });
+
+  it('deja el enunciado aparte cuando viene en la misma linea', () => {
+    expect(splitInlineOptions('1. She ___ to me. a) told b) said c) spoke')).toEqual([
+      '1. She ___ to me.',
+      'a) told',
+      'b) said',
+      'c) spoke',
+    ]);
+    expect(splitInlineOptions('Elige la correcta: a) uno b) dos')).toEqual(['Elige la correcta:', 'a) uno', 'b) dos']);
+  });
+
+  it('acepta dos opciones (verdadero / falso)', () => {
+    expect(splitInlineOptions('a) Verdadero b) Falso')).toEqual(['a) Verdadero', 'b) Falso']);
+  });
+
+  it('no pierde ni cambia ninguna palabra', () => {
+    const line = '3. .......... to the party. a) Do you come   b) Are you coming   c) Did you come';
+    const words = (text: string) => text.split(/\s+/).filter(Boolean);
+
+    expect(splitInlineOptions(line).flatMap(words)).toEqual(words(line));
+  });
+
+  it('no toca una linea sin opciones ni una opcion suelta', () => {
+    expect(splitInlineOptions('El gato duerme sobre la mesa.')).toEqual(['El gato duerme sobre la mesa.']);
+    expect(splitInlineOptions('a) told')).toEqual(['a) told']);
+    expect(splitInlineOptions('b) said c) spoke')).toEqual(['b) said c) spoke']);
+  });
+
+  it('no parte prosa que menciona letras entre parentesis', () => {
+    const prose = [
+      'Observa las figuras a) y b)',
+      'El plan (a) es mejor que el (b)',
+      'Compara a) la figura 1 y b) la figura 2',
+      'Se define f(a) y g(b) como funciones',
+    ];
+    for (const line of prose) expect(splitInlineOptions(line)).toEqual([line]);
+  });
+
+  it('exige letras consecutivas desde la "a": "a) x c) y" no se separa', () => {
+    expect(splitInlineOptions('a) uno c) tres')).toEqual(['a) uno c) tres']);
+  });
+});
+
+describe('splitLongTextElements con opciones en una sola linea', () => {
+  it('un bloque que es solo "a) told b) said c) spoke" pasa a ser tres elementos, con su idioma', () => {
+    const result = splitLongTextElements([{ type: 'Texto', content: 'a) told b) said c) spoke', lang: 'en' }]);
+
+    expect(result.map(element => element.content)).toEqual(['a) told', 'b) said', 'c) spoke']);
+    expect(result.every(element => element.type === 'Texto' && element.lang === 'en')).toBe(true);
+  });
+
+  it('en un examen completo cada opcion queda en su propio elemento', () => {
+    const contents = splitLongTextElements([{ type: 'Texto', content: MIXED_EXAM, lang: 'es' }]).map(
+      element => element.content,
+    );
+
+    for (const option of ['a) so', 'b) too', 'c) such', 'a) Little', 'b) Few', 'c) Much', 'b) Are you coming']) {
+      expect(contents).toContain(option);
+    }
+    expect(contents.some(content => /a\) so\s+b\) too/.test(content))).toBe(false);
+  });
+
+  it('el enunciado y sus opciones, aunque lleguen en una sola linea larga, quedan separados', () => {
+    const result = splitLongTextElements([
+      { type: 'Texto', content: '4. She ___ me the truth yesterday afternoon. a) told b) said c) spoke d) talked', lang: 'en' },
+    ]);
+
+    expect(result.map(element => element.content)).toEqual([
+      '4. She ___ me the truth yesterday afternoon.',
+      'a) told',
+      'b) said',
+      'c) spoke',
+      'd) talked',
+    ]);
+  });
+
+  it('las tablas no se tocan', () => {
+    const table = [{ type: 'Tabla', content: 'Fila 1. a) uno b) dos' }];
+    expect(splitLongTextElements(table)).toEqual(table);
   });
 });
 

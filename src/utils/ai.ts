@@ -233,6 +233,54 @@ export function splitIntoLines(content: string): string[] {
   return units.length > 0 ? units : [content];
 }
 
+// Marcador de opcion: "a)", "B)" o "(c)" al inicio de la linea o despues de un espacio, y seguido de un espacio.
+const OPTION_MARKER = /(^|\s)(?:\(([A-Za-z])\)|([A-Za-z])\))(?=\s|$)/g;
+// Un enunciado termina en punto, signo de pregunta/exclamacion, dos puntos, o en el hueco ("She ____", "was ....").
+const ENDS_LIKE_A_STEM = /[.!?:;_…]$/;
+
+/**
+ * Separa las opciones de una pregunta que llegaron pegadas en UNA linea ("a) told   b) said   c) spoke"): cada opcion
+ * pasa a ser su propia unidad para leerla, repetirla y recorrerla con las flechas. Si la linea trae el enunciado antes
+ * ("1. She ___ to me. a) told b) said c) spoke"), el enunciado queda aparte.
+ *
+ * Es conservador para no romper prosa normal: las letras deben ser consecutivas desde la "a" (a, b, c...), cada opcion
+ * debe tener texto, y si hay algo antes de "a)" debe verse como un enunciado terminado. Si no se cumple, devuelve la
+ * linea intacta. Nunca agrega, quita ni reordena palabras: solo corta.
+ */
+export function splitInlineOptions(line: string): string[] {
+  const markers = [...line.matchAll(OPTION_MARKER)].map(match => ({
+    start: match.index + match[1].length,
+    end: match.index + match[0].length,
+    letter: match[2] ?? match[3],
+  }));
+
+  for (let first = 0; first < markers.length; first++) {
+    const firstLetter = markers[first].letter;
+    if (firstLetter !== 'a' && firstLetter !== 'A') continue;
+
+    const chain = [markers[first]];
+    let expected = String.fromCharCode(firstLetter.charCodeAt(0) + 1);
+    for (const marker of markers.slice(first + 1)) {
+      if (marker.letter !== expected) continue;
+      chain.push(marker);
+      expected = String.fromCharCode(expected.charCodeAt(0) + 1);
+    }
+    if (chain.length < 2) continue;
+
+    const stem = line.slice(0, chain[0].start).trim();
+    if (stem && !ENDS_LIKE_A_STEM.test(stem)) continue;
+
+    const options = chain.map((marker, index) => {
+      const next = chain[index + 1]?.start ?? line.length;
+      return { text: line.slice(marker.start, next).trim(), body: line.slice(marker.end, next).trim() };
+    });
+    if (options.some(option => !option.body)) continue;
+
+    return [...(stem ? [stem] : []), ...options.map(option => option.text)];
+  }
+  return [line];
+}
+
 /** Una sola linea: si es larga, por oraciones y, si una oracion sigue siendo enorme, por longitud. */
 function splitLine(line: string): string[] {
   if (line.length <= LONG_TEXT_THRESHOLD) return [line];
@@ -264,7 +312,7 @@ export function splitLongTextElements(elements: PageElement[]): PageElement[] {
   const result: PageElement[] = [];
   for (const element of elements) {
     if (SPLITTABLE_TYPES.has(element.type)) {
-      const units = splitIntoLines(element.content).flatMap(splitLine);
+      const units = splitIntoLines(element.content).flatMap(splitInlineOptions).flatMap(splitLine);
       if (units.length > 1) {
         const languages = languagesForUnits(units, element.lang);
         units.forEach((unit, index) => {
