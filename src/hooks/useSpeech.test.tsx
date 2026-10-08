@@ -62,6 +62,58 @@ describe('useSpeech', () => {
     expect(queued[1].text).toBe(' Adiós.');
   });
 
+  describe('espacios en blanco de un examen ("........")', () => {
+    const EXAM = '11. Susan ........ eat meat, but now she does.';
+
+    it('los puntos del hueco no cortan la frase: se lee en dos frases, no en tres', () => {
+      const { result } = renderHook(() => useSpeech());
+      act(() => result.current.speak(EXAM, { lang: 'en' }));
+
+      expect(queued[0].text).toBe('11.');
+      act(() => queued[0].onend?.());
+      expect(queued[1].text).toBe(' Susan blank eat meat, but now she does.');
+      act(() => queued[1].onend?.());
+      expect(queued).toHaveLength(2); // antes eran 3 frases: "11.", " Susan ........" y " eat meat, ..."
+    });
+
+    it('en espanol el hueco se dice "espacio en blanco"', () => {
+      const { result } = renderHook(() => useSpeech());
+      act(() => result.current.speak('Mi hermano ........ a la escuela.', { lang: 'es' }));
+
+      expect(queued[0].text).toBe('Mi hermano espacio en blanco a la escuela.');
+    });
+
+    it('el resaltado sigue cayendo sobre la palabra correcta aunque el texto hablado sea distinto', () => {
+      const { result } = renderHook(() => useSpeech());
+      act(() => result.current.speak(EXAM, { lang: 'en' }));
+      act(() => queued[0].onend?.());
+      const spoken = queued[1].text;
+
+      const wordAt = (word: string) => spoken.indexOf(word);
+      const say = (word: string, length: number) =>
+        act(() => queued[1].onboundary?.({ name: 'word', charIndex: wordAt(word), charLength: length }));
+
+      say('Susan', 5);
+      expect(EXAM.slice(result.current.highlight!.start, result.current.highlight!.start + result.current.highlight!.length)).toBe('Susan');
+
+      say('blank', 5);
+      expect(EXAM.slice(result.current.highlight!.start, result.current.highlight!.start + result.current.highlight!.length)).toBe('........');
+
+      say('eat', 3);
+      expect(EXAM.slice(result.current.highlight!.start, result.current.highlight!.start + result.current.highlight!.length)).toBe('eat');
+
+      say('does', 4);
+      expect(EXAM.slice(result.current.highlight!.start, result.current.highlight!.start + result.current.highlight!.length)).toBe('does');
+    });
+
+    it('los puntos suspensivos normales ("...") siguen leyendose como antes', () => {
+      const { result } = renderHook(() => useSpeech());
+      act(() => result.current.speak('Wait... what?', { lang: 'en' }));
+
+      expect(queued[0].text).toBe('Wait...');
+    });
+  });
+
   it('usa una voz en ingles cuando el texto esta en ingles', () => {
     const { result } = renderHook(() => useSpeech());
     act(() => result.current.speak('The quick brown fox is on the table and it was fun.'));

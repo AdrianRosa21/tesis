@@ -1,6 +1,8 @@
 // Cliente de la voz en inglés del servidor (Piper, voz estadounidense). Se usa cuando el navegador no tiene
 // ninguna voz en inglés. Si el servidor no responde, AURA vuelve sola a la voz del navegador.
 
+import { BLANK_RUN } from './spokenBlanks';
+
 const RETRY_AFTER_FAILURE_MS = 60_000;
 const STATUS_TIMEOUT_MS = 5_000;
 const AUDIO_TIMEOUT_MS = 15_000;
@@ -23,7 +25,7 @@ function endpoint(): { url: string; headers: Record<string, string> } {
  */
 export function cleanForServerVoice(text: string): string {
   return text
-    .replace(/\.{4,}|_{3,}|…{2,}/g, ' blank ')
+    .replace(BLANK_RUN, ' blank ')
     .replace(/\s+/g, ' ')
     .trim();
 }

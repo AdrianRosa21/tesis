@@ -7,6 +7,7 @@ import {
 } from '../utils/language';
 import { RATE_STEP, clampRate, loadRate, saveRate } from '../utils/speechRate';
 import { cleanForServerVoice, serverVoice } from '../utils/serverVoice';
+import { maskBlanks, speakableText } from '../utils/spokenBlanks';
 import {
   type EnglishVoiceSource,
   chooseEnglishSource,
@@ -150,12 +151,14 @@ export function useSpeech(): SpeechApi {
     let useServer = lang === 'en' && currentEnglishSource(synth).kind === 'server';
     if (lang === 'en' && !serverVoice.available) void serverVoice.check().then(refreshEnglishSource);
 
-    // Identify chunks and their global start index
+    // Identify chunks and their global start index. Los puntos de un espacio en blanco ("Susan ........ eat meat.")
+    // no terminan la frase: se buscan los cortes en una copia de igual longitud donde esos puntos ya no son puntos.
     const chunks: { text: string; startIndex: number }[] = [];
     const regex = /[^.!?\n]+[.!?\n]+|[^.!?\n]+/g;
+    const masked = maskBlanks(text);
     let match;
-    while ((match = regex.exec(text)) !== null) {
-      chunks.push({ text: match[0], startIndex: match.index });
+    while ((match = regex.exec(masked)) !== null) {
+      chunks.push({ text: text.slice(match.index, match.index + match[0].length), startIndex: match.index });
     }
 
     if (chunks.length === 0) {
@@ -237,7 +240,9 @@ export function useSpeech(): SpeechApi {
         return;
       }
 
-      const utterance = new SpeechSynthesisUtterance(chunkText);
+      // Los huecos de un examen se dicen como una palabra ("blank") en vez de leer cada punto como una pausa.
+      const { spoken, toOriginal } = speakableText(chunkText, lang);
+      const utterance = new SpeechSynthesisUtterance(spoken);
       utterance.rate = rateRef.current;
       applyVoice(utterance, lang);
       setLastVoice(`${lang === 'en' ? 'inglés' : 'español'} · ${utterance.voice?.name ?? 'voz predeterminada del navegador'}`);
@@ -246,9 +251,11 @@ export function useSpeech(): SpeechApi {
       utterance.onboundary = (event) => {
         if (currentUtteranceRef.current !== utterance) return;
         if (event.name === 'word') {
-          const globalStart = chunkObj.startIndex + event.charIndex;
+          // charIndex es una posicion del texto hablado; el resaltado se dibuja sobre el texto original.
+          const range = toOriginal(event.charIndex, event.charLength);
+          const globalStart = chunkObj.startIndex + range.start;
 
-          let length = event.charLength;
+          let length = range.length;
           if (!length) {
             // fallback: guess word length by finding the next space/punctuation
             const remaining = text.slice(globalStart);
