@@ -4,3 +4,7 @@
 
 # Los scripts de shell se ejecutan en Linux (RunPod): siempre con finales de linea LF.
 *.sh text eol=lf
+
+# Los .bat y .cmd (LOCALAQUIFUNCIONALOCAL) se ejecutan en Windows: siempre con finales de linea CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
