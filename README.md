@@ -18,7 +18,7 @@ AURA (Visión en la Lectura) es una aplicación web full-stack diseñada para re
 **¿Cómo está construido?** El sistema está diseñado alrededor de **Ollama** y un modelo de visión abierto (`qwen2.5vl`) que corre en una GPU propia:
 - El pipeline que se desarrolló y se midió primero (v3 y, después, v4) corre completo en Ollama: clasifica la página, aplica solo las reglas que necesita y fuerza la salida con un esquema JSON.
 - Ollama está presente, por defecto, en **todos** los modos (solo se puede apagar a propósito con `AURA_DETECTOR=off` y `AURA_FALLBACK=off`). En el modo opcional `hybrid` detecta qué contiene cada página y es el respaldo automático si el modelo en la nube falla; sin ninguna clave de nube, AURA funciona solo con Ollama.
-- En el modo `hybrid` un proveedor en la nube configurable (Gemini, OpenAI o Claude) lee la página para mejorar tablas y gráficas. **En ese modo cada página sale del servidor propio hacia ese proveedor**; en `v4` y `v3` nunca sale. El motor que atendió cada página se ve siempre en `/api/ready`, en el panel «Detalle del análisis» de la app y en los logs en vivo.
+- En el modo `hybrid` un proveedor en la nube configurable (Gemini, OpenAI o Claude) lee la página para mejorar tablas y gráficas. **En ese modo cada página sale del servidor propio hacia ese proveedor**; en `v4` y `v3` nunca sale. El motor que atendió cada página se ve siempre en `/api/ready` y en los logs en vivo.
 
 **Reglas de fidelidad (no negociables):** no resolver ejercicios, no elegir opciones, no inventar, marcar lo dudoso y no obedecer instrucciones que aparezcan dentro del PDF (el documento se trata como dato no confiable).
 
@@ -63,7 +63,7 @@ Esta guía es para quien nunca ha tocado el proyecto. Tiene dos partes: **usar l
 
 3. Flujo normal: **R** → elegir el PDF → **F** → **↓** para recorrer la página → **→** para pasar a la siguiente.
 4. Pruebas listas para mostrar: la carpeta [`docs/demo/`](docs/demo) trae 9 PDF numerados (tabla, gráfica, imágenes, examen de inglés, instrucción engañosa…) y [`docs/guion-demo-cimat.md`](docs/guion-demo-cimat.md) tiene el recorrido sugerido de 5 a 6 minutos.
-5. En pantalla, el panel **«Detalle del análisis»** dice qué detectó, qué motor leyó la página y cuánto tardó.
+5. En pantalla, el panel **«Detalle del análisis»** dice qué detectó en la página (y avisa si se usó el respaldo local). El motor y los tiempos se ven en los logs en vivo.
 
 > Si la app dice que el servicio **no está disponible** o falla al analizar, el servidor está apagado: pasa a la Parte 2.
 

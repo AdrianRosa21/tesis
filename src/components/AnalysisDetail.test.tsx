@@ -31,14 +31,20 @@ describe('AnalysisDetail', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('muestra lo detectado, el motor, las etapas y el tiempo', () => {
+  it('muestra solo lo que se detecto, sin motor, etapas ni tiempos', () => {
     render(<AnalysisDetail meta={meta()} />);
 
     expect(screen.getByText('Se detectó: imagen · 3 columnas')).toBeTruthy();
-    expect(screen.getByText('Motor: gemini (gemini-2.5-flash) · detección con ollama')).toBeTruthy();
-    expect(screen.getByText(/Detección \(ollama\): imagen — 2\.10 s/)).toBeTruthy();
-    expect(screen.getByText(/Página procesada en 29\.27 s/)).toBeTruthy();
+    expect(screen.queryByText(/Motor/)).toBeNull();
+    expect(screen.queryByText(/Detección \(ollama\)/)).toBeNull();
+    expect(screen.queryByText(/Extracción/)).toBeNull();
+    expect(screen.queryByText(/Página procesada/)).toBeNull();
     expect(screen.queryByText(/respaldo local/)).toBeNull();
+  });
+
+  it('no dibuja un panel vacio cuando no hay nada que decir', () => {
+    const { container } = render(<AnalysisDetail meta={meta({ pageType: null })} />);
+    expect(container.innerHTML).toBe('');
   });
 
   it('avisa cuando se uso el respaldo local y por que', () => {
