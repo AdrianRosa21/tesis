@@ -1,0 +1,37 @@
+# Despliegue del backend de AURA en Render (plan gratis, sin GPU ni Ollama).
+# Modo hybrid con OpenAI: la nube lee la pagina; el detector y el respaldo locales (Ollama) van apagados.
+# Pasos: render.com -> New -> Blueprint -> elegir este repositorio. Render pide OPENAI_API_KEY (la escribes tu en
+# su panel, nunca en git) y genera API_KEY solo; esa misma clave se copia a AURA_API_KEY en Vercel.
+services:
+  - type: web
+    name: aura-backend
+    runtime: python
+    plan: free
+    # Render usa Python 3.14 por defecto y pydantic 2.7.4 (fijado en requirements.txt) no lo soporta.
+    buildCommand: pip install -r fastapi_backend/requirements.txt
+    startCommand: uvicorn fastapi_backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: API_KEY
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AURA_PIPELINE
+        value: hybrid
+      - key: AURA_PROVIDER
+        value: openai
+      - key: AURA_DETECTOR
+        value: "off"
+      - key: AURA_FALLBACK
+        value: "off"
+      - key: AURA_WARMUP
+        value: "off"
+      - key: AURA_TTS
+        value: "off"
+      # Cuida el saldo: tope de paginas por dia (0 = sin tope). Se reinicia si el servicio se reinicia.
+      - key: AURA_CLOUD_MAX_PAGES_PER_DAY
+        value: "300"
+      - key: AURA_RATE_LIMIT_PER_MIN
+        value: "60"
