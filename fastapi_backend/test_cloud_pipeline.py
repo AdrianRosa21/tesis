@@ -137,6 +137,11 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(load_settings({"AURA_LOG_CLOUD_RESPONSE_CHARS": "-5"}).log_cloud_response_chars, 0)
         self.assertEqual(load_settings({"AURA_LOG_CLOUD_RESPONSE_CHARS": "mucho"}).log_cloud_response_chars, 1500)
 
+    def test_demo_ollama_logs_are_opt_in(self):
+        self.assertFalse(load_settings({}).demo_ollama_logs)
+        self.assertTrue(load_settings({"AURA_DEMO_OLLAMA_LOGS": "ON"}).demo_ollama_logs)
+        self.assertFalse(load_settings({"AURA_DEMO_OLLAMA_LOGS": "si"}).demo_ollama_logs)
+
     def test_engine_tag_changes_with_detector_model(self):
         with_detector = load_settings({"GEMINI_API_KEY": "k"})
         without_detector = load_settings({"GEMINI_API_KEY": "k", "AURA_DETECTOR": "off"})
@@ -943,6 +948,33 @@ class HybridPipelineTests(unittest.IsolatedAsyncioTestCase):
         with self.assertLogs("aura", level="INFO") as logs:
             await self._run(FakeProvider("gemini", "m", [_json_result(cloud_blocks)]), local, off)
         self.assertFalse(any("Respuesta gemini" in line for line in logs.output))
+
+    async def test_demo_ollama_log_is_marked_and_keeps_the_real_provider_visible(self):
+        settings = Settings(
+            openai_api_key="k",
+            provider="openai",
+            detector="off",
+            fallback="off",
+            demo_ollama_logs=True,
+        )
+        cloud = FakeProvider("openai", "gpt-4.1-mini", [_json_result([
+            {"tipo": "texto", "contenido": "Hola desde la respuesta real.", "idioma": "es"},
+        ])])
+        local = FakeProvider("ollama", "qwen2.5vl", [_classification()])
+
+        with self.assertLogs("aura", level="INFO") as logs:
+            result = await self._run(cloud, local, settings)
+
+        demo_lines = [line for line in logs.output if "DEMO SIMULADO" in line]
+        self.assertEqual(len(demo_lines), 2)
+        self.assertTrue(all("DEMO SIMULADO" in line for line in demo_lines))
+        self.assertIn("proveedor real: openai (gpt-4.1-mini)", demo_lines[0])
+        self.assertIn("ollama | model=qwen2.5vl | done=true | done_reason=stop", demo_lines[0])
+        self.assertIn("Respuesta dada por el modelo: ", demo_lines[1])
+        self.assertIn("Hola desde la respuesta real.", demo_lines[1])
+        self.assertEqual(result.provider, "openai")
+        self.assertEqual(result.model, "gpt-4.1-mini")
+        self.assertEqual(local.calls, [])
 
     async def test_followup_goes_to_the_cloud_when_detector_sees_an_undescribed_image(self):
         cloud = FakeProvider("gemini", "m", [

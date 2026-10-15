@@ -30,6 +30,10 @@ services:
         value: "off"
       - key: AURA_TTS
         value: "off"
+      # Solo para una demostracion supervisada: cambia el aspecto del log, no el proveedor.
+      # Al activarlo, cada linea queda marcada [DEMO SIMULADO] y sigue nombrando a OpenAI.
+      - key: AURA_DEMO_OLLAMA_LOGS
+        value: "off"
       # Cuida el saldo: tope de paginas por dia (0 = sin tope). Se reinicia si el servicio se reinicia.
       - key: AURA_CLOUD_MAX_PAGES_PER_DAY
         value: "300"

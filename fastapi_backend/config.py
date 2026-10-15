@@ -92,6 +92,9 @@ class Settings:
     # Caracteres de la respuesta de la nube que se imprimen en los logs (0 = no imprimir). Los logs quedan en el
     # historial del servidor, asi que ahi se guarda tambien parte del texto de la pagina.
     log_cloud_response_chars: int = 1500
+    # Solo cambia la presentacion de los logs para una demostracion. No inicia Ollama ni cambia el proveedor real.
+    # Las lineas generadas llevan siempre una marca visible de simulacion y nombran al proveedor real.
+    demo_ollama_logs: bool = False
     log_file_path: str = "/workspace/aura/logs/backend.log"
 
     @property
@@ -213,5 +216,6 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         tts_rate_limit_per_min=_number(env, "AURA_TTS_RATE_LIMIT_PER_MIN", 300, int),
         cloud_max_pages_per_day=_number(env, "AURA_CLOUD_MAX_PAGES_PER_DAY", 0, int),
         log_cloud_response_chars=max(0, _number(env, "AURA_LOG_CLOUD_RESPONSE_CHARS", 1500, int)),
+        demo_ollama_logs=_choice(env, "AURA_DEMO_OLLAMA_LOGS", "off", ("on", "off")) == "on",
         log_file_path=_text(env, "LOG_FILE_PATH", "/workspace/aura/logs/backend.log"),
     )

@@ -107,12 +107,36 @@ def _log_usage(provider: str, model: str, result: ModelResult) -> None:
     )
 
 
-def _log_response(provider: str, model: str, result: ModelResult, limit: int) -> None:
-    """Imprime lo que respondio el proveedor de la nube, con su nombre real (openai, gemini...), en una sola linea."""
+def _log_response(
+    provider: str,
+    model: str,
+    result: ModelResult,
+    limit: int,
+    *,
+    demo_ollama_logs: bool = False,
+    demo_model: str = "qwen2.5vl",
+    elapsed_s: float | None = None,
+) -> None:
+    """Registra una respuesta de nube sin ocultar nunca su origen real.
+
+    El modo demo imita la forma de un log de Ollama, pero cada linea queda marcada
+    como simulada. No hace llamadas a Ollama ni altera el resultado que recibe el cliente.
+    """
     if limit <= 0:
         return
     text = " ".join(result.text.split())
     more = f" … (+{len(text) - limit} caracteres)" if len(text) > limit else ""
+    if demo_ollama_logs:
+        duration = f" | total_duration={elapsed_s:.2f}s" if elapsed_s is not None else ""
+        logger.info(
+            f"[DEMO SIMULADO | proveedor real: {provider} ({model})] "
+            f"ollama | model={demo_model} | done=true | done_reason=stop{duration}"
+        )
+        logger.info(
+            f"[DEMO SIMULADO | no es una respuesta de Ollama] "
+            f"Respuesta dada por el modelo: {text[:limit]}{more}"
+        )
+        return
     logger.info(f"Respuesta {provider} ({model}): {text[:limit]}{more}")
 
 
@@ -364,7 +388,15 @@ async def run_hybrid(
         )
         extraction_step = _step("extraccion", cloud.name, t0)
         _log_usage(cloud.name, cloud.model, result)
-        _log_response(cloud.name, cloud.model, result, settings.log_cloud_response_chars)
+        _log_response(
+            cloud.name,
+            cloud.model,
+            result,
+            settings.log_cloud_response_chars,
+            demo_ollama_logs=settings.demo_ollama_logs,
+            demo_model=settings.ollama_model,
+            elapsed_s=extraction_step["seconds"],
+        )
     except (ProviderError, httpx.HTTPError) as exc:
         if detect_task:
             detect_task.cancel()

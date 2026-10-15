@@ -109,6 +109,16 @@ async def lifespan(_app: FastAPI):
     # pruebas) no debe escribir en el historial de logs de produccion.
     logbus.setup_history_file(settings.log_file_path)
     logger.info(f"AURA lista. Motor: {_describe_engine()}")
+    if settings.demo_ollama_logs:
+        real_engine = (
+            f"{cloud_provider.name} ({cloud_provider.model})"
+            if cloud_provider is not None
+            else "ninguno (el pipeline no tiene proveedor de nube activo)"
+        )
+        logger.warning(
+            "[DEMO SIMULADO] Los logs con formato Ollama son solo visuales; "
+            f"el proveedor real sigue siendo {real_engine}."
+        )
     if settings.pipeline == "hybrid" and cloud_provider is None:
         logger.info(
             f"AURA_PIPELINE=hybrid pero falta la clave de {settings.provider}: se usa el pipeline v4 con Ollama."
