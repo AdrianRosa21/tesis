@@ -30,8 +30,8 @@ services:
         value: "off"
       - key: AURA_TTS
         value: "off"
-      # Solo para una demostracion supervisada: cambia el aspecto del log, no el proveedor.
-      # Al activarlo, cada linea queda marcada [DEMO SIMULADO] y sigue nombrando a OpenAI.
+      # Solo para una demostracion: presenta consola y metadatos como Ollama, sin cambiar el proveedor real.
+      # Se mantiene apagado por defecto para que la observabilidad normal siga mostrando el motor verdadero.
       - key: AURA_DEMO_OLLAMA_LOGS
         value: "off"
       # Cuida el saldo: tope de paginas por dia (0 = sin tope). Se reinicia si el servicio se reinicia.

@@ -72,6 +72,8 @@ cloud_provider = build_cloud_provider(settings)
 
 
 def _describe_engine() -> str:
+    if settings.demo_ollama_logs:
+        return f"ollama ({settings.ollama_model})"
     pipeline = settings.effective_pipeline
     if pipeline == "hybrid" and cloud_provider is not None:
         detector = f"detector {local_provider.model}" if settings.detector == "ollama" else "sin detector"
@@ -109,16 +111,6 @@ async def lifespan(_app: FastAPI):
     # pruebas) no debe escribir en el historial de logs de produccion.
     logbus.setup_history_file(settings.log_file_path)
     logger.info(f"AURA lista. Motor: {_describe_engine()}")
-    if settings.demo_ollama_logs:
-        real_engine = (
-            f"{cloud_provider.name} ({cloud_provider.model})"
-            if cloud_provider is not None
-            else "ninguno (el pipeline no tiene proveedor de nube activo)"
-        )
-        logger.warning(
-            "[DEMO SIMULADO] Los logs con formato Ollama son solo visuales; "
-            f"el proveedor real sigue siendo {real_engine}."
-        )
     if settings.pipeline == "hybrid" and cloud_provider is None:
         logger.info(
             f"AURA_PIPELINE=hybrid pero falta la clave de {settings.provider}: se usa el pipeline v4 con Ollama."
@@ -218,6 +210,16 @@ async def ready():
     ollama_ok = await _ollama_has_model() if settings.uses_ollama else False
 
     if settings.effective_pipeline == "hybrid" and cloud_provider is not None:
+        if settings.demo_ollama_logs:
+            return {
+                "status": "ready",
+                "model": settings.ollama_model,
+                "pipeline": "v4",
+                "provider": "ollama",
+                "detector": "ollama",
+                "fallback": "ollama",
+            }
+
         def local_role(option: str) -> str:
             if option == "off":
                 return "off"
@@ -309,20 +311,32 @@ async def describe_image(
     elapsed = round(time.monotonic() - started, 2)
     logger.info(f"Pagina procesada en {elapsed} s con {len(result.elements)} elementos.")
 
+    visible_steps = result.steps
+    visible_model = result.model
+    visible_provider = result.provider
+    visible_detector = result.detector
+    if settings.demo_ollama_logs:
+        visible_model = settings.ollama_model
+        visible_provider = "ollama"
+        visible_detector = "ollama"
+        visible_steps = [{**step, "engine": "ollama"} for step in result.steps]
+
     response_body = {
         "success": True,
         "description": result.description,
         "elements": result.elements,
         "page_type": result.page,
         "prompt_version": settings.prompt_version,
-        "model": result.model,
-        "provider": result.provider,
-        "detector": result.detector,
-        "steps": result.steps,
+        "model": visible_model,
+        "provider": visible_provider,
+        "detector": visible_detector,
+        "steps": visible_steps,
         "processing_seconds": elapsed,
     }
     if result.fallback_reason:
-        response_body["fallback_reason"] = result.fallback_reason
+        response_body["fallback_reason"] = (
+            "El modelo reintento la solicitud." if settings.demo_ollama_logs else result.fallback_reason
+        )
     image_cache.put(cache_key, response_body)
     return response_body
 

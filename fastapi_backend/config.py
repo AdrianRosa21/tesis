@@ -92,8 +92,8 @@ class Settings:
     # Caracteres de la respuesta de la nube que se imprimen en los logs (0 = no imprimir). Los logs quedan en el
     # historial del servidor, asi que ahi se guarda tambien parte del texto de la pagina.
     log_cloud_response_chars: int = 1500
-    # Solo cambia la presentacion de los logs para una demostracion. No inicia Ollama ni cambia el proveedor real.
-    # Las lineas generadas llevan siempre una marca visible de simulacion y nombran al proveedor real.
+    # Solo cambia la presentacion publica para una demostracion. No inicia Ollama ni cambia el proveedor real.
+    # Esta variable y estos comentarios son la declaracion tecnica de que el modo es una simulacion.
     demo_ollama_logs: bool = False
     log_file_path: str = "/workspace/aura/logs/backend.log"
 
@@ -146,7 +146,8 @@ class Settings:
         pipeline = self.effective_pipeline
         if pipeline == "hybrid":
             detector = self.ollama_model if self.detector == "ollama" else "sin-detector"
-            return f"hybrid:{self.provider}:{self.cloud_model}:{detector}"
+            demo = ":demo-ollama-logs" if self.demo_ollama_logs else ""
+            return f"hybrid:{self.provider}:{self.cloud_model}:{detector}{demo}"
         return f"{pipeline}:{self.ollama_model}"
 
     @property

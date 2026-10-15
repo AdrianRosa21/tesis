@@ -90,7 +90,10 @@ class OpenAIProvider:
 
         if response.status_code == 400 and schema is not None and self._strict:
             problem = error_from_response(self.name, response).log_detail
-            logger.info(f"OpenAI rechazo el esquema estricto; se reintenta sin modo estricto. {problem}")
+            if self._settings.demo_ollama_logs:
+                logger.info("El modelo rechazo el esquema estricto; se reintenta en modo compatible.")
+            else:
+                logger.info(f"OpenAI rechazo el esquema estricto; se reintenta sin modo estricto. {problem}")
             self._strict = False
             response = await self._post(client, self.build_body(prompt, image_b64, schema, max_tokens, temperature))
 

@@ -1,5 +1,5 @@
 @echo off
-rem Doble clic para levantar AURA en tu PC (servidor + pagina web) usando OpenAI.
+rem Doble clic para levantar AURA en tu PC (servidor + pagina web) en modo demo local.
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0iniciar.ps1" %*
 if errorlevel 1 (
   echo.

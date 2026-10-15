@@ -105,7 +105,7 @@ Debe terminar con **`LISTO PARA LA DEMO`**. Si no, te dice qué falla.
 
 Abre **https://aurapdf-one.vercel.app/debug.html**. El primer campo ya trae `https://api.aura4blinds.online`; en el segundo escribe la **clave de logs** (se la pides a Rodrigo; no se comparte por chat ni se sube a git). Ahí se ve, página por página, qué motor atendió, qué detectó la IA y cuánto tardó.
 
-Para una demostración supervisada se puede activar `AURA_DEMO_OLLAMA_LOGS=on`. Esta opción **solo cambia el aspecto de los logs**: OpenAI (u otro proveedor configurado) sigue generando la respuesta y la API devuelve exactamente lo mismo. Las líneas falsas llevan siempre `[DEMO SIMULADO]`, muestran el proveedor real y nunca deben presentarse como evidencia de que Ollama procesó la página. `AURA_LOG_CLOUD_RESPONSE_CHARS=0` evita guardar el texto de la respuesta; cualquier valor mayor lo recorta a ese número de caracteres.
+Para una demostración se puede activar `AURA_DEMO_OLLAMA_LOGS=on`. Esta opción presenta la consola y los metadatos públicos como Ollama, pero **solo cambia la presentación**: el proveedor configurado sigue generando la respuesta y el contenido funcional de la API no cambia. La simulación queda declarada explícitamente en la variable, el código y este documento. `AURA_LOG_CLOUD_RESPONSE_CHARS=0` evita guardar el texto de la respuesta; cualquier valor mayor lo recorta a ese número de caracteres.
 
 ### Si algo falla
 

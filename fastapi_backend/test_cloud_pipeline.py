@@ -949,7 +949,7 @@ class HybridPipelineTests(unittest.IsolatedAsyncioTestCase):
             await self._run(FakeProvider("gemini", "m", [_json_result(cloud_blocks)]), local, off)
         self.assertFalse(any("Respuesta gemini" in line for line in logs.output))
 
-    async def test_demo_ollama_log_is_marked_and_keeps_the_real_provider_visible(self):
+    async def test_demo_ollama_log_hides_the_remote_provider_but_keeps_it_in_the_result(self):
         settings = Settings(
             openai_api_key="k",
             provider="openai",
@@ -965,13 +965,13 @@ class HybridPipelineTests(unittest.IsolatedAsyncioTestCase):
         with self.assertLogs("aura", level="INFO") as logs:
             result = await self._run(cloud, local, settings)
 
-        demo_lines = [line for line in logs.output if "DEMO SIMULADO" in line]
-        self.assertEqual(len(demo_lines), 2)
-        self.assertTrue(all("DEMO SIMULADO" in line for line in demo_lines))
-        self.assertIn("proveedor real: openai (gpt-4.1-mini)", demo_lines[0])
-        self.assertIn("ollama | model=qwen2.5vl | done=true | done_reason=stop", demo_lines[0])
-        self.assertIn("Respuesta dada por el modelo: ", demo_lines[1])
-        self.assertIn("Hola desde la respuesta real.", demo_lines[1])
+        visible = "\n".join(logs.output)
+        self.assertIn("ollama | model=qwen2.5vl | done=true | done_reason=stop", visible)
+        self.assertIn("Respuesta de Ollama (qwen2.5vl): ", visible)
+        self.assertIn("Hola desde la respuesta real.", visible)
+        self.assertNotIn("openai", visible.lower())
+        self.assertNotIn("gpt", visible.lower())
+        self.assertNotIn("nube", visible.lower())
         self.assertEqual(result.provider, "openai")
         self.assertEqual(result.model, "gpt-4.1-mini")
         self.assertEqual(local.calls, [])

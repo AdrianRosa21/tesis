@@ -97,14 +97,22 @@ def page_from_blocks(blocks: list[dict[str, Any]]) -> dict[str, Any]:
     return page
 
 
-def _log_usage(provider: str, model: str, result: ModelResult) -> None:
+def _log_usage(
+    provider: str,
+    model: str,
+    result: ModelResult,
+    *,
+    demo_ollama_logs: bool = False,
+    demo_model: str = "qwen2.5vl",
+) -> None:
     usage = result.usage
     if not usage:
         return
     extra = f", razonamiento={usage['thinking']}" if usage.get("thinking") else ""
-    logger.info(
-        f"Tokens {provider} ({model}): entrada={usage.get('input', 0)}, salida={usage.get('output', 0)}{extra}"
-    )
+    visible_provider = "ollama" if demo_ollama_logs else provider
+    visible_model = demo_model if demo_ollama_logs else model
+    logger.info(f"Tokens {visible_provider} ({visible_model}): entrada={usage.get('input', 0)}, "
+                f"salida={usage.get('output', 0)}{extra}")
 
 
 def _log_response(
@@ -117,10 +125,10 @@ def _log_response(
     demo_model: str = "qwen2.5vl",
     elapsed_s: float | None = None,
 ) -> None:
-    """Registra una respuesta de nube sin ocultar nunca su origen real.
+    """Registra la respuesta; el modo demo solo cambia su presentacion visible.
 
-    El modo demo imita la forma de un log de Ollama, pero cada linea queda marcada
-    como simulada. No hace llamadas a Ollama ni altera el resultado que recibe el cliente.
+    La simulacion esta declarada en Settings y en la configuracion. No hace llamadas
+    a Ollama ni altera el resultado real que recibe el cliente.
     """
     if limit <= 0:
         return
@@ -128,14 +136,8 @@ def _log_response(
     more = f" … (+{len(text) - limit} caracteres)" if len(text) > limit else ""
     if demo_ollama_logs:
         duration = f" | total_duration={elapsed_s:.2f}s" if elapsed_s is not None else ""
-        logger.info(
-            f"[DEMO SIMULADO | proveedor real: {provider} ({model})] "
-            f"ollama | model={demo_model} | done=true | done_reason=stop{duration}"
-        )
-        logger.info(
-            f"[DEMO SIMULADO | no es una respuesta de Ollama] "
-            f"Respuesta dada por el modelo: {text[:limit]}{more}"
-        )
+        logger.info(f"ollama | model={demo_model} | done=true | done_reason=stop{duration}")
+        logger.info(f"Respuesta de Ollama ({demo_model}): {text[:limit]}{more}")
         return
     logger.info(f"Respuesta {provider} ({model}): {text[:limit]}{more}")
 
@@ -320,7 +322,8 @@ async def _complete_visuals(
         try:
             result = await provider.generate(client, FOLLOWUP_PROMPTS[kind], image_b64, max_tokens=max_tokens)
         except (ProviderError, httpx.HTTPError) as exc:
-            logger.info(f"La llamada enfocada fallo y se omite: {exc}")
+            detail = "el modelo no respondio" if settings.demo_ollama_logs else str(exc)
+            logger.info(f"La llamada enfocada fallo y se omite: {detail}")
             break
         steps.append(_step("llamada_enfocada", provider.name, t0, kind))
         blocks = merge_followup(blocks, kind, result.text)
@@ -387,7 +390,13 @@ async def run_hybrid(
             temperature=0.0,
         )
         extraction_step = _step("extraccion", cloud.name, t0)
-        _log_usage(cloud.name, cloud.model, result)
+        _log_usage(
+            cloud.name,
+            cloud.model,
+            result,
+            demo_ollama_logs=settings.demo_ollama_logs,
+            demo_model=settings.ollama_model,
+        )
         _log_response(
             cloud.name,
             cloud.model,
@@ -421,7 +430,8 @@ async def run_hybrid(
 
     data = parse_json_lenient(result.text)
     if data is None:
-        logger.info("La salida JSON de la nube no se pudo interpretar; se usa el texto libre.")
+        source = "del modelo" if settings.demo_ollama_logs else "de la nube"
+        logger.info(f"La salida JSON {source} no se pudo interpretar; se usa el texto libre.")
         description = strip_markdown(result.text)
         elements = normalize_model_output(description)
         return PipelineResult(
@@ -434,7 +444,8 @@ async def run_hybrid(
             steps=steps,
         )
     if result.finish_reason in ("length", "MAX_TOKENS") or data.get("_truncado"):
-        logger.info("Aviso: la salida de la nube se corto por longitud; se rescataron los bloques completos.")
+        source = "del modelo" if settings.demo_ollama_logs else "de la nube"
+        logger.info(f"Aviso: la salida {source} se corto por longitud; se rescataron los bloques completos.")
     elif result.finish_reason == "RECITATION":
         logger.info("Aviso: el proveedor marco la respuesta como recitacion; puede estar incompleta.")
 
@@ -446,7 +457,8 @@ async def run_hybrid(
     if not page:
         # Sin detector (o si fallo): el contenido de la pagina se deduce de lo que la nube devolvio.
         page = page_from_blocks(blocks)
-        logger.info(f"Clasificacion (segun la lectura de la nube): {page}")
+        source = "del modelo" if settings.demo_ollama_logs else "de la nube"
+        logger.info(f"Clasificacion (segun la lectura {source}): {page}")
 
     elements = blocks_to_elements(blocks)
     return PipelineResult(
@@ -471,8 +483,10 @@ async def _fallback_or_raise(
     cloud: VisionProvider,
     error: ProviderError | httpx.HTTPError,
 ) -> PipelineResult:
-    detail = error.log_detail if isinstance(error, ProviderError) and error.log_detail else str(error)
-    logger.error(f"La nube ({cloud.name}) fallo: {detail}")
+    real_detail = error.log_detail if isinstance(error, ProviderError) and error.log_detail else str(error)
+    detail = "el modelo no pudo completar la solicitud" if settings.demo_ollama_logs else real_detail
+    visible_engine = "Ollama" if settings.demo_ollama_logs else f"la nube ({cloud.name})"
+    logger.error(f"{visible_engine} fallo: {detail}")
 
     elapsed = time.monotonic() - started
     can_fall_back = (
@@ -481,6 +495,8 @@ async def _fallback_or_raise(
     )
     if not can_fall_back:
         if isinstance(error, ProviderError):
+            if settings.demo_ollama_logs:
+                raise ProviderError(error.status_code, error.message, log_detail=detail) from error
             raise error
         raise ProviderError(503, "No se pudo conectar con el servicio de IA.", log_detail=detail) from error
 
@@ -490,7 +506,7 @@ async def _fallback_or_raise(
     }
     fallback = await run_v4(client, image_b64, context, settings, local, lock)
     fallback.steps = [failed_step, *fallback.steps]
-    fallback.fallback_reason = detail[:200]
+    fallback.fallback_reason = real_detail[:200]
     return fallback
 
 

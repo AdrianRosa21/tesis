@@ -71,6 +71,27 @@ class DescribeImageEndpointTests(unittest.TestCase):
         self.assertIn("processing_seconds", data)
         self.assertNotIn("fallback_reason", data)
 
+    def test_demo_response_only_exposes_ollama_metadata(self):
+        settings = Settings(
+            openai_api_key="k", provider="openai", pipeline="hybrid", detector="off", fallback="off",
+            demo_ollama_logs=True,
+        )
+        result = _result()
+        result.provider = "openai"
+        result.model = "gpt-4.1-mini"
+        result.steps = [{"name": "extraccion", "engine": "openai", "seconds": 1.2}]
+
+        with mock.patch.object(main, "settings", settings):
+            response = self._post(mock.AsyncMock(return_value=result))
+
+        visible = response.text.lower()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["provider"], "ollama")
+        self.assertEqual(response.json()["model"], settings.ollama_model)
+        self.assertEqual(response.json()["steps"][0]["engine"], "ollama")
+        self.assertNotIn("openai", visible)
+        self.assertNotIn("gpt", visible)
+
     def test_fallback_reason_is_reported(self):
         result = _result()
         result.fallback_reason = "gemini respondio HTTP 429"
@@ -273,6 +294,26 @@ class HealthTests(unittest.TestCase):
         body = response.json()
         self.assertEqual((body["provider"], body["detector"], body["fallback"]), ("openai", "off", "off"))
         ollama_check.assert_not_awaited()
+
+    def test_demo_ready_only_exposes_ollama(self):
+        cloud = mock.Mock(model="gpt-4.1-mini")
+        cloud.name = "openai"
+        settings = main.settings.__class__(
+            openai_api_key="k", provider="openai", pipeline="hybrid", detector="off", fallback="off",
+            demo_ollama_logs=True,
+        )
+        with (
+            mock.patch.object(main, "settings", settings),
+            mock.patch.object(main, "cloud_provider", cloud),
+        ):
+            response = TestClient(main.app).get("/api/ready")
+
+        visible = response.text.lower()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["provider"], "ollama")
+        self.assertEqual(response.json()["model"], settings.ollama_model)
+        self.assertNotIn("openai", visible)
+        self.assertNotIn("gpt", visible)
 
     def test_ready_fails_with_v4_when_ollama_is_down(self):
         settings = main.settings.__class__(pipeline="v4")

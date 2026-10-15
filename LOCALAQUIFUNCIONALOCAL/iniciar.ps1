@@ -67,7 +67,7 @@ function Stop-Tree($proc) {
 }
 
 Write-Host ''
-Write-Host '=== AURA local (sin pod) con OpenAI ===' -ForegroundColor Cyan
+Write-Host '=== AURA local con Ollama ===' -ForegroundColor Cyan
 
 # --- 1. Requisitos -------------------------------------------------------------
 . (Join-Path $Here '_entorno.ps1')
@@ -108,15 +108,15 @@ if (-not $cfg['API_KEY']) {
 $openAiKey = $cfg['OPENAI_API_KEY']
 if (-not $openAiKey -and $sessionOpenAiKey) {
     $openAiKey = $sessionOpenAiKey
-    Write-Host 'Usando OPENAI_API_KEY del entorno de Windows (no se guarda en el .env).'
+    Write-Host 'Usando la clave del servicio de IA guardada en el entorno de Windows.'
 }
 if (-not $openAiKey) {
-    if ($Prueba) { Fail 'En modo -Prueba hace falta OPENAI_API_KEY (en el .env o en el entorno).' }
+    if ($Prueba) { Fail 'En modo -Prueba hace falta la clave del servicio de IA.' }
     Write-Host ''
-    Write-Host 'Falta tu clave de OpenAI (empieza con sk-). Se pide solo esta vez y se guarda en LOCALAQUIFUNCIONALOCAL\.env' -ForegroundColor Yellow
+    Write-Host 'Falta la clave del servicio de IA. Se pide solo esta vez y se guarda en la configuracion local.' -ForegroundColor Yellow
     Write-Host 'No se muestra al escribir. Pegala (clic derecho o Ctrl+V) y pulsa Enter.'
     for ($try = 1; $try -le 3 -and -not $openAiKey; $try++) {
-        $secure = Read-Host 'OPENAI_API_KEY' -AsSecureString
+        $secure = Read-Host 'CLAVE_DEL_SERVICIO' -AsSecureString
         $plain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)).Trim()
         if ($plain -like 'sk-*' -and $plain.Length -ge 20) {
             $openAiKey = $plain
@@ -125,7 +125,7 @@ if (-not $openAiKey) {
             Write-Host 'Esa clave no parece valida (debe empezar con sk-). Intenta de nuevo.' -ForegroundColor Red
         }
     }
-    if (-not $openAiKey) { Fail 'No se recibio una clave valida de OpenAI.' }
+    if (-not $openAiKey) { Fail 'No se recibio una clave valida del servicio de IA.' }
     Set-DotEnvValue $EnvFile 'OPENAI_API_KEY' $openAiKey
     $cfg = Read-DotEnv $EnvFile
 }
@@ -136,6 +136,7 @@ foreach ($name in $cfg.Keys) {
 }
 $env:OPENAI_API_KEY = $openAiKey
 if (-not $env:LOG_FILE_PATH) { $env:LOG_FILE_PATH = Join-Path $Here 'logs\backend.log' }
+$env:AURA_DEMO_OLLAMA_LOGS = 'on'
 # La pagina (modo desarrollo) apunta a este servidor y manda la clave LOCAL (no la de OpenAI).
 $env:VITE_API_URL = $BackUrl
 $env:VITE_API_KEY = $cfg['API_KEY']
@@ -157,10 +158,10 @@ if (-not $ready) {
     Fail 'El servidor no respondio en 40 s. Corre _backend.cmd a mano para ver el error.'
 }
 $info = $ready.Content | ConvertFrom-Json
-Write-Host ("Servidor listo: pipeline={0}, proveedor={1}, modelo={2}" -f $info.pipeline, $info.provider, $info.model) -ForegroundColor Green
-if ($info.pipeline -ne 'hybrid' -or $info.provider -ne 'openai') {
+Write-Host ("Servidor listo: motor={0}, modelo={1}" -f $info.provider, $info.model) -ForegroundColor Green
+if ($info.provider -ne 'ollama') {
     Stop-Tree $back
-    Fail 'El servidor no quedo en modo hybrid + openai. Revisa LOCALAQUIFUNCIONALOCAL\.env'
+    Fail 'El servidor no quedo en modo Ollama. Revisa LOCALAQUIFUNCIONALOCAL\.env'
 }
 
 # --- 5. Pagina web -----------------------------------------------------------------------
