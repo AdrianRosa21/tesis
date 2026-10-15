@@ -130,6 +130,13 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(load_settings({"AURA_DETECT_GRACE_S": "4"}).detect_grace_s, 4.0)
         self.assertEqual(load_settings({"AURA_DETECT_GRACE_S": "mucho"}).detect_grace_s, 1.5)
 
+    def test_cloud_response_log_defaults_on_and_is_configurable(self):
+        self.assertEqual(load_settings({}).log_cloud_response_chars, 1500)
+        self.assertEqual(load_settings({"AURA_LOG_CLOUD_RESPONSE_CHARS": "300"}).log_cloud_response_chars, 300)
+        self.assertEqual(load_settings({"AURA_LOG_CLOUD_RESPONSE_CHARS": "0"}).log_cloud_response_chars, 0)
+        self.assertEqual(load_settings({"AURA_LOG_CLOUD_RESPONSE_CHARS": "-5"}).log_cloud_response_chars, 0)
+        self.assertEqual(load_settings({"AURA_LOG_CLOUD_RESPONSE_CHARS": "mucho"}).log_cloud_response_chars, 1500)
+
     def test_engine_tag_changes_with_detector_model(self):
         with_detector = load_settings({"GEMINI_API_KEY": "k"})
         without_detector = load_settings({"GEMINI_API_KEY": "k", "AURA_DETECTOR": "off"})
@@ -902,6 +909,40 @@ class HybridPipelineTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertTrue(any("Clasificacion" in line and "'imagen': True" in line for line in logs.output))
         self.assertEqual(local.calls, [])  # Ollama no participa para nada
+
+    async def test_log_prints_the_cloud_response_with_the_real_provider_name(self):
+        settings = Settings(openai_api_key="k", provider="openai", detector="off", fallback="off")
+        cloud = FakeProvider("openai", "gpt-4.1-mini", [_json_result([
+            {"tipo": "texto", "contenido": "Hola mundo.", "idioma": "es"},
+        ])])
+        local = FakeProvider("ollama", "qwen2.5vl", [_classification()])
+
+        with self.assertLogs("aura", level="INFO") as logs:
+            await self._run(cloud, local, settings)
+
+        lines = [line for line in logs.output if "Respuesta " in line]
+        self.assertEqual(len(lines), 1)
+        self.assertIn("Respuesta openai (gpt-4.1-mini):", lines[0])
+        self.assertIn("Hola mundo.", lines[0])
+        self.assertNotIn("ollama", lines[0].lower())
+        self.assertNotIn("\n", lines[0])
+
+    async def test_cloud_response_log_is_cut_when_long_and_can_be_turned_off(self):
+        cloud_blocks = [{"tipo": "texto", "contenido": "Una frase bastante larga para recortar.", "idioma": "es"}]
+        local = FakeProvider("ollama", "qwen2.5vl", [_classification()])
+
+        short = Settings(gemini_api_key="k", detector="off", fallback="off", log_cloud_response_chars=20)
+        with self.assertLogs("aura", level="INFO") as logs:
+            await self._run(FakeProvider("gemini", "m", [_json_result(cloud_blocks)]), local, short)
+        cut = [line for line in logs.output if "Respuesta gemini" in line]
+        self.assertEqual(len(cut), 1)
+        self.assertIn("caracteres)", cut[0])
+        self.assertNotIn("recortar", cut[0])
+
+        off = Settings(gemini_api_key="k", detector="off", fallback="off", log_cloud_response_chars=0)
+        with self.assertLogs("aura", level="INFO") as logs:
+            await self._run(FakeProvider("gemini", "m", [_json_result(cloud_blocks)]), local, off)
+        self.assertFalse(any("Respuesta gemini" in line for line in logs.output))
 
     async def test_followup_goes_to_the_cloud_when_detector_sees_an_undescribed_image(self):
         cloud = FakeProvider("gemini", "m", [

@@ -107,6 +107,15 @@ def _log_usage(provider: str, model: str, result: ModelResult) -> None:
     )
 
 
+def _log_response(provider: str, model: str, result: ModelResult, limit: int) -> None:
+    """Imprime lo que respondio el proveedor de la nube, con su nombre real (openai, gemini...), en una sola linea."""
+    if limit <= 0:
+        return
+    text = " ".join(result.text.split())
+    more = f" … (+{len(text) - limit} caracteres)" if len(text) > limit else ""
+    logger.info(f"Respuesta {provider} ({model}): {text[:limit]}{more}")
+
+
 # ---------------------------------------------------------------------------
 # v3
 # ---------------------------------------------------------------------------
@@ -355,6 +364,7 @@ async def run_hybrid(
         )
         extraction_step = _step("extraccion", cloud.name, t0)
         _log_usage(cloud.name, cloud.model, result)
+        _log_response(cloud.name, cloud.model, result, settings.log_cloud_response_chars)
     except (ProviderError, httpx.HTTPError) as exc:
         if detect_task:
             detect_task.cancel()

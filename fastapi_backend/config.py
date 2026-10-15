@@ -89,6 +89,9 @@ class Settings:
     # Tope global de paginas leidas por la nube al dia (0 = sin tope). Protege el saldo: al llegar,
     # AURA sigue funcionando con el respaldo local en vez de seguir gastando.
     cloud_max_pages_per_day: int = 0
+    # Caracteres de la respuesta de la nube que se imprimen en los logs (0 = no imprimir). Los logs quedan en el
+    # historial del servidor, asi que ahi se guarda tambien parte del texto de la pagina.
+    log_cloud_response_chars: int = 1500
     log_file_path: str = "/workspace/aura/logs/backend.log"
 
     @property
@@ -209,5 +212,6 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         tts_max_chars=max(50, _number(env, "AURA_TTS_MAX_CHARS", 600, int)),
         tts_rate_limit_per_min=_number(env, "AURA_TTS_RATE_LIMIT_PER_MIN", 300, int),
         cloud_max_pages_per_day=_number(env, "AURA_CLOUD_MAX_PAGES_PER_DAY", 0, int),
+        log_cloud_response_chars=max(0, _number(env, "AURA_LOG_CLOUD_RESPONSE_CHARS", 1500, int)),
         log_file_path=_text(env, "LOG_FILE_PATH", "/workspace/aura/logs/backend.log"),
     )
