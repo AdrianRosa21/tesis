@@ -42,6 +42,9 @@ class DescribeImageEndpointTests(unittest.TestCase):
             mock.patch.object(main, "API_KEY_SECRET", KEY),
             mock.patch.object(main, "image_cache", ResponseCache(8)),
             mock.patch.object(main, "rate_limiter", RateLimiter(3)),
+            # Las pruebas no deben depender del .env de produccion (que puede tener
+            # activada la presentacion de demostracion).
+            mock.patch.object(main, "settings", Settings()),
         ]
         for patch in patches:
             patch.start()

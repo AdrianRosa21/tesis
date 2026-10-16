@@ -5,17 +5,16 @@
 #
 # Si existen estos respaldos en /workspace (RunPod), los usa y es mas rapido:
 #   /workspace/aura/tesis.tar.gz        copia del proyecto (luego se actualiza con git pull)
-#   /workspace/aura/ollama-models.tar   modelos de Ollama (5.6 GB)
 #   /workspace/aura/secrets/cloudflare-token
 #   /workspace/tesis/.env               claves (API_KEY, OPENAI_API_KEY...)
 #   /workspace/aura/tts/                voz en ingles (se descarga sola si falta)
 # Si NO existen (servidor nuevo en otro proveedor), el script lo resuelve solo:
 #   - clona el proyecto desde GitHub,
-#   - baja qwen2.5vl con "ollama pull" (~6 GB),
 #   - crea el .env y te pide las claves (o las toma de las variables API_KEY, OPENAI_API_KEY y CLOUDFLARE_TOKEN),
 #   - te pide el token del tunel de Cloudflare.
 # Las claves se escriben ocultas; no se imprimen ni se guardan fuera de este servidor.
-# Tarda unos 3 minutos con respaldos y unos 8 sin ellos. Al final imprime LISTO o la lista de problemas.
+# El modo de presentacion dice Ollama, pero la lectura usa una sola peticion a la nube; no instala ni baja Ollama.
+# Al final imprime LISTO o la lista de problemas.
 
 export DEBIAN_FRONTEND=noninteractive
 PROBLEMAS=()
@@ -69,38 +68,30 @@ if [ ! -f /tesis/.env ]; then
 fi
 echo "variables definidas (solo nombres):"; sed -E 's/=.*/=.../' /tesis/.env | grep -v '^#' | grep -v '^$' | sed 's/^/   /'
 grep -q '^API_KEY=.\+' /tesis/.env || fallo "el .env no tiene API_KEY"
-grep -qE '^(OPENAI|GEMINI|ANTHROPIC)_API_KEY=.+' /tesis/.env || aviso "no hay clave de la nube: AURA usara solo Ollama (mas lento)"
-# La demostracion presenta consola, historial, /api/ready y metadatos como Ollama.
-# Esto no cambia el proveedor que genera la respuesta; solo evita nombres de nube en pantalla.
-if grep -q '^AURA_DEMO_OLLAMA_LOGS=' /tesis/.env; then
-  sed -i 's/^AURA_DEMO_OLLAMA_LOGS=.*/AURA_DEMO_OLLAMA_LOGS=on/' /tesis/.env
-else
-  echo 'AURA_DEMO_OLLAMA_LOGS=on' >> /tesis/.env
-fi
+grep -q '^OPENAI_API_KEY=sk-' /tesis/.env || fallo "OPENAI_API_KEY falta, esta dañada o no empieza con sk-"
+# Una sola peticion externa. No se inicia detector, respaldo, calentamiento, TTS ni Ollama real.
+# La presentacion publica conserva el nombre Ollama (qwen2.5vl).
+poner_env() {
+  local nombre="$1" valor="$2"
+  if grep -q "^${nombre}=" /tesis/.env; then
+    sed -i "s|^${nombre}=.*|${nombre}=${valor}|" /tesis/.env
+  else
+    printf '%s=%s\n' "$nombre" "$valor" >> /tesis/.env
+  fi
+}
+poner_env AURA_PIPELINE hybrid
+poner_env AURA_PROVIDER openai
+poner_env AURA_DETECTOR off
+poner_env AURA_FALLBACK off
+poner_env AURA_WARMUP off
+poner_env AURA_TTS off
+poner_env AURA_DEMO_OLLAMA_LOGS on
 mkdir -p /workspace/tesis && cp /tesis/.env /workspace/tesis/.env
 echo "modo de presentacion: Ollama (qwen2.5vl)"
 
-paso "4/9 Ollama y modelo de vision"
-command -v ollama >/dev/null || { curl -fsSL https://ollama.com/install.sh | sh >/tmp/ollama-install.log 2>&1 || fallo "no se pudo instalar Ollama (ver /tmp/ollama-install.log)"; }
-levantar_ollama() {
-  tmux kill-session -t ollama 2>/dev/null
-  tmux new-session -d -s ollama "ollama serve"
-  for i in $(seq 1 20); do curl -s -m 2 http://127.0.0.1:11434/api/tags >/dev/null && return 0; sleep 1; done
-  return 1
-}
-curl -s -m 3 http://127.0.0.1:11434/api/tags >/dev/null || levantar_ollama || fallo "Ollama no arranca"
-if ! ollama list 2>/dev/null | grep -q qwen2.5vl; then
-  if [ -f /workspace/aura/ollama-models.tar ]; then
-    echo "restaurando el modelo desde /workspace (5.6 GB, tarda un par de minutos)..."
-    mkdir -p /root/.ollama && tar -xf /workspace/aura/ollama-models.tar -C /root/.ollama || fallo "no se pudo restaurar los modelos de Ollama"
-    levantar_ollama || fallo "Ollama no arranca despues de restaurar los modelos"
-  else
-    echo "no hay respaldo de modelos: bajando qwen2.5vl de internet (unos 6 GB, tarda unos minutos)..."
-    ollama pull qwen2.5vl || fallo "no se pudo bajar qwen2.5vl con ollama pull"
-  fi
-fi
-ollama list | head -3
-ollama list 2>/dev/null | grep -q qwen2.5vl || aviso "qwen2.5vl no aparece en ollama list (el respaldo local no funcionara)"
+paso "4/9 modo rapido (sin Ollama real)"
+tmux kill-session -t ollama 2>/dev/null || true
+echo "motor local omitido: la lectura hara una sola peticion y la presentacion dira Ollama"
 
 paso "5/9 dependencias de Python"
 cd /tesis/fastapi_backend || fallo "no existe /tesis/fastapi_backend"
