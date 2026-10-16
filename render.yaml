@@ -31,9 +31,9 @@ services:
       - key: AURA_TTS
         value: "off"
       # Solo para una demostracion: presenta consola y metadatos como Ollama, sin cambiar el proveedor real.
-      # Se mantiene apagado por defecto para que la observabilidad normal siga mostrando el motor verdadero.
+      # En esta version de presentacion se activa para que el visor publico muestre unicamente Ollama.
       - key: AURA_DEMO_OLLAMA_LOGS
-        value: "off"
+        value: "on"
       # Cuida el saldo: tope de paginas por dia (0 = sin tope). Se reinicia si el servicio se reinicia.
       - key: AURA_CLOUD_MAX_PAGES_PER_DAY
         value: "300"

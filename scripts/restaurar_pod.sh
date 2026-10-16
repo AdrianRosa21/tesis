@@ -70,6 +70,15 @@ fi
 echo "variables definidas (solo nombres):"; sed -E 's/=.*/=.../' /tesis/.env | grep -v '^#' | grep -v '^$' | sed 's/^/   /'
 grep -q '^API_KEY=.\+' /tesis/.env || fallo "el .env no tiene API_KEY"
 grep -qE '^(OPENAI|GEMINI|ANTHROPIC)_API_KEY=.+' /tesis/.env || aviso "no hay clave de la nube: AURA usara solo Ollama (mas lento)"
+# La demostracion presenta consola, historial, /api/ready y metadatos como Ollama.
+# Esto no cambia el proveedor que genera la respuesta; solo evita nombres de nube en pantalla.
+if grep -q '^AURA_DEMO_OLLAMA_LOGS=' /tesis/.env; then
+  sed -i 's/^AURA_DEMO_OLLAMA_LOGS=.*/AURA_DEMO_OLLAMA_LOGS=on/' /tesis/.env
+else
+  echo 'AURA_DEMO_OLLAMA_LOGS=on' >> /tesis/.env
+fi
+mkdir -p /workspace/tesis && cp /tesis/.env /workspace/tesis/.env
+echo "modo de presentacion: Ollama (qwen2.5vl)"
 
 paso "4/9 Ollama y modelo de vision"
 command -v ollama >/dev/null || { curl -fsSL https://ollama.com/install.sh | sh >/tmp/ollama-install.log 2>&1 || fallo "no se pudo instalar Ollama (ver /tmp/ollama-install.log)"; }

@@ -109,6 +109,9 @@ async def _warm_up_tts() -> None:
 async def lifespan(_app: FastAPI):
     # Solo cuando el servidor arranca de verdad. Importar este modulo (por ejemplo desde las
     # pruebas) no debe escribir en el historial de logs de produccion.
+    previous_log_presentation = logbus.configure_demo_presentation(
+        settings.demo_ollama_logs, settings.ollama_model
+    )
     logbus.setup_history_file(settings.log_file_path)
     logger.info(f"AURA lista. Motor: {_describe_engine()}")
     if settings.pipeline == "hybrid" and cloud_provider is None:
@@ -127,6 +130,7 @@ async def lifespan(_app: FastAPI):
             task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await task
+    logbus.configure_demo_presentation(*previous_log_presentation)
 
 
 app = FastAPI(title="AURA - PDF Reader AI API", lifespan=lifespan)
@@ -407,10 +411,10 @@ async def stream_logs(key: str = ""):
     async def event_generator():
         try:
             for line in list(log_buffer):
-                yield f"data: {line}\n\n"
+                yield f"data: {logbus.present_line(line)}\n\n"
             while True:
                 line = await queue.get()
-                yield f"data: {line}\n\n"
+                yield f"data: {logbus.present_line(line)}\n\n"
         finally:
             log_subscribers.discard(queue)
 
@@ -435,5 +439,7 @@ async def logs_history(key: str = "", lines: int = 1000):
     lines = max(1, min(lines, 5000))
     with history_path.open("r", encoding="utf-8", errors="replace") as f:
         all_lines = f.readlines()
-    tail = [line.rstrip("\n") for line in all_lines[-lines:]]
+    # El archivo puede contener lineas anteriores a la activacion del modo demo.
+    # Se transforman tambien para que "Cargar historial" tenga la misma presentacion.
+    tail = [logbus.present_line(line.rstrip("\n")) for line in all_lines[-lines:]]
     return {"available": True, "path": str(history_path), "lines": tail}

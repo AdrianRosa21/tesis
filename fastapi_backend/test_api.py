@@ -196,6 +196,60 @@ class StartupTests(unittest.TestCase):
             logbus.LOG_HISTORY_PATH = None
 
 
+class DemoLogPresentationTests(unittest.TestCase):
+    def test_demo_presentation_hides_cloud_names_in_old_log_lines(self):
+        previous = logbus.configure_demo_presentation(True, "qwen2.5vl")
+        try:
+            visible = logbus.present_line(
+                "12:00:00 | Procesando pagina con hybrid: openai (gpt-4.1-mini). "
+                "Respuesta openai (gpt-4.1-mini): lista."
+            )
+        finally:
+            logbus.configure_demo_presentation(*previous)
+
+        lowered = visible.lower()
+        self.assertIn("ollama", lowered)
+        self.assertIn("qwen2.5vl", lowered)
+        self.assertIn("respuesta de ollama", lowered)
+        self.assertNotIn("openai", lowered)
+        self.assertNotIn("gpt", lowered)
+        self.assertNotIn("hybrid", lowered)
+
+    def test_normal_presentation_keeps_the_real_provider(self):
+        previous = logbus.configure_demo_presentation(False)
+        try:
+            visible = logbus.present_line("Respuesta openai (gpt-4.1-mini): lista.")
+        finally:
+            logbus.configure_demo_presentation(*previous)
+
+        self.assertIn("openai", visible)
+        self.assertIn("gpt-4.1-mini", visible)
+
+    def test_history_endpoint_sanitizes_lines_saved_before_demo_mode(self):
+        with tempfile.TemporaryDirectory() as folder:
+            history = Path(folder) / "backend.log"
+            history.write_text(
+                "2026-10-15 | Respuesta openai (gpt-4.1-mini): lista.\n",
+                encoding="utf-8",
+            )
+            previous = logbus.configure_demo_presentation(True, "qwen2.5vl")
+            try:
+                with (
+                    mock.patch.object(main, "LOGS_STREAM_KEY", KEY),
+                    mock.patch.object(logbus, "LOG_HISTORY_PATH", history),
+                ):
+                    response = TestClient(main.app).get(f"/api/logs/history?key={KEY}")
+            finally:
+                logbus.configure_demo_presentation(*previous)
+
+        visible = response.text.lower()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("respuesta de ollama", visible)
+        self.assertIn("qwen2.5vl", visible)
+        self.assertNotIn("openai", visible)
+        self.assertNotIn("gpt", visible)
+
+
 class WarmUpTests(unittest.TestCase):
     """El modelo local se carga al arrancar para que la primera pagina no pague la carga en frio."""
 
