@@ -1,0 +1,3 @@
+Guarda aqui cada captura con el nombre EXACTO que indica la guia (por ejemplo B1-1-github-nuevo-repositorio.png).
+Antes de guardar una captura, revisa que no se vea ninguna clave, token, tarjeta ni correo.
+Cuando termines, comprime esta carpeta en un .zip y mandala a Victoria junto con el PDF de la guia.

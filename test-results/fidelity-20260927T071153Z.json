@@ -75,6 +75,27 @@
       "forbidden_matches": [],
       "unprefixed_line_count": 0,
       "warnings": []
+    },
+    {
+      "case": "F09",
+      "file": "F09_articulo_dos_columnas.pdf",
+      "run": 3,
+      "duration_seconds": 28.82,
+      "description": "[TEXTO] Artículo científico breve: percepción multimodal La percepción multimodal combina información textual y visual. En documentos científicos, el orden de lectura importa porque una página puede contener encabezados, notas y referencias. La columna izquierda presenta el contexto, la metodología y parte de los resultados.\n[TEXTO] La segunda columna continúa el argumento. Los resultados muestran que conservar la relación espacial entre texto, figura y tabla reduce errores de interpretación. Esta columna termina con una conclusión y una referencia simulada.",
+      "automated_status": "candidate_pass",
+      "missing_anchors": [],
+      "forbidden_matches": [],
+      "unprefixed_line_count": 0,
+      "warnings": []
     }
-  ]
+  ],
+  "finished_at": "2026-09-27T07:13:55.076751+00:00",
+  "summary": {
+    "total": 6,
+    "candidate_pass": 3,
+    "errors": 0,
+    "pass_rate": 50.0,
+    "avg_seconds": 19.76,
+    "max_seconds": 28.82
+  }
 }

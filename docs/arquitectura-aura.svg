@@ -1,0 +1,281 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="910" viewBox="0 0 1700 910" role="img" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+<title>Arquitectura del sistema AURA</title>
+<desc>Diagrama de la arquitectura de AURA: el usuario, el navegador con el frontend React, el proxy de Vercel, el tunel de Cloudflare, el servidor propio en RunPod con FastAPI, Ollama y Piper, y la nube de IA (Gemini, OpenAI o Claude) usada por el modo hybrid.</desc>
+<defs>
+<marker id="ak" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#444441" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#0F6E56" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<marker id="ac" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#993C1D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+<rect width="1700" height="910" fill="#FFFFFF"/>
+<text x="20" y="44" font-size="28" font-weight="600" fill="#2C2C2A" text-anchor="start">AURA · Arquitectura del sistema</text>
+<text x="20" y="70" font-size="15" font-weight="400" fill="#5F5E5A" text-anchor="start">Aplicación web accesible: captura cada página de un PDF, la describe con IA multimodal y la lee en voz alta.</text>
+<rect x="20" y="96" width="140" height="590" rx="10" fill="#FFFFFF" stroke="#888780" stroke-width="1.2" stroke-dasharray="7 5"/>
+<text x="30" y="122" font-size="17" font-weight="600" fill="#2C2C2A" text-anchor="start">Usuario</text>
+<rect x="30" y="140" width="120" height="122" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<circle cx="90" cy="166" r="12" fill="#5F5E5A"/>
+<path d="M68 204 Q68 182 90 182 Q112 182 112 204 Z" fill="#5F5E5A"/>
+<text x="90" y="226" font-size="13" font-weight="600" fill="#2C2C2A" text-anchor="middle">Persona con</text>
+<text x="90" y="242" font-size="13" font-weight="600" fill="#2C2C2A" text-anchor="middle">discapacidad</text>
+<text x="90" y="258" font-size="13" font-weight="600" fill="#2C2C2A" text-anchor="middle">visual severa</text>
+<rect x="30" y="276" width="120" height="112" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<text x="40" y="297" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Teclado</text>
+<text x="40" y="316" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">F  analizar página</text>
+<text x="40" y="332" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">+ / −  velocidad</text>
+<text x="40" y="348" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">Espacio  pausa</text>
+<text x="40" y="364" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">Flechas  navegar</text>
+<rect x="30" y="402" width="120" height="50" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<text x="40" y="423" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Archivo PDF</text>
+<text x="40" y="442" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">del equipo</text>
+<rect x="30" y="478" width="120" height="66" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<text x="40" y="499" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Audio</text>
+<text x="40" y="518" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">bocinas o</text>
+<text x="40" y="534" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">audífonos</text>
+<rect x="186" y="96" width="340" height="590" rx="10" fill="#FFFFFF" stroke="#7F77DD" stroke-width="1.2" stroke-dasharray="7 5"/>
+<text x="196" y="122" font-size="17" font-weight="600" fill="#3C3489" text-anchor="start">Navegador (frontend)</text>
+<text x="196" y="141" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">React 19 + Vite + TS · aurapdf-one.vercel.app</text>
+<rect x="196" y="164" width="320" height="66" rx="6" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="206" y="185" font-size="14" font-weight="600" fill="#3C3489" text-anchor="start">pdfjs-dist</text>
+<text x="206" y="204" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">Renderiza la página (escala 3.0)</text>
+<text x="206" y="220" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">→ JPEG de 1600 px + texto nativo</text>
+<rect x="196" y="240" width="320" height="66" rx="6" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="206" y="261" font-size="14" font-weight="600" fill="#3C3489" text-anchor="start">Cliente de la API (ai.ts)</text>
+<text x="206" y="280" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">Envía imagen + texto de la página</text>
+<text x="206" y="296" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">Recibe description y elements</text>
+<rect x="196" y="316" width="155" height="82" rx="6" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="206" y="337" font-size="14" font-weight="600" fill="#3C3489" text-anchor="start">Voz del navegador</text>
+<text x="206" y="356" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">Web Speech (TTS)</text>
+<text x="206" y="372" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">voz según idioma</text>
+<text x="206" y="388" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">velocidad + / −</text>
+<rect x="361" y="316" width="155" height="82" rx="6" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="371" y="337" font-size="14" font-weight="600" fill="#3C3489" text-anchor="start">Voz del servidor</text>
+<text x="371" y="356" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">Piper, solo inglés</text>
+<text x="371" y="372" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">si el navegador</text>
+<text x="371" y="388" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">no tiene voz EN</text>
+<rect x="196" y="410" width="155" height="66" rx="6" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="206" y="431" font-size="14" font-weight="600" fill="#3C3489" text-anchor="start">IndexedDB</text>
+<text x="206" y="450" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">guarda el PDF abierto</text>
+<text x="206" y="466" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">en el propio navegador</text>
+<rect x="361" y="410" width="155" height="66" rx="6" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="371" y="431" font-size="14" font-weight="600" fill="#3C3489" text-anchor="start">Hooks del lector</text>
+<text x="371" y="450" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">análisis, navegación,</text>
+<text x="371" y="466" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">teclas y velocidad</text>
+<rect x="196" y="488" width="320" height="66" rx="6" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="206" y="509" font-size="14" font-weight="600" fill="#3C3489" text-anchor="start">Panel de análisis</text>
+<text x="206" y="528" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">tipo de página, motor y</text>
+<text x="206" y="544" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">elementos detectados</text>
+<rect x="196" y="566" width="320" height="50" rx="6" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="206" y="587" font-size="14" font-weight="600" fill="#3C3489" text-anchor="start">Pantallas</text>
+<text x="206" y="606" font-size="12.5" font-weight="400" fill="#534AB7" text-anchor="start">Inicio · Lector · Tutorial</text>
+<rect x="552" y="96" width="148" height="590" rx="10" fill="#FFFFFF" stroke="#888780" stroke-width="1.2" stroke-dasharray="7 5"/>
+<text x="562" y="122" font-size="17" font-weight="600" fill="#2C2C2A" text-anchor="start">Vercel</text>
+<text x="562" y="141" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">Functions (proxy)</text>
+<rect x="562" y="232" width="128" height="82" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<text x="572" y="253" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">describe-image</text>
+<text x="572" y="272" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">clave privada</text>
+<text x="572" y="288" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">(AURA_API_KEY)</text>
+<text x="572" y="304" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">maxDuration 300 s</text>
+<rect x="562" y="324" width="128" height="66" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<text x="572" y="345" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">tts</text>
+<text x="572" y="364" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">voz del servidor</text>
+<text x="572" y="380" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">maxDuration 30 s</text>
+<rect x="562" y="410" width="128" height="82" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<text x="572" y="431" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">IP real</text>
+<text x="572" y="450" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">x-aura-client-ip</text>
+<text x="572" y="466" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">para el límite</text>
+<text x="572" y="482" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">por persona</text>
+<rect x="562" y="504" width="128" height="66" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<text x="572" y="525" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Seguridad</text>
+<text x="572" y="544" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">La clave nunca</text>
+<text x="572" y="560" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">llega al navegador</text>
+<rect x="724" y="96" width="128" height="590" rx="10" fill="#FFFFFF" stroke="#888780" stroke-width="1.2" stroke-dasharray="7 5"/>
+<text x="734" y="122" font-size="17" font-weight="600" fill="#2C2C2A" text-anchor="start">Cloudflare</text>
+<text x="734" y="141" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">Túnel</text>
+<rect x="734" y="232" width="108" height="146" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<text x="744" y="253" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Túnel</text>
+<text x="744" y="272" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">Lleva la</text>
+<text x="744" y="288" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">petición al</text>
+<text x="744" y="304" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">pod.</text>
+<text x="744" y="320" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">Corta a los</text>
+<text x="744" y="336" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">~100 s: cada</text>
+<text x="744" y="352" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">página debe</text>
+<text x="744" y="368" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">tardar &lt; 90 s</text>
+<rect x="876" y="96" width="600" height="590" rx="10" fill="#FFFFFF" stroke="#1D9E75" stroke-width="1.2" stroke-dasharray="7 5"/>
+<text x="886" y="122" font-size="17" font-weight="600" fill="#085041" text-anchor="start">Servidor propio (RunPod)</text>
+<text x="886" y="141" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">GPU PRO 6000 MIG 24 GB · FastAPI · api.aura4blinds.online</text>
+<rect x="886" y="160" width="270" height="66" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="896" y="181" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Configuración (.env)</text>
+<text x="896" y="200" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">AURA_PIPELINE, AURA_PROVIDER,</text>
+<text x="896" y="216" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">claves de nube, AURA_WARMUP</text>
+<rect x="886" y="240" width="270" height="132" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="896" y="261" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Endpoints (main.py)</text>
+<text x="896" y="280" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">POST /api/describe-image</text>
+<text x="896" y="296" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">POST /api/tts · GET /api/tts/status</text>
+<text x="896" y="312" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">GET /api/health · /api/ready</text>
+<text x="896" y="328" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">GET /api/logs/stream · /history</text>
+<rect x="886" y="384" width="270" height="208" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="896" y="405" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Protecciones</text>
+<rect x="896" y="418" width="250" height="24" rx="4" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="0.8"/>
+<text x="904" y="434.5" font-size="12.5" font-weight="400" fill="#085041" text-anchor="start">Valida la API key</text>
+<rect x="896" y="446" width="250" height="24" rx="4" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="0.8"/>
+<text x="904" y="462.5" font-size="12.5" font-weight="400" fill="#085041" text-anchor="start">Límite de 5 MB por imagen</text>
+<rect x="896" y="474" width="250" height="24" rx="4" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="0.8"/>
+<text x="904" y="490.5" font-size="12.5" font-weight="400" fill="#085041" text-anchor="start">Límite de peticiones por IP</text>
+<rect x="896" y="502" width="250" height="24" rx="4" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="0.8"/>
+<text x="904" y="518.5" font-size="12.5" font-weight="400" fill="#085041" text-anchor="start">Caché LRU: imagen + motor + prompt</text>
+<rect x="896" y="530" width="250" height="24" rx="4" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="0.8"/>
+<text x="904" y="546.5" font-size="12.5" font-weight="400" fill="#085041" text-anchor="start">Tope diario de páginas a la nube</text>
+<rect x="896" y="558" width="250" height="24" rx="4" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="0.8"/>
+<text x="904" y="574.5" font-size="12.5" font-weight="400" fill="#085041" text-anchor="start">Lock: una página a la vez (GPU)</text>
+<rect x="886" y="604" width="270" height="66" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="896" y="625" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Piper TTS (tts.py)</text>
+<text x="896" y="644" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">voz en inglés (en_US-lessac)</text>
+<text x="896" y="660" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">el texto no sale del servidor</text>
+<rect x="1184" y="160" width="282" height="256" rx="8" fill="#FFFFFF" stroke="#1D9E75" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="1194" y="181" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Pipeline de IA (pipeline.py)</text>
+<rect x="1194" y="192" width="262" height="82" rx="6" fill="#9FE1CB" stroke="#0F6E56" stroke-width="1"/>
+<text x="1204" y="213" font-size="14" font-weight="600" fill="#085041" text-anchor="start">hybrid · modo por defecto</text>
+<text x="1204" y="232" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">1. La nube lee la página (JSON)</text>
+<text x="1204" y="248" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">2. Ollama detecta el tipo en paralelo</text>
+<text x="1204" y="264" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">3. Ollama completa lo visual</text>
+<line x1="1257" y1="274" x2="1257" y2="322" stroke="#0F6E56" stroke-width="1.8" marker-end="url(#at)"/>
+<text x="1268" y="303" font-size="12" font-weight="400" fill="#0F6E56" text-anchor="start">respaldo si la nube falla</text>
+<rect x="1194" y="322" width="125" height="82" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="1204" y="343" font-size="14" font-weight="600" fill="#085041" text-anchor="start">v4 · local</text>
+<text x="1204" y="362" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">clasifica la</text>
+<text x="1204" y="378" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">página, prompt</text>
+<text x="1204" y="394" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">corto + JSON</text>
+<rect x="1331" y="322" width="125" height="82" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="1341" y="343" font-size="14" font-weight="600" fill="#085041" text-anchor="start">v3 · local</text>
+<text x="1341" y="362" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">prompt único,</text>
+<text x="1341" y="378" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">línea base</text>
+<text x="1341" y="394" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">para el A/B</text>
+<rect x="1184" y="438" width="282" height="128" rx="8" fill="#FFFFFF" stroke="#1D9E75" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="1194" y="459" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Proveedores (providers/)</text>
+<rect x="1194" y="472" width="125" height="82" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="1204" y="493" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Ollama</text>
+<text x="1204" y="512" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">qwen2.5vl</text>
+<text x="1204" y="528" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">en la GPU</text>
+<text x="1204" y="544" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">del pod</text>
+<rect x="1331" y="472" width="125" height="82" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="1341" y="493" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Adaptadores</text>
+<text x="1341" y="512" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">Gemini</text>
+<text x="1341" y="528" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">OpenAI</text>
+<text x="1341" y="544" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">Claude</text>
+<rect x="1184" y="588" width="140" height="82" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="1194" y="609" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Respuesta</text>
+<text x="1194" y="628" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">description,</text>
+<text x="1194" y="644" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">elements,</text>
+<text x="1194" y="660" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">page_type, model</text>
+<rect x="1336" y="588" width="130" height="82" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="1346" y="609" font-size="14" font-weight="600" fill="#085041" text-anchor="start">Logs en vivo</text>
+<text x="1346" y="628" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">logbus.py</text>
+<text x="1346" y="644" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">stream (SSE) e</text>
+<text x="1346" y="660" font-size="12.5" font-weight="400" fill="#0F6E56" text-anchor="start">historial</text>
+<rect x="1500" y="96" width="180" height="590" rx="10" fill="#FFFFFF" stroke="#D85A30" stroke-width="1.2" stroke-dasharray="7 5"/>
+<text x="1510" y="122" font-size="17" font-weight="600" fill="#712B13" text-anchor="start">Nube de IA</text>
+<text x="1510" y="141" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">solo en modo hybrid</text>
+<rect x="1510" y="160" width="160" height="146" rx="6" fill="#F5C4B3" stroke="#993C1D" stroke-width="1"/>
+<text x="1520" y="181" font-size="14" font-weight="600" fill="#712B13" text-anchor="start">Privacidad</text>
+<text x="1520" y="200" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">En hybrid cada página</text>
+<text x="1520" y="216" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">sale del servidor y se</text>
+<text x="1520" y="232" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">envía a la nube del</text>
+<text x="1520" y="248" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">proveedor elegido.</text>
+<text x="1520" y="264" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">En v4 y v3 la página</text>
+<text x="1520" y="280" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">se queda en el</text>
+<text x="1520" y="296" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">servidor propio.</text>
+<rect x="1510" y="464" width="160" height="98" rx="6" fill="#FAECE7" stroke="#993C1D" stroke-width="1"/>
+<text x="1520" y="485" font-size="14" font-weight="600" fill="#712B13" text-anchor="start">Modelo en la nube</text>
+<text x="1520" y="504" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">Google Gemini</text>
+<text x="1520" y="520" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">OpenAI gpt-4.1-mini</text>
+<text x="1520" y="536" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">Anthropic Claude</text>
+<text x="1520" y="552" font-size="12.5" font-weight="400" fill="#993C1D" text-anchor="start">(AURA_PROVIDER)</text>
+<line x1="152" y1="332" x2="184" y2="332" stroke="#444441" stroke-width="1.8" marker-end="url(#ak)"/>
+<line x1="152" y1="432" x2="184" y2="432" stroke="#444441" stroke-width="1.8" marker-end="url(#ak)"/>
+<line x1="184" y1="518" x2="152" y2="518" stroke="#444441" stroke-width="1.8" marker-end="url(#ak)"/>
+<line x1="518" y1="273" x2="560" y2="273" stroke="#444441" stroke-width="1.8" marker-end="url(#ak)" marker-start="url(#ak)"/>
+<line x1="692" y1="273" x2="732" y2="273" stroke="#444441" stroke-width="1.8" marker-end="url(#ak)" marker-start="url(#ak)"/>
+<line x1="844" y1="273" x2="884" y2="273" stroke="#444441" stroke-width="1.8" marker-end="url(#ak)" marker-start="url(#ak)"/>
+<line x1="518" y1="357" x2="560" y2="357" stroke="#444441" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#ak)" marker-start="url(#ak)"/>
+<line x1="692" y1="357" x2="732" y2="357" stroke="#444441" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#ak)" marker-start="url(#ak)"/>
+<line x1="844" y1="357" x2="884" y2="357" stroke="#444441" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#ak)" marker-start="url(#ak)"/>
+<line x1="1158" y1="400" x2="1182" y2="400" stroke="#0F6E56" stroke-width="1.8" marker-end="url(#at)"/>
+<line x1="1325" y1="416" x2="1325" y2="438" stroke="#0F6E56" stroke-width="1.8" marker-end="url(#at)"/>
+<line x1="1254" y1="566" x2="1254" y2="588" stroke="#0F6E56" stroke-width="1.8" marker-end="url(#at)"/>
+<line x1="1458" y1="513" x2="1508" y2="513" stroke="#993C1D" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#ac)" marker-start="url(#ac)"/>
+<circle cx="516" cy="164" r="11" fill="#2C2C2A"/>
+<text x="516" y="168.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">1</text>
+<circle cx="690" cy="232" r="11" fill="#2C2C2A"/>
+<text x="690" y="236.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">2</text>
+<circle cx="842" cy="232" r="11" fill="#2C2C2A"/>
+<text x="842" y="236.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">3</text>
+<circle cx="1156" cy="384" r="11" fill="#2C2C2A"/>
+<text x="1156" y="388.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">4</text>
+<circle cx="1466" cy="160" r="11" fill="#2C2C2A"/>
+<text x="1466" y="164.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">5</text>
+<circle cx="1324" cy="588" r="11" fill="#2C2C2A"/>
+<text x="1324" y="592.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">6</text>
+<circle cx="351" cy="316" r="11" fill="#2C2C2A"/>
+<text x="351" y="320.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">7</text>
+<text x="20" y="722" font-size="17" font-weight="600" fill="#2C2C2A" text-anchor="start">Qué pasa cuando el usuario presiona F</text>
+<rect x="20" y="736" width="222" height="92" rx="6" fill="#FFFFFF" stroke="#B4B2A9" stroke-width="1"/>
+<circle cx="40" cy="758" r="11" fill="#2C2C2A"/>
+<text x="40" y="762.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">1</text>
+<text x="58" y="763" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Presiona F</text>
+<text x="32" y="788" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">pdfjs-dist renderiza la página</text>
+<text x="32" y="804" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">a JPEG de 1600 px y extrae</text>
+<text x="32" y="820" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">su texto nativo como contexto</text>
+<rect x="257" y="736" width="222" height="92" rx="6" fill="#FFFFFF" stroke="#B4B2A9" stroke-width="1"/>
+<circle cx="277" cy="758" r="11" fill="#2C2C2A"/>
+<text x="277" y="762.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">2</text>
+<text x="295" y="763" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Envía al proxy</text>
+<text x="269" y="788" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">ai.ts hace POST con imagen +</text>
+<text x="269" y="804" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">texto a Vercel; la función</text>
+<text x="269" y="820" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">agrega la clave privada</text>
+<rect x="494" y="736" width="222" height="92" rx="6" fill="#FFFFFF" stroke="#B4B2A9" stroke-width="1"/>
+<circle cx="514" cy="758" r="11" fill="#2C2C2A"/>
+<text x="514" y="762.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">3</text>
+<text x="532" y="763" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Cruza el túnel</text>
+<text x="506" y="788" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">Cloudflare lo lleva al pod,</text>
+<text x="506" y="804" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">a FastAPI en RunPod. Debe</text>
+<text x="506" y="820" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">responder en menos de ~90 s</text>
+<rect x="731" y="736" width="222" height="92" rx="6" fill="#FFFFFF" stroke="#B4B2A9" stroke-width="1"/>
+<circle cx="751" cy="758" r="11" fill="#2C2C2A"/>
+<text x="751" y="762.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">4</text>
+<text x="769" y="763" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Protecciones</text>
+<text x="743" y="788" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">Valida clave, tamaño (5 MB)</text>
+<text x="743" y="804" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">y límite por IP. Si ya vio la</text>
+<text x="743" y="820" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">página, responde desde caché</text>
+<rect x="968" y="736" width="222" height="92" rx="6" fill="#FFFFFF" stroke="#B4B2A9" stroke-width="1"/>
+<circle cx="988" cy="758" r="11" fill="#2C2C2A"/>
+<text x="988" y="762.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">5</text>
+<text x="1006" y="763" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Pipeline hybrid</text>
+<text x="980" y="788" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">La nube lee la página; Ollama</text>
+<text x="980" y="804" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">detecta el tipo en paralelo.</text>
+<text x="980" y="820" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">Si la nube falla, usa v4</text>
+<rect x="1205" y="736" width="222" height="92" rx="6" fill="#FFFFFF" stroke="#B4B2A9" stroke-width="1"/>
+<circle cx="1225" cy="758" r="11" fill="#2C2C2A"/>
+<text x="1225" y="762.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">6</text>
+<text x="1243" y="763" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Responde JSON</text>
+<text x="1217" y="788" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">description + elements,</text>
+<text x="1217" y="804" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">page_type, model y</text>
+<text x="1217" y="820" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">processing_seconds</text>
+<rect x="1442" y="736" width="222" height="92" rx="6" fill="#FFFFFF" stroke="#B4B2A9" stroke-width="1"/>
+<circle cx="1462" cy="758" r="11" fill="#2C2C2A"/>
+<text x="1462" y="762.5" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">7</text>
+<text x="1480" y="763" font-size="14" font-weight="600" fill="#2C2C2A" text-anchor="start">Se lee en voz alta</text>
+<text x="1454" y="788" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">useSpeech (Piper si falta voz</text>
+<text x="1454" y="804" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">en inglés) y el panel</text>
+<text x="1454" y="820" font-size="12.5" font-weight="400" fill="#5F5E5A" text-anchor="start">muestra el análisis</text>
+<rect x="20" y="861" width="16" height="16" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="44" y="874" font-size="13" font-weight="400" fill="#2C2C2A" text-anchor="start">Frontend (navegador)</text>
+<rect x="208" y="861" width="16" height="16" rx="3" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
+<text x="232" y="874" font-size="13" font-weight="400" fill="#2C2C2A" text-anchor="start">Intermediarios (Vercel, Cloudflare)</text>
+<rect x="492" y="861" width="16" height="16" rx="3" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="516" y="874" font-size="13" font-weight="400" fill="#2C2C2A" text-anchor="start">Servidor propio (RunPod)</text>
+<rect x="705" y="861" width="16" height="16" rx="3" fill="#FAECE7" stroke="#993C1D" stroke-width="1"/>
+<text x="729" y="874" font-size="13" font-weight="400" fill="#2C2C2A" text-anchor="start">Nube de IA</text>
+<line x1="829" y1="869" x2="869" y2="869" stroke="#444441" stroke-width="1.8" marker-end="url(#ak)" marker-start="url(#ak)"/>
+<text x="879" y="874" font-size="13" font-weight="400" fill="#2C2C2A" text-anchor="start">petición y respuesta</text>
+<line x1="1043" y1="869" x2="1083" y2="869" stroke="#444441" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#ak)" marker-start="url(#ak)"/>
+<text x="1093" y="874" font-size="13" font-weight="400" fill="#2C2C2A" text-anchor="start">voz del servidor y llamadas a la nube</text>
+</svg>

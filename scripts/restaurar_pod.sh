@@ -1,28 +1,62 @@
 #!/bin/bash
-# Restaura AURA en un pod de RunPod nuevo (contenedor limpio). Se puede ejecutar de nuevo sin romper nada.
+# Restaura AURA en un servidor con GPU nuevo (RunPod, Vast.ai, etc.; contenedor limpio). Se puede ejecutar de nuevo sin romper nada.
 #
 #   curl -fsSL https://raw.githubusercontent.com/AdrianRosa21/tesis/main/scripts/restaurar_pod.sh -o /tmp/restaurar_pod.sh && bash /tmp/restaurar_pod.sh
 #
-# Necesita lo que SI se conserva entre pods, en /workspace:
+# Si existen estos respaldos en /workspace (RunPod), los usa y es mas rapido:
 #   /workspace/aura/tesis.tar.gz        copia del proyecto (luego se actualiza con git pull)
 #   /workspace/aura/ollama-models.tar   modelos de Ollama (5.6 GB)
 #   /workspace/aura/secrets/cloudflare-token
 #   /workspace/tesis/.env               claves (API_KEY, OPENAI_API_KEY...)
 #   /workspace/aura/tts/                voz en ingles (se descarga sola si falta)
-# Tarda unos 3 minutos. Al final imprime LISTO o la lista de problemas.
+# Si NO existen (servidor nuevo en otro proveedor), el script lo resuelve solo:
+#   - clona el proyecto desde GitHub,
+#   - baja qwen2.5vl con "ollama pull" (~6 GB),
+#   - crea el .env y te pide las claves (o las toma de las variables API_KEY, OPENAI_API_KEY y CLOUDFLARE_TOKEN),
+#   - te pide el token del tunel de Cloudflare.
+# Las claves se escriben ocultas; no se imprimen ni se guardan fuera de este servidor.
+# Tarda unos 3 minutos con respaldos y unos 8 sin ellos. Al final imprime LISTO o la lista de problemas.
 
 export DEBIAN_FRONTEND=noninteractive
 PROBLEMAS=()
+NUEVA_API_KEY=""
 paso() { echo; echo "[$(date +%H:%M:%S)] PASO $1"; }
 aviso() { echo "AVISO: $1"; PROBLEMAS+=("$1"); }
 fallo() { echo; echo "FALLO: $1"; echo "Corrige eso y vuelve a ejecutar el comando (es seguro repetirlo)."; exit 1; }
+
+# Crea /tesis/.env cuando no hay uno guardado (servidor nuevo).
+crear_env() {
+  echo "No hay .env guardado: se crea uno nuevo."
+  local api="${API_KEY:-}" openai="${OPENAI_API_KEY:-}"
+  if [ -t 0 ]; then
+    if [ -z "$api" ]; then
+      read -rsp "API_KEY (la misma que AURA_API_KEY en Vercel; Enter = generar una nueva): " api; echo
+    fi
+    if [ -z "$openai" ]; then
+      read -rsp "OPENAI_API_KEY (Enter = sin clave de la nube, solo Ollama): " openai; echo
+    fi
+  fi
+  if [ -z "$api" ]; then
+    api=$(python3 -c "import secrets; print(secrets.token_urlsafe(48))") || fallo "no se pudo generar la API_KEY"
+    NUEVA_API_KEY=1
+  fi
+  ( umask 077
+    echo "API_KEY=$api" > /tesis/.env
+    [ -n "$openai" ] && echo "OPENAI_API_KEY=$openai" >> /tesis/.env )
+  mkdir -p /workspace/tesis && cp /tesis/.env /workspace/tesis/.env
+}
 
 paso "1/9 paquetes del sistema"
 apt-get update -qq && apt-get install -y -qq curl git tmux python3-venv python3-pip poppler-utils zstd >/dev/null || fallo "no se pudieron instalar los paquetes (apt)"
 
 paso "2/9 codigo (rama main)"
 if [ ! -d /tesis/.git ]; then
-  tar -xzf /workspace/aura/tesis.tar.gz -C / || fallo "no se pudo restaurar /workspace/aura/tesis.tar.gz"
+  if [ -f /workspace/aura/tesis.tar.gz ]; then
+    tar -xzf /workspace/aura/tesis.tar.gz -C / || fallo "no se pudo restaurar /workspace/aura/tesis.tar.gz"
+  else
+    echo "no hay respaldo del proyecto: clonando desde GitHub..."
+    git clone -q https://github.com/AdrianRosa21/tesis.git /tesis || fallo "no se pudo clonar el repositorio (hay internet?)"
+  fi
 fi
 cd /tesis || fallo "no existe /tesis"
 git fetch origin -q && git switch main -q 2>/dev/null
@@ -31,7 +65,7 @@ git log --oneline -1
 
 paso "3/9 claves (.env)"
 if [ ! -f /tesis/.env ]; then
-  cp /workspace/tesis/.env /tesis/.env 2>/dev/null || fallo "no existe /tesis/.env ni /workspace/tesis/.env"
+  cp /workspace/tesis/.env /tesis/.env 2>/dev/null || crear_env
 fi
 echo "variables definidas (solo nombres):"; sed -E 's/=.*/=.../' /tesis/.env | grep -v '^#' | grep -v '^$' | sed 's/^/   /'
 grep -q '^API_KEY=.\+' /tesis/.env || fallo "el .env no tiene API_KEY"
@@ -47,9 +81,14 @@ levantar_ollama() {
 }
 curl -s -m 3 http://127.0.0.1:11434/api/tags >/dev/null || levantar_ollama || fallo "Ollama no arranca"
 if ! ollama list 2>/dev/null | grep -q qwen2.5vl; then
-  echo "restaurando el modelo desde /workspace (5.6 GB, tarda un par de minutos)..."
-  mkdir -p /root/.ollama && tar -xf /workspace/aura/ollama-models.tar -C /root/.ollama || fallo "no se pudo restaurar los modelos de Ollama"
-  levantar_ollama || fallo "Ollama no arranca despues de restaurar los modelos"
+  if [ -f /workspace/aura/ollama-models.tar ]; then
+    echo "restaurando el modelo desde /workspace (5.6 GB, tarda un par de minutos)..."
+    mkdir -p /root/.ollama && tar -xf /workspace/aura/ollama-models.tar -C /root/.ollama || fallo "no se pudo restaurar los modelos de Ollama"
+    levantar_ollama || fallo "Ollama no arranca despues de restaurar los modelos"
+  else
+    echo "no hay respaldo de modelos: bajando qwen2.5vl de internet (unos 6 GB, tarda unos minutos)..."
+    ollama pull qwen2.5vl || fallo "no se pudo bajar qwen2.5vl con ollama pull"
+  fi
 fi
 ollama list | head -3
 ollama list 2>/dev/null | grep -q qwen2.5vl || aviso "qwen2.5vl no aparece en ollama list (el respaldo local no funcionara)"
@@ -86,9 +125,17 @@ if ! command -v cloudflared >/dev/null; then
   fi
   chmod +x /usr/local/bin/cloudflared
 fi
-[ -f /workspace/aura/secrets/cloudflare-token ] || fallo "falta /workspace/aura/secrets/cloudflare-token"
+TOKEN_FILE=/workspace/aura/secrets/cloudflare-token
+if [ ! -f "$TOKEN_FILE" ]; then
+  tok="${CLOUDFLARE_TOKEN:-}"
+  if [ -z "$tok" ] && [ -t 0 ]; then
+    read -rsp "Token del tunel de Cloudflare (empieza con eyJ): " tok; echo
+  fi
+  [ -n "$tok" ] || fallo "falta el token del tunel (guardalo en $TOKEN_FILE o pasalo en CLOUDFLARE_TOKEN; se saca de Cloudflare: Zero Trust > Networks > Tunnels)"
+  mkdir -p /workspace/aura/secrets && ( umask 077; printf '%s' "$tok" > "$TOKEN_FILE" )
+fi
 tmux kill-session -t tunnel 2>/dev/null
-tmux new-session -d -s tunnel "cloudflared tunnel --no-autoupdate run --token-file /workspace/aura/secrets/cloudflare-token"
+tmux new-session -d -s tunnel "cloudflared tunnel --no-autoupdate run --token-file $TOKEN_FILE"
 PUBLICO=""
 for i in $(seq 1 30); do
   PUBLICO=$(curl -s -m 5 https://api.aura4blinds.online/api/ready) && echo "$PUBLICO" | grep -q '"status":"ready"' && break
@@ -99,6 +146,11 @@ paso "9/9 resumen"
 echo "local:   $(curl -s -m 5 http://127.0.0.1:3000/api/ready)"
 echo "publico: ${PUBLICO:-SIN RESPUESTA (el tunel no conecto; revisa: tmux attach -t tunnel)}"
 echo "sesiones tmux: $(tmux ls 2>/dev/null | cut -d: -f1 | tr '\n' ' ')"
+if [ -n "$NUEVA_API_KEY" ]; then
+  echo
+  echo "Se genero una API_KEY nueva. Copiala a AURA_API_KEY en Vercel (Settings > Environment Variables) y haz Redeploy."
+  echo "Para verla (no la pegues en chats ni capturas):  grep '^API_KEY=' /tesis/.env"
+fi
 echo
 if [ -z "$PUBLICO" ]; then
   echo "NO LISTO: el servidor funciona pero la direccion publica no responde."; exit 1
