@@ -98,13 +98,7 @@ cd /tesis/fastapi_backend || fallo "no existe /tesis/fastapi_backend"
 [ -d venv ] || python3 -m venv venv
 source venv/bin/activate
 pip install -q -r requirements.txt || fallo "pip no pudo instalar requirements.txt"
-if pip install -q -r requirements-tts.txt; then
-  [ -f /workspace/aura/tts/en_US-lessac-medium.onnx ] \
-    || python -m piper.download_voices --download-dir /workspace/aura/tts en_US-lessac-medium >/dev/null 2>&1 \
-    || aviso "no se pudo descargar la voz en ingles del servidor (se usara la del navegador)"
-else
-  aviso "no se pudo instalar Piper (voz en ingles del servidor); se usara la del navegador"
-fi
+echo "voz local omitida: se usaran las voces del navegador"
 
 paso "6/9 pruebas automaticas del backend"
 cd /tesis && python -W ignore -m unittest fastapi_backend.test_prompt_policy fastapi_backend.test_cloud_pipeline \
