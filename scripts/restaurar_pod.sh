@@ -47,7 +47,7 @@ crear_env() {
 }
 
 paso "1/9 paquetes del sistema"
-apt-get update -qq && apt-get install -y -qq curl git tmux python3-venv python3-pip poppler-utils zstd >/dev/null || fallo "no se pudieron instalar los paquetes (apt)"
+apt-get update -qq && apt-get install -y -qq curl git tmux socat python3-venv python3-pip poppler-utils zstd >/dev/null || fallo "no se pudieron instalar los paquetes (apt)"
 
 paso "2/9 codigo (rama main)"
 if [ ! -d /tesis/.git ]; then
@@ -126,6 +126,11 @@ tmux new-session -d -s backend "bash /tesis/scripts/correr_backend.sh"
 for i in $(seq 1 40); do curl -s -m 3 http://127.0.0.1:3000/api/health >/dev/null && break; sleep 1; done
 curl -s -m 8 http://127.0.0.1:3000/api/ready || fallo "el backend no responde en el puerto 3000 (tmux attach -t backend)"
 echo
+# El tunel actual de api.aura4blinds.online apunta al puerto 3001. Este puente mantiene
+# FastAPI en su puerto normal 3000 y evita tener que cambiar el tunel al crear otro servidor.
+tmux kill-session -t aura-port-bridge 2>/dev/null
+tmux new-session -d -s aura-port-bridge \
+  "socat TCP-LISTEN:3001,bind=127.0.0.1,reuseaddr,fork TCP:127.0.0.1:3000"
 
 paso "8/9 tunel de Cloudflare (api.aura4blinds.online)"
 if ! command -v cloudflared >/dev/null; then
